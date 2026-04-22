@@ -1,0 +1,90 @@
+name: CEO Daily Brief
+
+on:
+  schedule:
+    # Monday–Friday at 13:00 UTC = 7am CT (CDT is UTC-6; CST is UTC-5)
+    # 13:00 UTC = 7am CDT (summer) / 8am CST (winter) — close enough year-round
+    - cron: '0 13 * * 1-5'
+
+  # Manual trigger for testing (with dry-run option)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run — print brief to logs without sending email'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  generate-daily-brief:
+    name: Generate and Deliver CEO Daily Brief
+    runs-on: ubuntu-latest
+
+    # Notion and Resend use external APIs — no GitHub write permissions needed
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install anthropic requests httpx
+
+      - name: Verify required files exist
+        run: |
+          echo "Checking required files..."
+          test -f docs/claude-skills/00-master-context.md && echo "✓ Master context" || (echo "✗ Missing master context" && exit 1)
+          test -f docs/claude-skills/ai-chief-of-staff.md && echo "✓ Chief of Staff persona" || (echo "✗ Missing CoS persona" && exit 1)
+          test -f docs/claude-skills/ai-cfo.md && echo "✓ CFO persona" || (echo "✗ Missing CFO persona" && exit 1)
+          test -f docs/current-state.md && echo "✓ Current state" || (echo "✗ Missing current-state.md — update this file!" && exit 1)
+          echo "All required files present."
+
+      - name: Check secrets availability
+        run: |
+          echo "Checking secrets..."
+          if [ -z "$ANTHROPIC_API_KEY" ]; then echo "✗ ANTHROPIC_API_KEY not set" && exit 1; else echo "✓ ANTHROPIC_API_KEY set"; fi
+          if [ -z "$RESEND_API_KEY" ]; then echo "✗ RESEND_API_KEY not set — email will not be sent" && exit 1; else echo "✓ RESEND_API_KEY set"; fi
+          if [ -z "$HUBSPOT_ACCESS_TOKEN" ]; then echo "⚠ HUBSPOT_ACCESS_TOKEN not set — HubSpot pipeline/contacts will be skipped"; else echo "✓ HUBSPOT_ACCESS_TOKEN set"; fi
+          if [ -z "$NOTION_API_KEY" ]; then echo "⚠ NOTION_API_KEY not set — Notion sync will be skipped"; else echo "✓ NOTION_API_KEY set"; fi
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          HUBSPOT_ACCESS_TOKEN: ${{ secrets.HUBSPOT_ACCESS_TOKEN }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+
+      - name: Generate and deliver CEO daily brief
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          HUBSPOT_ACCESS_TOKEN: ${{ secrets.HUBSPOT_ACCESS_TOKEN }}
+          HUBSPOT_PORTAL_ID: ${{ secrets.HUBSPOT_PORTAL_ID }}
+          CHRIS_EMAIL: ${{ secrets.CHRIS_EMAIL }}
+          RESEND_USE_VERIFIED_DOMAIN: ${{ secrets.RESEND_USE_VERIFIED_DOMAIN }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DAILY_BRIEFS_DB_ID: ${{ secrets.NOTION_DAILY_BRIEFS_DB_ID }}
+          NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python -m src.advisory.daily_brief
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::CEO Daily Brief generation failed. Check logs above."
+          echo ""
+          echo "Common fixes:"
+          echo "  1. ANTHROPIC_API_KEY not set → GitHub repo Settings → Secrets → Actions"
+          echo "  2. RESEND_API_KEY not set → sign up at resend.com → copy API key → add as secret"
+          echo "  3. docs/current-state.md has template placeholders → update and commit the file"
+          echo "  4. CHRIS_EMAIL not set → add chris.scowden@staffingagent.ai as secret"
+          echo "  5. HUBSPOT_ACCESS_TOKEN not set → HubSpot pipeline/contacts skipped (optional)"

@@ -1,0 +1,72 @@
+name: Weekly AI Advisory Board Report
+
+on:
+  schedule:
+    # Every Monday at 8:00am CT (14:00 UTC — CT is UTC-6 in CDT, UTC-5 in CST)
+    # Using 14:00 UTC which is 8am CDT / 9am CST — close enough year-round
+    - cron: '0 14 * * 1'
+
+  # Allow manual trigger from GitHub Actions UI for testing
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run — print report to logs without creating a GitHub Issue'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  generate-advisory-report:
+    name: Generate and Deliver Weekly Advisory Report
+    runs-on: ubuntu-latest
+
+    # Required permissions for creating GitHub Issues
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install anthropic requests
+
+      - name: Verify persona files exist
+        run: |
+          echo "Checking for required files..."
+          test -f docs/claude-skills/00-master-context.md && echo "✓ Master context" || (echo "✗ Missing: docs/claude-skills/00-master-context.md" && exit 1)
+          test -f docs/claude-skills/ai-cfo.md && echo "✓ CFO persona" || (echo "✗ Missing: docs/claude-skills/ai-cfo.md" && exit 1)
+          test -f docs/claude-skills/ai-chief-of-staff.md && echo "✓ Chief of Staff persona" || (echo "✗ Missing: docs/claude-skills/ai-chief-of-staff.md" && exit 1)
+          test -f docs/claude-skills/ai-gtm-lead.md && echo "✓ GTM Lead persona" || (echo "✗ Missing: docs/claude-skills/ai-gtm-lead.md" && exit 1)
+          test -f docs/claude-skills/ai-product-lead.md && echo "✓ Product Lead persona" || (echo "✗ Missing: docs/claude-skills/ai-product-lead.md" && exit 1)
+          test -f docs/claude-skills/ai-risk-advisor.md && echo "✓ Risk Advisor persona" || (echo "✗ Missing: docs/claude-skills/ai-risk-advisor.md" && exit 1)
+          test -f docs/current-state.md && echo "✓ Current state" || (echo "✗ Missing: docs/current-state.md — update this file before Monday!" && exit 1)
+          echo "All required files present."
+
+      - name: Generate and deliver advisory report
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python -m src.advisory.weekly_report
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Weekly advisory report generation failed. Check logs above."
+          echo "Common causes:"
+          echo "  1. ANTHROPIC_API_KEY secret not set in GitHub repo settings"
+          echo "  2. docs/current-state.md not updated (still has template placeholders)"
+          echo "  3. A persona file is missing from docs/claude-skills/"
