@@ -1,0 +1,40 @@
+{
+    "CallerReference": "staffingagent-frontend-2026-04-03",
+    "Comment": "StaffingAgent Command Center",
+    "DefaultCacheBehavior": {
+        "TargetOriginId": "S3-staffingagent-frontend-prod",
+        "ViewerProtocolPolicy": "redirect-to-https",
+        "AllowedMethods": {
+            "Quantity": 2,
+            "Items": ["GET", "HEAD"]
+        },
+        "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+        "Compress": true
+    },
+    "Origins": {
+        "Quantity": 1,
+        "Items": [
+            {
+                "Id": "S3-staffingagent-frontend-prod",
+                "DomainName": "staffingagent-frontend-prod.s3.us-east-1.amazonaws.com",
+                "OriginAccessControlId": "E2H54LDUYPMYGH",
+                "S3OriginConfig": {
+                    "OriginAccessIdentity": ""
+                }
+            }
+        ]
+    },
+    "Enabled": true,
+    "DefaultRootObject": "index.html",
+    "CustomErrorResponses": {
+        "Quantity": 1,
+        "Items": [
+            {
+                "ErrorCode": 403,
+                "ResponsePagePath": "/index.html",
+                "ResponseCode": "200",
+                "ErrorCachingMinTTL": 10
+            }
+        ]
+    }
+}

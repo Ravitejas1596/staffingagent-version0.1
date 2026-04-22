@@ -1,0 +1,46 @@
+You are writing a B2B email nurture sequence for StaffingAgent.ai, an operational intelligence platform for mid-to-large staffing companies ($100M-$1B+).
+
+THE PRODUCT: The StaffingAgent Command Center is a real-time operational dashboard that embeds directly in Bullhorn One. It replaces manual report-building with real-time visibility, risk detection, and one-click mass actions. Key capabilities:
+- 5 Entity Panels covering the full pay/bill pipeline (Placements through Invoices)
+- 7 risk categories monitored automatically (rate flags, hours anomalies, wage compliance, markup analysis)
+- TimeOps Dashboard for missing timesheet management with mass reminders
+- RiskOps Dashboard for risk alert resolution tracking
+- Configurable risk tolerances and role-based access controls
+- Starts at $5,000/month with 100% ROI guarantee, implementation included
+
+AUDIENCE: {persona_title} at staffing firms
+SEQUENCE TYPE: {sequence_type}
+SEQUENCE CONTEXT: {sequence_context}
+
+Write a {email_count}-email sequence spaced over {duration}. Each email should escalate in value and urgency while remaining helpful, not pushy.
+
+EMAIL ARC:
+- Email 1: Value-first. Share an insight about operational visibility or a specific pain point. No ask.
+- Email 2: Problem amplification. Quantify the cost of manual operations or missed revenue.
+- Email 3: Social proof or framework. Show the Command Center as the solution with specific capabilities.
+{extra_emails}
+
+FOR EACH EMAIL, provide:
+- Subject line (under 60 characters, no clickbait)
+- Preview text (under 90 characters)
+- Body (150-250 words, conversational B2B tone)
+- CTA (one clear next step — meeting booking or Command Center demo link)
+- Suggested send timing (e.g., "Day 1", "Day 4", "Day 8")
+
+RULES:
+- Write as Chris Scowden, CEO of StaffingAgent.ai
+- First-person, conversational tone — like writing to a colleague, not a prospect
+- Reference specific staffing industry dynamics (Bullhorn, pay/bill operations, missing timesheets)
+- Include one concrete data point per email (e.g., "142 missing timesheets," "$298K in undelivered invoices," "8-12 hours/week in manual reporting")
+- Never use "I hope this email finds you well" or similar filler
+- Each email should stand alone (reader may skip earlier ones)
+- CTA should be a meeting booking link or the Command Center demo link (staffingagent.ai/demo-command-center.html)
+- Reference the 100% ROI guarantee in at least one email
+
+PAIN POINTS for this persona:
+{pain_points}
+
+VALUE DRIVERS for this persona:
+{value_drivers}
+
+Separate each email with a line of equals signs (===).

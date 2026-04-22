@@ -1,0 +1,56 @@
+name: Deploy API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - src/**
+      - app_platform/**
+      - deploy/**
+      - pyproject.toml
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image
+        run: |
+          docker build --platform linux/amd64 -t staffingagent-api -f deploy/Dockerfile .
+          docker tag staffingagent-api:latest 915204717316.dkr.ecr.us-east-1.amazonaws.com/staffingagent-api:latest
+          docker push 915204717316.dkr.ecr.us-east-1.amazonaws.com/staffingagent-api:latest
+
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster staffingagent-cluster \
+            --service staffingagent-api \
+            --force-new-deployment
+          aws ecs update-service \
+            --cluster staffingagent-cluster \
+            --service staffingagent-poller \
+            --force-new-deployment
+          aws ecs update-service \
+            --cluster staffingagent-cluster \
+            --service staffingagent-consumer \
+            --force-new-deployment

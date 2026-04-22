@@ -1,0 +1,117 @@
+{
+  "_doc": "Agent permission matrix. Enforced by src/shared/permissions.py. Each agent lists the actions it may perform; anything not listed is denied.",
+  "agents": {
+    "brain": {
+      "read":  ["ALL"],
+      "write": ["audit_logs"],
+      "send":  ["internal_notifications"],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "billing": {
+      "read":  ["invoices", "timesheets", "rates", "placements"],
+      "write": ["reconciliation_reports"],
+      "send":  [],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "vms": {
+      "read":  ["vms_data", "timesheets", "placements"],
+      "write": ["match_reports"],
+      "send":  [],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "compliance": {
+      "read":  ["ALL"],
+      "write": ["compliance_flags"],
+      "send":  ["escalation_alerts"],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "collections": {
+      "read":  ["ar_data", "invoice_history", "client_contacts"],
+      "write": ["collection_notes"],
+      "send":  ["draft_only"],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "time_anomaly": {
+      "read":  ["timesheets", "placements", "pay_periods"],
+      "write": ["anomaly_flags", "reminder_queue"],
+      "send":  ["reminders"],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "invoice": {
+      "read":  ["billable_charges", "invoices", "placements"],
+      "write": ["match_reports", "correction_queue"],
+      "send":  [],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "verification": {
+      "read":  ["ALL"],
+      "write": ["verification_reports"],
+      "send":  [],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "risk_alert": {
+      "read":  ["placements", "charges", "rates", "timesheets"],
+      "write": ["risk_flags"],
+      "send":  ["escalation_alerts"],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "gl_reconciliation": {
+      "read":  ["gl_data", "billable_charges", "payable_charges"],
+      "write": ["reconciliation_reports", "gl_adjustments"],
+      "send":  [],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "payroll_reconciliation": {
+      "read":  ["payroll_data", "payable_charges", "placements"],
+      "write": ["reconciliation_reports", "payroll_adjustments"],
+      "send":  [],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "forecasting": {
+      "read":  ["billing_history", "payroll_history", "pipeline_data"],
+      "write": ["forecast_reports"],
+      "send":  [],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "kpi": {
+      "read":  ["ALL"],
+      "write": ["kpi_reports", "anomalies"],
+      "send":  [],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "commissions": {
+      "read":  ["placements", "spread_data", "commissions_rules"],
+      "write": ["commissions_reports", "payroll_queue"],
+      "send":  [],
+      "modify_financial": false,
+      "override_compliance": false
+    },
+    "contract_compliance": {
+      "read":  ["contracts", "msa_data", "placements", "billable_charges"],
+      "write": ["compliance_flags"],
+      "send":  ["escalation_alerts"],
+      "modify_financial": false,
+      "override_compliance": false
+    }
+  },
+  "approval_gates": [
+    "Any action that modifies a client invoice amount",
+    "Any communication sent to a client contact",
+    "Any compliance flag that triggers a regulatory notification",
+    "Any write to financial records (GL, AR, AP)",
+    "Any action on data older than 90 days"
+  ]
+}

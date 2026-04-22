@@ -1,0 +1,36 @@
+{
+  "tenant_id": "ghr",
+  "display_name": "General Healthcare Resources",
+  "tolerance_overrides": {
+    "hours_mismatch_tolerance": 0.0,
+    "rate_mismatch_tolerance": 0.01,
+    "financial_variance_threshold": 500.0,
+    "confidence_threshold": 0.85
+  },
+  "client_aliases": {
+    "GHR - General Healthcare": "General Healthcare Resources",
+    "GHR Healthcare": "General Healthcare Resources"
+  },
+  "known_exceptions": [
+    {
+      "pattern": "PO format change Q2 2026",
+      "description": "GHR switched PO format from PO-GHR-XXXX to GHR-XXXX in April 2026. Both formats are valid during transition.",
+      "added_date": "2026-04-01",
+      "expires": "2026-07-01"
+    }
+  ],
+  "vms_quirks": [
+    "Fieldglass delays approval notifications by 24-48 hours on Fridays",
+    "Fieldglass rounds per diem to nearest whole dollar"
+  ],
+  "billing_rules": [
+    "Bill rate always rounded to nearest $0.50",
+    "OT rate = 1.5x regular rate, no exceptions"
+  ],
+  "escalation_contacts": {
+    "ap_manager": "jane.doe@ghr.com",
+    "vms_admin": "fieldglass-admin@ghr.com"
+  },
+  "learned_patterns": [],
+  "notes": "Pilot customer — Assess tier. Primary contact: Cortney/Jane."
+}

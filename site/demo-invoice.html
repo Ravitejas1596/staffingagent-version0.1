@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Matching Demo — StaffingAgent.ai</title>
+  <meta name="description" content="Try the Invoice Matching Agent. Auto-match invoices to purchase orders and flag variances instantly.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260404">
+  <link rel="stylesheet" href="demos.css?v=20260404">
+</head>
+<body>
+
+<nav class="nav scrolled">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="demos.html">All Demos</a>
+      <a href="demo-command-center.html">Command Center</a>
+      <a href="index.html#pricing">Pricing</a>
+    </div>
+    <a href="demo-command-center.html#agent-invoice" class="btn btn-sm" style="background:#2563eb;color:#fff">Try in Command Center &rarr;</a>
+    <a href="demos.html" class="btn btn-sm" style="background:#1e293b;color:#94a3b8">&larr; All Demos</a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<header class="demo-hero">
+  <div class="container text-center">
+    <span class="demo-tag tag-green">Billing Automation</span>
+    <h1>Invoice Matching &amp; Generation Agent</h1>
+    <p>Auto-matches invoices to purchase orders, flags variances, and identifies duplicates before they become problems.</p>
+  </div>
+</header>
+
+<section class="section" id="demo">
+  <div class="container">
+    <div class="demo-source">
+      <button class="btn btn-primary" id="btn-sample">Try with Sample Data</button>
+      <button class="btn btn-outline" id="btn-upload">Upload Your Files</button>
+      <input type="file" id="file-input" accept=".csv,.xlsx,.xls" style="display:none">
+    </div>
+    <div class="demo-privacy">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1a4 4 0 00-4 4v3H3a1 1 0 00-1 1v5a1 1 0 001 1h10a1 1 0 001-1V9a1 1 0 00-1-1h-1V5a4 4 0 00-4-4zm-2 4a2 2 0 114 0v3H6V5z" fill="#64748b"/></svg>
+      Your data never leaves your browser. All processing happens locally.
+    </div>
+
+    <div id="input-section" style="display:none">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">Input Data Preview</h2>
+      <div class="demo-table-wrap" id="input-table"></div>
+    </div>
+
+    <div class="demo-processing" id="processing">
+      <h3>Matching Invoices...</h3>
+      <div class="demo-progress-bar"><div class="demo-progress-fill"></div></div>
+      <div class="demo-step"></div>
+    </div>
+
+    <div class="demo-results" id="results">
+      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1.5rem">Invoice Matching Results</h2>
+      <div class="demo-summary" id="summary"></div>
+      <div class="demo-table-wrap" id="results-table"></div>
+      <div class="demo-result-cta">
+        <p>See how this eliminates manual invoice matching across your entire operation.</p>
+        <a href="https://meetings-na2.hubspot.com/chris-scowden" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Book a Meeting &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+      <p>&copy; 2026 StaffingAgent LLC. All rights reserved.</p>
+      <p class="footer-newbury">Built by the team behind <a href="https://www.newburypartners.com" target="_blank" rel="noopener">Newbury Partners</a></p>
+    </div>
+    <div class="footer-links">
+      <a href="index.html#command-center">Command Center</a>
+      <a href="index.html#how-it-works">How It Works</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="demos.html">Demos</a>
+      <a href="demo-command-center.html">Command Center Demo</a>
+      <a href="assessment.html">AI Readiness Assessment</a>
+      <a href="blog-middle-office-whitespace.html">Blog</a>
+      <a href="https://meetings-na2.hubspot.com/chris-scowden" target="_blank" rel="noopener">Book a Meeting</a>
+      <a href="invest.html">Investors</a>
+    </div>
+    <div class="footer-contact">
+      <a href="mailto:chris.scowden@staffingagent.ai">chris.scowden@staffingagent.ai</a>
+      <a href="https://www.linkedin.com/in/chrisscowden/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+var t = document.getElementById('nav-toggle'), l = document.getElementById('nav-links');
+t.addEventListener('click', function () { l.classList.toggle('open'); t.classList.toggle('open'); });
+</script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="demos.js?v=20260316"></script>
+<script src="demo-invoice.js?v=20260316"></script>
+<script type="text/javascript" id="hs-script-loader" async defer src="//js-na2.hs-scripts.com/245521589.js"></script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

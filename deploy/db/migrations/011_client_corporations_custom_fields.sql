@@ -1,0 +1,41 @@
+-- Migration 011: Add custom fields to client_corporations
+
+BEGIN;
+
+ALTER TABLE client_corporations
+    ADD COLUMN IF NOT EXISTS custom_float1       NUMERIC(18,4),
+    ADD COLUMN IF NOT EXISTS custom_float2       NUMERIC(18,4),
+    ADD COLUMN IF NOT EXISTS custom_float3       NUMERIC(18,4),
+    ADD COLUMN IF NOT EXISTS custom_date1        DATE,
+    ADD COLUMN IF NOT EXISTS custom_date2        DATE,
+    ADD COLUMN IF NOT EXISTS custom_date3        DATE,
+    ADD COLUMN IF NOT EXISTS custom_int1         INTEGER,
+    ADD COLUMN IF NOT EXISTS custom_int2         INTEGER,
+    ADD COLUMN IF NOT EXISTS custom_int3         INTEGER,
+    ADD COLUMN IF NOT EXISTS custom_text1        TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text2        TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text3        TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text4        TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text5        TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text6        TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text7        TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text8        TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text9        TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text10       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text11       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text12       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text13       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text14       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text15       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text16       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text17       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text18       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text19       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text20       TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text_block1  TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text_block2  TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text_block3  TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text_block4  TEXT,
+    ADD COLUMN IF NOT EXISTS custom_text_block5  TEXT;
+
+COMMIT;

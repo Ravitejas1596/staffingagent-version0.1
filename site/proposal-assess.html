@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StaffingAgent.ai — Command Center Proposal</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; color: #1a1a2e; line-height: 1.65; background: #fff; }
+    .page { max-width: 800px; margin: 0 auto; padding: 3rem 2.5rem; }
+    @media print {
+      .page { padding: 1rem; }
+      .page-break { break-before: page; }
+    }
+
+    /* Header */
+    .prop-header { text-align: center; padding-bottom: 2.5rem; border-bottom: 2px solid #e2e8f0; margin-bottom: 2.5rem; }
+    .prop-logo { font-weight: 800; font-size: 1.6rem; letter-spacing: -.03em; margin-bottom: .25rem; }
+    .prop-logo span { color: var(--sa-accent); }
+    .prop-tagline { font-size: .9rem; color: #64748b; margin-bottom: 1.5rem; }
+    .prop-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.2; margin-bottom: .5rem; }
+    .prop-for { font-size: 1rem; color: #475569; }
+    .prop-for strong { color: var(--sa-accent); }
+    .prop-date { font-size: .82rem; color: #94a3b8; margin-top: .75rem; }
+
+    /* Sections */
+    h2 { font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; margin: 2.5rem 0 1rem; padding-bottom: .5rem; border-bottom: 2px solid #f1f5f9; }
+    h3 { font-size: 1rem; font-weight: 700; margin: 1.5rem 0 .5rem; }
+    p { margin-bottom: .75rem; font-size: .92rem; color: #334155; }
+    ul { padding-left: 1.25rem; margin-bottom: 1rem; }
+    li { font-size: .92rem; color: #334155; margin-bottom: .35rem; }
+
+    /* Highlight Box */
+    .highlight {
+      background: linear-gradient(135deg, var(--sa-accent-50), #ecfdf5); border: 1px solid var(--sa-accent-200);
+      border-radius: 14px; padding: 1.75rem; margin: 1.5rem 0;
+    }
+    .highlight-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--sa-accent); margin-bottom: .75rem; }
+
+    /* Pricing Table */
+    .price-table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: .88rem; }
+    .price-table th {
+      text-align: left; padding: .75rem 1rem; background: #0f172a; color: #f1f5f9;
+      font-weight: 700; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em;
+    }
+    .price-table th:first-child { border-radius: 10px 0 0 0; }
+    .price-table th:last-child { border-radius: 0 10px 0 0; }
+    .price-table td { padding: .75rem 1rem; border-bottom: 1px solid #f1f5f9; }
+    .price-table tr:last-child td { border-bottom: none; }
+    .price-table .price-highlight { background: var(--sa-accent-50); }
+    .price-total { font-weight: 800; color: var(--sa-accent); font-size: 1rem; }
+
+    /* Stats Row */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0; }
+    .stat-card { text-align: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; }
+    .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--sa-accent); display: block; }
+    .stat-label { font-size: .78rem; color: #64748b; margin-top: .15rem; }
+
+    /* ROI Box */
+    .roi-box {
+      background: linear-gradient(135deg, #0f172a, #1e293b); color: #f1f5f9;
+      border-radius: 14px; padding: 2rem; margin: 1.5rem 0; text-align: center;
+    }
+    .roi-box h3 { color: #f1f5f9; font-size: 1.1rem; margin-bottom: .75rem; }
+    .roi-badge {
+      display: inline-block; font-size: 2rem; font-weight: 800; color: #34d399;
+      margin-bottom: .5rem;
+    }
+    .roi-box p { color: #94a3b8; font-size: .88rem; }
+
+    /* Signature */
+    .sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3rem; }
+    .sig-block { padding-top: 1rem; }
+    .sig-line { border-top: 1px solid #cbd5e1; padding-top: .75rem; margin-top: 3rem; }
+    .sig-name { font-weight: 700; font-size: .88rem; }
+    .sig-title { font-size: .82rem; color: #64748b; }
+
+    /* Footer */
+    .prop-footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; font-size: .78rem; color: #94a3b8; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="prop-header">
+    <div class="prop-logo">Staffing<span>Agent</span>.ai</div>
+    <p class="prop-tagline">AI Transformation Platform for the Staffing Industry</p>
+    <h1 class="prop-title">Command Center Platform Proposal</h1>
+    <p class="prop-for">Prepared for: <strong>[Customer Name]</strong></p>
+    <p class="prop-date">Date: [Date] &nbsp;|&nbsp; Valid for 30 days</p>
+  </div>
+
+  <!-- THE PROBLEM -->
+  <h2>The Challenge</h2>
+  <p>Staffing companies running Bullhorn One face a universal problem: <strong>operational visibility requires manual effort</strong>. Pay/bill teams spend hours each day pulling reports, cross-referencing data, and chasing missing information across disconnected systems. The result:</p>
+  <ul>
+    <li>Missing timesheets become unbilled revenue (industry average: 2–5% revenue leakage)</li>
+    <li>Rate mismatches and compliance gaps go undetected until audit</li>
+    <li>Manual report-building consumes 8–12 hours per week per team member</li>
+    <li>No single view of operational health across placements, timesheets, payroll, billing, and invoices</li>
+  </ul>
+
+  <!-- THE SOLUTION -->
+  <h2>The Solution: StaffingAgent Command Center</h2>
+  <p>The Command Center is an operational intelligence dashboard that embeds directly in Bullhorn One. It replaces manual report-building with <strong>real-time visibility, risk detection, and one-click mass actions</strong> — all from a single interface your team already works in.</p>
+
+  <div class="highlight">
+    <div class="highlight-label">What's Included</div>
+    <ul style="margin-bottom:0;">
+      <li><strong>5 Entity Panels</strong> — Placement, Time & Expense, Payroll, Billing, Invoices with drill-through to Bullhorn lists</li>
+      <li><strong>Risk Panel</strong> — 7 risk categories: timesheets, placement alignment, wage compliance, rate flags, hours flags, amount flags, markup analysis</li>
+      <li><strong>TimeOps Dashboard</strong> — Missing timesheet management with mass reminders, exclusions, and audit trail</li>
+      <li><strong>RiskOps Dashboard</strong> — Full risk alert management with resolution tracking and mass actions</li>
+      <li><strong>Admin Settings</strong> — Configurable risk tolerances, placement statuses, and role-based access controls</li>
+      <li><strong>Configurable Filters</strong> — Map any Bullhorn custom field as a dashboard filter</li>
+      <li><strong>Implementation included</strong> — 2–3 business day deployment, 30-minute admin configuration, training session</li>
+    </ul>
+  </div>
+
+  <!-- IMPACT -->
+  <h2>Expected Impact</h2>
+  <div class="stats">
+    <div class="stat-card">
+      <span class="stat-num">8–12 hrs</span>
+      <span class="stat-label">Saved per week per team member</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">2–5%</span>
+      <span class="stat-label">Revenue leakage recovered</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">&lt; 24 hrs</span>
+      <span class="stat-label">Risk alert response time</span>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <h2>Investment</h2>
+  <table class="price-table">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Details</th>
+        <th style="text-align:right;">Monthly</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="price-highlight">
+        <td><strong>Command Center Platform License</strong></td>
+        <td>Assess Tier — Full dashboard, risk alerts, TimeOps, RiskOps, capped mass actions, admin settings</td>
+        <td style="text-align:right;" class="price-total">$5,000</td>
+      </tr>
+      <tr>
+        <td>Implementation</td>
+        <td>Deployment, configuration, training — included for founding customers</td>
+        <td style="text-align:right;color:var(--sa-accent);font-weight:700;">Included</td>
+      </tr>
+      <tr>
+        <td>Minimum Term</td>
+        <td>12-month commitment</td>
+        <td style="text-align:right;">—</td>
+      </tr>
+      <tr>
+        <td><strong>Total Annual Investment</strong></td>
+        <td></td>
+        <td style="text-align:right;" class="price-total">$60,000</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ROI GUARANTEE -->
+  <div class="roi-box">
+    <div class="roi-badge">100% ROI Guarantee</div>
+    <h3>We guarantee your investment pays for itself.</h3>
+    <p>ROI is measured across six dimensions: time saved, improved financials (billing accuracy, disputes, revenue leakage), productivity per FTE, risks/penalties avoided, improved DSO and cash flow, and error reduction. Baseline measurements captured during onboarding. Quarterly ROI dashboards track all dimensions. If we don't deliver 100% ROI in Year 1, we make you whole.</p>
+  </div>
+
+  <!-- GROWTH PATH -->
+  <h2>Growth Path</h2>
+  <p>The Assess tier is your starting point. As your team sees results, the platform grows with you:</p>
+  <table class="price-table">
+    <thead>
+      <tr><th>Tier</th><th>What's Added</th><th style="text-align:right;">Monthly</th></tr>
+    </thead>
+    <tbody>
+      <tr class="price-highlight"><td><strong>Assess</strong> (Current)</td><td>Command Center dashboard, risk alerts, capped mass actions</td><td style="text-align:right;font-weight:700;">$5,000</td></tr>
+      <tr><td><strong>Transform</strong></td><td>+ AI agents (Time Anomaly, Risk Alert, Invoice Matching), unlimited mass actions, scheduled automation</td><td style="text-align:right;font-weight:700;">$12,500</td></tr>
+      <tr><td><strong>Enterprise</strong></td><td>+ Governance layer, full agent suite, custom agent rules, dedicated success</td><td style="text-align:right;font-weight:700;">$20,000</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TIMELINE -->
+  <h2>Implementation Timeline</h2>
+  <table class="price-table">
+    <thead><tr><th>Phase</th><th>Activity</th><th style="text-align:right;">Duration</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Contract execution & kickoff call</td><td style="text-align:right;">Day 1</td></tr>
+      <tr><td>2</td><td>Backend provisioning & Bullhorn menu setup</td><td style="text-align:right;">Days 2–3</td></tr>
+      <tr><td>3</td><td>Admin configuration (risk tolerances, statuses, access controls)</td><td style="text-align:right;">30–60 min</td></tr>
+      <tr><td>4</td><td>Team training session</td><td style="text-align:right;">60 min</td></tr>
+      <tr><td>5</td><td>Live & baseline ROI measurement begins</td><td style="text-align:right;">Day 3–5</td></tr>
+    </tbody>
+  </table>
+
+  <!-- NEXT STEPS -->
+  <h2>Next Steps</h2>
+  <ol style="padding-left:1.25rem;">
+    <li style="margin-bottom:.5rem;">Schedule 30-minute technical session with your pay/bill team lead</li>
+    <li style="margin-bottom:.5rem;">Review and execute platform license agreement</li>
+    <li style="margin-bottom:.5rem;">Kickoff call — begin implementation</li>
+  </ol>
+
+  <!-- SIGNATURES -->
+  <div class="sig-row">
+    <div class="sig-block">
+      <div class="sig-line">
+        <div class="sig-name">[Customer Name]</div>
+        <div class="sig-title">[Title] — [Company]</div>
+      </div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line">
+        <div class="sig-name">Chris Scowden</div>
+        <div class="sig-title">CEO — StaffingAgent LLC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="prop-footer">
+    <p>StaffingAgent LLC &nbsp;|&nbsp; McKinney, Texas &nbsp;|&nbsp; staffingagent.ai</p>
+    <p>This proposal is confidential and intended solely for the named recipient.</p>
+  </div>
+
+</div>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

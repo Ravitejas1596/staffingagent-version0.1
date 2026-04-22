@@ -1,0 +1,287 @@
+/* ===== Investor Page Styles ===== */
+
+/* Hero */
+.inv-hero {
+  padding: 9rem 0 4rem;
+  background: linear-gradient(175deg, #0f172a 0%, #1e293b 100%);
+  color: #f1f5f9;
+}
+.inv-hero h1 {
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  margin-bottom: .5rem;
+}
+.inv-badge {
+  display: inline-block;
+  background: rgba(6,182,212,.15);
+  color: var(--sa-accent-bright);
+  font-size: .72rem;
+  font-weight: 600;
+  padding: .4rem 1rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(34,211,238,.2);
+}
+.inv-tagline {
+  font-size: 1.2rem;
+  color: #94a3b8;
+  margin-bottom: 2rem;
+}
+.inv-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: .95rem;
+  color: #94a3b8;
+}
+.inv-meta strong { color: #f1f5f9; }
+.inv-round {
+  background: rgba(6,182,212,.12);
+  color: var(--sa-accent-bright);
+  font-weight: 600;
+  padding: .3rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(34,211,238,.2);
+}
+
+/* Two-column layout */
+.inv-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+.inv-two-col p {
+  font-size: 1.05rem;
+  color: #475569;
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+/* Problem stat cards */
+.inv-problem-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.inv-stat-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.inv-stat-num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--sa-accent);
+  white-space: nowrap;
+}
+.inv-stat-label {
+  font-size: .9rem;
+  color: #64748b;
+}
+
+/* Agent solution grid */
+.inv-agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+.inv-agent {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+.inv-agent-icon {
+  font-size: 2rem;
+  margin-bottom: .75rem;
+}
+.inv-agent h3 {
+  font-size: .95rem;
+  font-weight: 700;
+  margin-bottom: .5rem;
+}
+.inv-agent p {
+  font-size: .85rem;
+  color: #94a3b8;
+}
+
+/* Highlight box */
+.inv-highlight-box {
+  background: var(--sa-accent-50);
+  border: 1px solid var(--sa-accent-200);
+  border-left: 4px solid var(--sa-accent);
+  border-radius: 8px;
+  padding: 1.5rem 2rem;
+}
+.inv-highlight-box p {
+  font-size: 1rem;
+  color: #334155;
+  margin: 0;
+}
+
+/* Competitive moat grid */
+.inv-moat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+.inv-moat {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 2rem;
+}
+.inv-moat-num {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--sa-accent-bright);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: .75rem;
+}
+.inv-moat h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: .5rem;
+}
+.inv-moat p {
+  font-size: .9rem;
+  color: #94a3b8;
+}
+
+/* Tables */
+.inv-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+}
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .95rem;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.inv-table thead {
+  background: #f1f5f9;
+}
+.inv-table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #475569;
+}
+.inv-table td {
+  padding: .85rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+.inv-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.inv-table-dark {
+  background: rgba(255,255,255,.04);
+  color: #f1f5f9;
+}
+.inv-table-dark thead {
+  background: rgba(255,255,255,.06);
+}
+.inv-table-dark th {
+  color: #94a3b8;
+}
+.inv-table-dark td {
+  color: #cbd5e1;
+  border-bottom-color: rgba(255,255,255,.06);
+}
+
+/* Funds grid */
+.inv-funds-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+.inv-fund {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.inv-fund-icon {
+  font-size: 2rem;
+  margin-bottom: .75rem;
+}
+.inv-fund h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: .5rem;
+}
+.inv-fund p {
+  font-size: .88rem;
+  color: #64748b;
+}
+
+/* Team grid */
+.inv-team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.inv-team-card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 2rem;
+}
+.inv-team-featured {
+  border-color: var(--sa-accent);
+  border-width: 2px;
+  background: rgba(6,182,212,.06);
+}
+.inv-team-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: .25rem;
+}
+.inv-team-role {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--sa-accent-bright);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: .75rem;
+}
+.inv-team-card p:last-child {
+  font-size: .9rem;
+  color: #94a3b8;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+  .inv-hero { padding: 7rem 0 3rem; }
+  .inv-hero h1 { font-size: 2rem; }
+  .inv-meta { flex-direction: column; align-items: center; gap: .75rem; }
+  .inv-two-col { grid-template-columns: 1fr; gap: 2rem; }
+  .inv-agent-grid { grid-template-columns: 1fr 1fr; }
+  .inv-moat-grid { grid-template-columns: 1fr; }
+  .inv-funds-grid { grid-template-columns: 1fr 1fr; }
+  .inv-team-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .inv-agent-grid { grid-template-columns: 1fr; }
+  .inv-funds-grid { grid-template-columns: 1fr; }
+}

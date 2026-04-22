@@ -1,0 +1,28 @@
+{
+    "_comment": "Security Sprint Workstream 7 — create once, then attach to the distribution's DefaultCacheBehavior.ResponseHeadersPolicyId. Create via: aws cloudfront create-response-headers-policy --response-headers-policy-config file://deploy/cloudfront-security-headers-policy.json",
+    "Name": "StaffingAgent-Command-Center-Security-Headers",
+    "Comment": "CSP, HSTS, X-Frame, Referrer-Policy for the Command Center SPA",
+    "SecurityHeadersConfig": {
+        "ContentSecurityPolicy": {
+            "Override": true,
+            "ContentSecurityPolicy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://api.staffingagent.ai; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+        },
+        "ContentTypeOptions": {
+            "Override": true
+        },
+        "FrameOptions": {
+            "Override": true,
+            "FrameOption": "DENY"
+        },
+        "ReferrerPolicy": {
+            "Override": true,
+            "ReferrerPolicy": "strict-origin-when-cross-origin"
+        },
+        "StrictTransportSecurity": {
+            "Override": true,
+            "AccessControlMaxAgeSec": 31536000,
+            "IncludeSubdomains": true,
+            "Preload": true
+        }
+    }
+}

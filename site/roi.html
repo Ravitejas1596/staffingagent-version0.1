@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROI Calculator — StaffingAgent.ai</title>
+  <meta name="description" content="Estimate the annual value of AI-powered middle-office automation for your staffing firm. Real-time ROI calculation based on your operation's numbers.">
+  <link rel="canonical" href="https://staffingagent.ai/roi.html">
+  <meta property="og:title" content="ROI Calculator — StaffingAgent.ai">
+  <meta property="og:description" content="Estimate the annual value of AI-powered middle-office automation for your staffing firm.">
+  <meta property="og:url" content="https://staffingagent.ai/roi.html">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260404">
+  <link rel="stylesheet" href="roi.css?v=20260404">
+</head>
+<body>
+
+<nav class="nav scrolled">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html#command-center">Command Center</a>
+      <a href="index.html#how-it-works">How It Works</a>
+      <a href="index.html#pricing">Pricing</a>
+    </div>
+    <a href="index.html" class="btn btn-sm" style="background:#1e293b;color:#94a3b8">&larr; Back to Site</a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<header class="roi-hero">
+  <div class="container text-center">
+    <span class="inv-badge">Interactive Calculator</span>
+    <h1>What's Your Middle-Office AI Worth?</h1>
+    <p class="roi-tagline">Plug in your numbers. See the projected annual value in real time.</p>
+  </div>
+</header>
+
+<section class="section" id="calculator">
+  <div class="container">
+    <div class="roi-layout">
+
+      <div class="roi-inputs">
+        <h2>Your Operation</h2>
+
+        <div class="roi-field">
+          <label for="contractors">Contractors on Assignment</label>
+          <input type="range" id="contractors" min="50" max="5000" value="500" step="50">
+          <div class="roi-range-labels"><span>50</span><output id="contractors-val">500</output><span>5,000</span></div>
+        </div>
+
+        <div class="roi-field">
+          <label for="invoices">Monthly Invoice Volume</label>
+          <input type="range" id="invoices" min="100" max="50000" value="5000" step="100">
+          <div class="roi-range-labels"><span>100</span><output id="invoices-val">5,000</output><span>50,000</span></div>
+        </div>
+
+        <div class="roi-field">
+          <label for="backlog">Current Unbilled Backlog ($)</label>
+          <input type="number" id="backlog" min="0" max="10000000" value="250000" step="10000" placeholder="e.g., 250000">
+        </div>
+
+        <div class="roi-field">
+          <label for="hours">Hours/Week on Manual Reconciliation</label>
+          <input type="range" id="hours" min="5" max="100" value="30" step="5">
+          <div class="roi-range-labels"><span>5</span><output id="hours-val">30</output><span>100</span></div>
+        </div>
+
+        <div class="roi-field">
+          <label for="vms-pct">VMS Revenue as % of Total</label>
+          <select id="vms-pct">
+            <option value="0.125">Less than 25%</option>
+            <option value="0.375" selected>25% &ndash; 50%</option>
+            <option value="0.625">50% &ndash; 75%</option>
+            <option value="0.875">75%+</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="roi-output">
+        <h2>Projected Annual Value</h2>
+
+        <div class="roi-line">
+          <span class="roi-line-label">Labor Savings</span>
+          <span class="roi-line-value" id="out-labor">$0</span>
+        </div>
+        <div class="roi-line-sub">Manual hours eliminated &times; $55/hr loaded cost &times; 60% automation</div>
+
+        <div class="roi-line">
+          <span class="roi-line-label">Revenue Recovery</span>
+          <span class="roi-line-value" id="out-recovery">$0</span>
+        </div>
+        <div class="roi-line-sub">40% recovery rate on current unbilled backlog</div>
+
+        <div class="roi-line">
+          <span class="roi-line-label">Billing Error Reduction</span>
+          <span class="roi-line-value" id="out-errors">$0</span>
+        </div>
+        <div class="roi-line-sub">2% error rate &times; 70% AI catch rate across invoice volume</div>
+
+        <div class="roi-total">
+          <div class="roi-total-row">
+            <span>Total Annual Value</span>
+            <span class="roi-total-num" id="out-total">$0</span>
+          </div>
+          <div class="roi-multiple">
+            <span class="roi-multiple-num" id="out-multiple">0</span>&times; return on your annual platform investment
+          </div>
+          <div class="roi-tier-note" id="out-tier" style="font-size:.85rem;color:#64748b;margin-top:.5rem;text-align:center"></div>
+        </div>
+
+        <a href="https://meetings-na2.hubspot.com/chris-scowden" class="btn btn-primary btn-lg btn-block" target="_blank" rel="noopener" style="margin-top:1.5rem">See How These Numbers Apply to You &rarr;</a>
+
+        <p class="roi-disclaimer">Estimates based on operational benchmarks across the staffing industry. Actual results measured during engagement. Average invoice value estimated at $5,000.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+      <p>&copy; 2026 StaffingAgent LLC. All rights reserved.</p>
+      <p class="footer-newbury">Built by the team behind <a href="https://www.newburypartners.com" target="_blank" rel="noopener">Newbury Partners</a></p>
+    </div>
+    <div class="footer-links">
+      <a href="index.html#command-center">Command Center</a>
+      <a href="index.html#how-it-works">How It Works</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="demos.html">Demos</a>
+      <a href="demo-command-center.html">Command Center Demo</a>
+      <a href="assessment.html">AI Readiness Assessment</a>
+      <a href="blog-middle-office-whitespace.html">Blog</a>
+      <a href="https://meetings-na2.hubspot.com/chris-scowden" target="_blank" rel="noopener">Book a Meeting</a>
+      <a href="invest.html">Investors</a>
+    </div>
+    <div class="footer-contact">
+      <a href="mailto:chris.scowden@staffingagent.ai">chris.scowden@staffingagent.ai</a>
+      <a href="https://www.linkedin.com/in/chrisscowden/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const toggle = document.getElementById('nav-toggle');
+const links = document.getElementById('nav-links');
+toggle.addEventListener('click', () => { links.classList.toggle('open'); toggle.classList.toggle('open'); });
+</script>
+<script src="roi.js?v=20260315"></script>
+<script type="text/javascript" id="hs-script-loader" async defer src="//js-na2.hs-scripts.com/245521589.js"></script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

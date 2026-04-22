@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Anomaly Agent &mdash; A1/A2/B/C detectors inside the Command Center | StaffingAgent.ai</title>
+  <meta name="description" content="The Time Anomaly Agent runs four detector groups across every open placement — A1 missing timesheet, A2 consecutive miss, B hours variance, C rate drift — drives SMS/email outreach, and escalates unresolved cases to HITL.">
+  <link rel="canonical" href="https://staffingagent.ai/agent-time.html">
+  <meta property="og:title" content="Time Anomaly Agent — StaffingAgent.ai">
+  <meta property="og:description" content="Four detector groups across open placements, SMS + email outreach, human-in-the-loop escalation, 7-day reversal window.">
+  <meta property="og:url" content="https://staffingagent.ai/agent-time.html">
+  <meta property="og:image" content="https://staffingagent.ai/images/cc/agent-plan.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://staffingagent.ai/images/cc/agent-plan.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260404">
+  <style>
+    .agent-page-tag { display: inline-block; font-size: .72rem; font-weight: 700; padding: .3rem .9rem; border-radius: 10px; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 1rem; }
+    .tag-orange { background: rgba(249,115,22,.15); color: #fb923c; }
+    .agent-hero { padding: 9rem 0 3rem; background: linear-gradient(175deg, #0f172a 0%, #1e293b 100%); color: #f1f5f9; text-align: center; }
+    .agent-hero h1 { font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 800; letter-spacing: -.03em; margin-bottom: .75rem; }
+    .agent-hero p.agent-sub { font-size: 1.05rem; color: #94a3b8; max-width: 680px; margin: 0 auto 1.25rem; }
+    .agent-hero .hero-badges { display: flex; justify-content: center; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .agent-hero-shot { margin: 2rem auto 0; max-width: 960px; }
+    .agent-hero-shot img { width: 100%; height: auto; border-radius: 14px; box-shadow: 0 40px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(148,163,184,.18); display: block; }
+    .agent-hero-shot-caption { color: #94a3b8; font-size: .85rem; text-align: center; margin-top: .65rem; }
+    .agent-detail { max-width: 760px; margin: 0 auto; }
+    .agent-detail h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; }
+    .agent-detail p { font-size: 1.05rem; color: #475569; line-height: 1.7; margin-bottom: 1rem; }
+    .section-dark .agent-detail h2 { color: #f1f5f9; }
+    .section-dark .agent-detail p { color: #cbd5e1; }
+    .agent-cta { text-align: center; padding: 2rem 0; }
+    .agent-cta .btn { margin: .5rem; }
+
+    .detector-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 2rem 0 0; }
+    .detector-card { background: rgba(255,255,255,.04); border: 1px solid rgba(148,163,184,.18); border-radius: 14px; padding: 1.3rem 1.25rem; }
+    .detector-code { display: inline-block; font-family: ui-monospace, Menlo, monospace; font-size: .75rem; font-weight: 700; color: var(--sa-accent-bright); background: rgba(34,211,238,.14); padding: .2rem .55rem; border-radius: 6px; margin-bottom: .6rem; }
+    .detector-card h3 { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin-bottom: .4rem; }
+    .detector-card p { font-size: .9rem; color: #94a3b8; line-height: 1.55; margin: 0 0 .5rem; }
+    .detector-card .detector-action { font-size: .82rem; color: #fbbf24; font-weight: 600; }
+
+    .flow-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 2rem 0 1rem; }
+    .flow-step { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.2rem 1rem; }
+    .flow-step-num { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--sa-accent); color: #fff; font-weight: 700; font-size: .8rem; margin-bottom: .55rem; }
+    .flow-step h4 { font-size: .95rem; color: #0f172a; margin-bottom: .3rem; }
+    .flow-step p { font-size: .85rem; color: #64748b; line-height: 1.55; margin: 0; }
+  </style>
+</head>
+<body>
+
+<nav class="nav scrolled">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="the-command-center.html">Command Center</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+    </div>
+    <a href="index.html" class="btn btn-sm" style="background:#1e293b;color:#94a3b8">&larr; Back to Site</a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<header class="agent-hero">
+  <div class="container">
+    <div class="hero-badges">
+      <span class="agent-page-tag tag-orange">Middle-Office Automation</span>
+      <span class="agent-status-badge active">Active</span>
+    </div>
+    <h1>Time Anomaly Agent</h1>
+    <p class="agent-sub">Four detector groups run across every open placement every cycle. Missing timesheets, consecutive misses, hours variance, rate drift. Drafts SMS + email reminders, escalates unresolved cases to HITL, and asks for a human signature before touching Bullhorn.</p>
+    <div class="agent-hero-shot">
+      <picture>
+        <source srcset="/images/cc/agent-plan.webp" type="image/webp">
+        <img src="/images/cc/agent-plan.png" alt="Time Anomaly Agent Plan view in plan_ready phase showing five proposed actions across the A1, A2, B, and C detector groups with confidence, severity, and dollar impact." width="1440" height="900" loading="eager" fetchpriority="high">
+      </picture>
+      <div class="agent-hero-shot-caption">Agent Plan view &mdash; five proposed actions waiting on a human signature before any reminder is sent.</div>
+    </div>
+  </div>
+</header>
+
+<!-- Problem -->
+<section class="section">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Problem</span>
+      <h2>Missed and drifted timesheets are where the week leaks.</h2>
+      <p>Every Monday, account managers triage the same list by hand: who didn&rsquo;t submit, who&rsquo;s on week two of no submission, who&rsquo;s reporting 2&times; their usual hours, whose pay rate just changed without a corresponding placement update. Miss one cycle and the invoice goes out wrong &mdash; or not at all. The exact category of leak the Risk Alert panel on the cockpit is designed to surface, but now with an agent that can act on it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Detectors -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Detectors</span>
+      <h2>Four detector groups. One planning pass. Every open placement.</h2>
+      <p>Each cycle, the agent loads tenant configuration (thresholds, templates, excluded placements), scans Bullhorn for every open placement, and classifies findings into four groups. Each group gets its own recommended action, confidence score, severity, and dollar-impact estimate.</p>
+    </div>
+    <div class="detector-grid">
+      <div class="detector-card">
+        <span class="detector-code">A1</span>
+        <h3>Missing timesheet</h3>
+        <p>Placement active, pay period closed, no timesheet submitted.</p>
+        <span class="detector-action">&rarr; Send SMS + email reminder</span>
+      </div>
+      <div class="detector-card">
+        <span class="detector-code">A2</span>
+        <h3>Consecutive miss</h3>
+        <p>Second or third pay period in a row with no timesheet.</p>
+        <span class="detector-action">&rarr; Escalate to account manager + HITL</span>
+      </div>
+      <div class="detector-card">
+        <span class="detector-code">B</span>
+        <h3>Hours variance</h3>
+        <p>Reported hours differ materially from the placement&rsquo;s rolling average (configurable &plusmn;%).</p>
+        <span class="detector-action">&rarr; Flag for account-manager review</span>
+      </div>
+      <div class="detector-card">
+        <span class="detector-code">C</span>
+        <h3>Rate drift</h3>
+        <p>Pay or bill rate on the timesheet doesn&rsquo;t match the active placement rate.</p>
+        <span class="detector-action">&rarr; Open dispute ticket, optionally block invoice</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Flow -->
+<section class="section">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Flow</span>
+      <h2>Plan &rarr; Approve &rarr; Execute &mdash; with a human in the loop.</h2>
+      <p>The Time Anomaly Agent follows the same five-phase pipeline as every other StaffingAgent agent. It never touches production data without a human approving the plan, and every gateway action it takes is reversible for 7 days.</p>
+    </div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <span class="flow-step-num">1</span>
+        <h4>Scan</h4>
+        <p>Pull every open placement, compute each detector across the current pay cycle.</p>
+      </div>
+      <div class="flow-step">
+        <span class="flow-step-num">2</span>
+        <h4>Classify</h4>
+        <p>Bucket each finding into A1 / A2 / B / C with confidence, severity, and impact.</p>
+      </div>
+      <div class="flow-step">
+        <span class="flow-step-num">3</span>
+        <h4>Draft</h4>
+        <p>Compose tenant-configured SMS + email using the Message Templates tab.</p>
+      </div>
+      <div class="flow-step">
+        <span class="flow-step-num">4</span>
+        <h4>Approve</h4>
+        <p>Human reviews the plan in AgentPlanView, unchecks anything that shouldn&rsquo;t run.</p>
+      </div>
+      <div class="flow-step">
+        <span class="flow-step-num">5</span>
+        <h4>Execute &amp; log</h4>
+        <p>Typed gateway calls are issued one at a time. Each one is reversible for 7 days; all are permanently audited.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Settings / Configuration -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">Per-Tenant Settings</span>
+      <h2>Thresholds, templates, and runtime &mdash; configurable without code.</h2>
+      <p>Every knob the Time Anomaly Agent relies on is exposed in the Agent Settings view of the Command Center. Platform defaults ship sensible; every tenant can override any field, and every override is diffed against the default and can be reset in one click.</p>
+      <ul style="list-style:none;padding:0;margin:1rem 0 0">
+        <li style="padding:.45rem 0 .45rem 1.5rem;position:relative;color:#cbd5e1;font-size:.95rem"><span style="position:absolute;left:0;color:#34d399;font-weight:700">&#10003;</span> <strong style="color:#f1f5f9">Thresholds</strong> &mdash; hours variance %, rate drift $, consecutive-miss count for HITL escalation</li>
+        <li style="padding:.45rem 0 .45rem 1.5rem;position:relative;color:#cbd5e1;font-size:.95rem"><span style="position:absolute;left:0;color:#34d399;font-weight:700">&#10003;</span> <strong style="color:#f1f5f9">Message templates</strong> &mdash; SMS + email per detector with variable reference and preview</li>
+        <li style="padding:.45rem 0 .45rem 1.5rem;position:relative;color:#cbd5e1;font-size:.95rem"><span style="position:absolute;left:0;color:#34d399;font-weight:700">&#10003;</span> <strong style="color:#f1f5f9">Runtime</strong> &mdash; schedule, dry-run toggle, concurrency, error handling</li>
+        <li style="padding:.45rem 0 .45rem 1.5rem;position:relative;color:#cbd5e1;font-size:.95rem"><span style="position:absolute;left:0;color:#34d399;font-weight:700">&#10003;</span> <strong style="color:#f1f5f9">Integrations</strong> &mdash; SMS provider, email sender, audit log sink</li>
+        <li style="padding:.45rem 0 .45rem 1.5rem;position:relative;color:#cbd5e1;font-size:.95rem"><span style="position:absolute;left:0;color:#34d399;font-weight:700">&#10003;</span> <strong style="color:#f1f5f9">Dirty tracking</strong> &mdash; sticky save bar, per-field reset to platform default, discard changes</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="container text-center">
+    <span class="section-tag">Included in Transform &amp; Enterprise</span>
+    <h2>See it running on real data.</h2>
+    <p class="section-sub">The Time Anomaly Agent is bundled with the Transform tier alongside VMS Reconciliation, Invoice Matching, and Risk Alert. Dry-run on every tenant before first live execution.</p>
+    <div class="agent-cta">
+      <a href="demo-command-center.html" class="btn btn-primary btn-lg">See the Command Center</a>
+      <a href="demo-time.html" class="btn btn-outline btn-lg">Try Time Demo</a>
+    </div>
+    <p style="font-size:.9rem;color:#64748b"><a href="the-command-center.html" style="color:var(--sa-accent)">How agents work inside the Command Center &rarr;</a></p>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+      <p>&copy; 2026 StaffingAgent LLC. All rights reserved.</p>
+      <p class="footer-newbury">Built by the team behind <a href="https://www.newburypartners.com" target="_blank" rel="noopener">Newbury Partners</a></p>
+    </div>
+    <div class="footer-links">
+      <a href="the-command-center.html">Command Center</a>
+      <a href="index.html#how-it-works">How It Works</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="demos.html">Demos</a>
+      <a href="demo-command-center.html">Command Center Demo</a>
+      <a href="assessment.html">AI Readiness Assessment</a>
+      <a href="blog-middle-office-whitespace.html">Blog</a>
+      <a href="https://meetings-na2.hubspot.com/chris-scowden" target="_blank" rel="noopener">Book a Meeting</a>
+      <a href="invest.html">Investors</a>
+    </div>
+    <div class="footer-contact">
+      <a href="mailto:chris.scowden@staffingagent.ai">chris.scowden@staffingagent.ai</a>
+      <a href="https://www.linkedin.com/in/chrisscowden/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+var t = document.getElementById('nav-toggle'), l = document.getElementById('nav-links');
+t.addEventListener('click', function () { l.classList.toggle('open'); t.classList.toggle('open'); });
+</script>
+<script type="text/javascript" id="hs-script-loader" async defer src="//js-na2.hs-scripts.com/245521589.js"></script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

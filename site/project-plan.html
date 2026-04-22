@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Plan — StaffingAgent.ai</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; color: #1a1a2e; line-height: 1.6; background: #f8fafc; padding: 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    /* Header */
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+    .header-left h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.03em; margin-bottom: .25rem; }
+    .subtitle { color: #64748b; font-size: .95rem; margin-bottom: .5rem; }
+    .target { display: inline-block; background: var(--sa-accent); color: #fff; font-size: .82rem; font-weight: 700; padding: .4rem 1.2rem; border-radius: 8px; }
+    .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: .5rem; }
+    .last-saved { font-size: .75rem; color: #94a3b8; }
+    .btn-reset { font-size: .75rem; font-weight: 600; color: #94a3b8; background: none; border: 1px solid #e2e8f0; border-radius: 6px; padding: .3rem .75rem; cursor: pointer; font-family: inherit; transition: all .15s; }
+    .btn-reset:hover { color: #ef4444; border-color: #fca5a5; background: #fef2f2; }
+
+    /* Toast */
+    #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: #1e293b; color: #fff; font-size: .8rem; font-weight: 600; padding: .6rem 1.2rem; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 999; }
+    #toast.show { opacity: 1; }
+
+    /* Summary stats */
+    .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.5rem; margin-top: 1.5rem; }
+    .summary-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; text-align: center; }
+    .summary-num { font-size: 1.5rem; font-weight: 800; display: block; }
+    .summary-label { font-size: .78rem; color: #64748b; margin-top: .15rem; }
+    .green { color: var(--sa-accent); } .blue { color: #3b82f6; } .orange { color: #f59e0b; } .red { color: #ef4444; }
+
+    /* Workstream */
+    .ws { margin-bottom: 2.5rem; }
+    .ws-header { display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem; border-radius: 10px; margin-bottom: 1rem; }
+    .ws-header h2 { font-size: 1.05rem; font-weight: 800; margin: 0; flex: 1; }
+    .ws-badge { font-size: .65rem; font-weight: 700; padding: .25rem .65rem; border-radius: 6px; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* Table */
+    .task-table { width: 100%; border-collapse: collapse; font-size: .82rem; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+    .task-table th { text-align: left; padding: .65rem .75rem; background: #f8fafc; font-weight: 700; color: #64748b; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; border-bottom: 2px solid #e2e8f0; }
+    .task-table td { padding: .6rem .75rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .task-table tr:last-child td { border-bottom: none; }
+    .task-table tr:hover td { background: #fafafa; }
+
+    /* Status badges — clickable */
+    .status {
+      display: inline-block; font-size: .68rem; font-weight: 700; padding: .2rem .55rem;
+      border-radius: 6px; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap;
+      cursor: pointer; user-select: none; transition: transform .1s, box-shadow .1s;
+      position: relative;
+    }
+    .status:hover { transform: scale(1.06); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+    .status:active { transform: scale(.97); }
+    .status-not-started { background: #f1f5f9; color: #94a3b8; }
+    .status-in-progress { background: #dbeafe; color: #2563eb; }
+    .status-done { background: #dcfce7; color: #16a34a; }
+    .status-blocked { background: #fee2e2; color: #dc2626; }
+    .status::after { content: 'click to change'; font-size: .6rem; font-weight: 400; text-transform: none; letter-spacing: 0; position: absolute; bottom: calc(100% + 5px); left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: .2rem .5rem; border-radius: 4px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s; }
+    .status:hover::after { opacity: 1; }
+
+    /* Calendar date picker */
+    td.date-cell { white-space: nowrap; }
+    .date-wrap {
+      position: relative; display: inline-flex; align-items: center; gap: .3rem;
+      cursor: pointer; border-radius: 5px; padding: .15rem .35rem; margin: -.15rem -.35rem;
+      transition: background .15s;
+    }
+    .date-wrap:hover { background: #f0f9ff; }
+    .date-wrap:hover .date-cal-icon { opacity: 1; }
+    .date-display { font-size: .82rem; }
+    .date-cal-icon { font-size: .7rem; opacity: 0; transition: opacity .15s; color: #3b82f6; line-height: 1; }
+    .date-hidden {
+      position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer; border: none; padding: 0;
+      /* Let the browser native calendar open on click */
+    }
+
+    /* Editable owner cells */
+    .editable-owner {
+      cursor: text; border-radius: 4px; padding: .1rem .3rem; margin: -.1rem -.3rem;
+      transition: background .15s; display: inline-block; min-width: 4rem;
+    }
+    .editable-owner:hover { background: #fdf4ff; }
+    .editable-owner:focus { outline: 2px solid #a855f7; background: #fff; border-radius: 4px; }
+
+    /* Notes inline field */
+    .task-note { font-size: .72rem; color: #64748b; font-style: italic; margin-top: .2rem; min-height: 1.2em; display: block; border-radius: 3px; }
+    .task-note:empty::before { content: 'Add note…'; color: #cbd5e1; }
+    .task-note:focus { outline: 1px solid #cbd5e1; background: #fafafa; padding: .1rem .25rem; font-style: normal; }
+
+    /* Dependencies */
+    .dep { font-size: .72rem; color: #94a3b8; font-style: italic; }
+
+    /* Milestone */
+    .milestone-row td { background: #fef3c7 !important; font-weight: 700; }
+    .milestone-marker { color: #f59e0b; font-weight: 800; }
+
+    /* Notes section */
+    .notes { margin-top: 2rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; }
+    .notes h3 { font-size: .95rem; font-weight: 700; margin-bottom: .75rem; }
+    .notes ul { padding-left: 1.25rem; font-size: .85rem; color: #475569; }
+    .notes li { margin-bottom: .35rem; }
+
+    /* Legend */
+    .legend { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-bottom: .75rem; font-size: .75rem; color: #64748b; }
+    .legend-item { display: flex; align-items: center; gap: .35rem; }
+
+    @media (max-width: 768px) {
+      .summary { grid-template-columns: repeat(2, 1fr); }
+      .task-table { font-size: .75rem; }
+      .page-header { flex-direction: column; }
+      .header-right { align-items: flex-start; }
+    }
+    @media print {
+      body { padding: .5rem; background: #fff; }
+      .ws { break-inside: avoid; }
+      .status::after, .date-cal-icon, .btn-reset, #toast { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="page-header">
+    <div class="header-left">
+      <h1>StaffingAgent.ai — Project Plan</h1>
+      <p class="subtitle">Goal: First signed customer by Q2 2026 — Platform built, agents deployed, stabilizing for demos</p>
+      <div class="target">Target: Signed Assess Tier LOI by 5/30/2026</div>
+    </div>
+    <div class="header-right">
+      <div class="last-saved" id="last-saved">No changes saved yet</div>
+      <button class="btn-reset" id="btn-reset">Reset to original</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span>Click any status badge to cycle:</span>
+    <span class="legend-item"><span class="status status-not-started" style="cursor:default;pointer-events:none;">Not Started</span></span>
+    <span>→</span>
+    <span class="legend-item"><span class="status status-in-progress" style="cursor:default;pointer-events:none;">In Progress</span></span>
+    <span>→</span>
+    <span class="legend-item"><span class="status status-done" style="cursor:default;pointer-events:none;">Done</span></span>
+    <span>→</span>
+    <span class="legend-item"><span class="status status-blocked" style="cursor:default;pointer-events:none;">Blocked</span></span>
+    <span style="margin-left:.5rem;">| Click any date 📅 to open calendar | Click owner to edit | Click task to add a note</span>
+  </div>
+
+  <div class="summary">
+    <div class="summary-card"><span class="summary-num green" id="s-done">0</span><span class="summary-label">Completed</span></div>
+    <div class="summary-card"><span class="summary-num blue" id="s-progress">0</span><span class="summary-label">In Progress</span></div>
+    <div class="summary-card"><span class="summary-num orange" id="s-notstarted">0</span><span class="summary-label">Not Started</span></div>
+    <div class="summary-card"><span class="summary-num red" id="s-blocked">0</span><span class="summary-label">Blocked</span></div>
+  </div>
+
+  <!-- ========== WS1: PRODUCT ========== -->
+  <div class="ws">
+    <div class="ws-header" style="background:var(--sa-accent-50);">
+      <h2 style="color:var(--sa-accent);">1. Product — Command Center</h2>
+      <span class="ws-badge" style="background:#dcfce7;color:#16a34a;">Critical Path</span>
+    </div>
+    <table class="task-table">
+      <thead><tr><th style="width:30px;">#</th><th>Task</th><th>Owner</th><th>Start</th><th>Due</th><th>Status</th><th>Dependencies</th></tr></thead>
+      <tbody>
+        <tr data-task="1.1"><td>1.1</td><td>Complete Phase 1 backend build (database, API, Bullhorn integration)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Josh / Lane</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Feb 1</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-02-01"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 28</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-28"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">—</td></tr>
+        <tr data-task="1.2"><td>1.2</td><td>Complete Phase 2 backend build (Payroll, Billing, Invoices, RiskOps)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Josh / Lane</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 11</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-11"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">1.1 complete</td></tr>
+        <tr data-task="1.3"><td>1.3</td><td>Resolve TBD risk thresholds (High Pay/Bill Rate, Amounts, Markup defaults)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Cortney / Chris</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 21</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-21"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">—</td></tr>
+        <tr data-task="1.4"><td>1.4</td><td>Resolve additional RiskOps columns (Job Title, Candidate ID, Customer ID)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Renee / Cortney</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 21</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-21"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">—</td></tr>
+        <tr data-task="1.5"><td>1.5</td><td>Rebrand all UI from OpsHub/Beacon to StaffingAgent Command Center<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-17"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">—</td></tr>
+        <tr data-task="1.6"><td>1.6</td><td>Deploy demo dashboard on staffingagent.ai with password gate<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">1.5</td></tr>
+        <tr data-task="1.7"><td>1.7</td><td>Build production React scaffold (componentize monolithic HTML)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-17"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 28</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-28"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">1.5</td></tr>
+        <tr data-task="1.8"><td>1.8</td><td>Connect React frontend to Josh/Lane backend APIs<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev + Josh</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 28</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-28"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 11</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-11"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">1.2, 1.7</td></tr>
+        <tr data-task="1.9"><td>1.9</td><td>Bullhorn embedded app setup (menu item, iframe config)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Josh</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 7</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-07"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 11</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-11"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">1.8</td></tr>
+        <tr data-task="1.10"><td>1.10</td><td>QA testing on sandbox Bullhorn environment<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Cortney</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 28</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-28"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 11</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-11"></span></td><td><span class="status status-in-progress" data-default="in-progress">In Progress</span></td><td class="dep">1.9</td></tr>
+        <tr data-task="1.11"><td>1.11</td><td>Josh: GRANT DDL privileges to app_user + apply migration 022<br><span class="task-note" contenteditable="true" spellcheck="false">Unblocks all agent operations. See deployment-instructions-josh.md</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Josh</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 2</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-02"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 4</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-04"></span></td><td><span class="status status-blocked" data-default="blocked">Blocked</span></td><td class="dep">—</td></tr>
+        <tr data-task="1.12"><td>1.12</td><td>Josh: Add GITHUB_TOKEN to API container (Secrets Manager + ECS task def)<br><span class="task-note" contenteditable="true" spellcheck="false">Enables Ava chat to auto-file GitHub Issues for bug reports</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Josh</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 2</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-02"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 7</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-07"></span></td><td><span class="status status-in-progress" data-default="in-progress">In Progress</span></td><td class="dep">—</td></tr>
+        <tr data-task="1.13"><td>1.13</td><td>Fix agent data pipeline (timesheet data not syncing to agents)<br><span class="task-note" contenteditable="true" spellcheck="false">Multiple agents report "no timesheet records found for last 8 weeks"</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev / Josh</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 2</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-02"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 9</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-09"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">1.11</td></tr>
+        <tr data-task="1.14"><td>1.14</td><td>Diagnose and fix tenant UUID alignment (Bullhorn sync vs user JWT)<br><span class="task-note" contenteditable="true" spellcheck="false">Suspected root cause of empty agent results</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev / Josh</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 4</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-04"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 9</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-09"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">1.11</td></tr>
+        <tr data-task="1.15"><td>1.15</td><td>Build agent execution framework (plan → approve → execute workflow)<br><span class="task-note" contenteditable="true" spellcheck="false">All 4 P0 agents operational with HITL review</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 24</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-24"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 1</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-01"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">1.8</td></tr>
+        <tr data-task="1.16"><td>1.16</td><td>Ava support chat with auto GitHub Issue filing<br><span class="task-note" contenteditable="true" spellcheck="false">Claude tool use: detects bugs/requests, creates GitHub Issues</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 1</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-01"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 2</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-02"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">1.8</td></tr>
+        <tr data-task="1.17"><td>1.17</td><td>Database migration automation (auto-run on deploy)<br><span class="task-note" contenteditable="true" spellcheck="false">entrypoint.sh + FastAPI lifespan integration. No manual Josh step needed for future migrations.</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 28</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-28"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 1</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-01"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">4.5</td></tr>
+        <tr data-task="1.18"><td>1.18</td><td>All agents functional end-to-end with live data (demo-ready)<br><span class="task-note" contenteditable="true" spellcheck="false">Requires 1.11, 1.13, 1.14 resolved. Must work before GHR/Atrium demo.</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 7</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-07"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 11</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-11"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">1.11, 1.13, 1.14</td></tr>
+        <tr class="milestone-row"><td><span class="milestone-marker">&#9670;</span></td><td><strong>MILESTONE: Command Center + Agents demo-ready with live Bullhorn data</strong></td><td></td><td></td><td class="date-cell"><span class="date-wrap" data-field="due" data-ms="ms-1"><span class="date-display"><strong>Apr 11</strong></span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-11"></span></td><td></td><td class="dep">1.10, 1.18</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== WS2: SALES ========== -->
+  <div class="ws">
+    <div class="ws-header" style="background:#eff6ff;">
+      <h2 style="color:#3b82f6;">2. Sales — First Customer</h2>
+      <span class="ws-badge" style="background:#dbeafe;color:#2563eb;">Revenue Path</span>
+    </div>
+    <table class="task-table">
+      <thead><tr><th style="width:30px;">#</th><th>Task</th><th>Owner</th><th>Start</th><th>Due</th><th>Status</th><th>Dependencies</th></tr></thead>
+      <tbody>
+        <tr data-task="2.1"><td>2.1</td><td>Create demo script for CFO/VP Ops walkthrough<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">1.6</td></tr>
+        <tr data-task="2.2"><td>2.2</td><td>Create Assess tier customer proposal template<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">—</td></tr>
+        <tr data-task="2.3"><td>2.3</td><td>Schedule discovery call with GHR (Cortney → Jane)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Cortney</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-17"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 21</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-21"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">—</td></tr>
+        <tr data-task="2.4"><td>2.4</td><td>Schedule discovery call with Atrium (Sean)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Sean</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-17"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 21</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-21"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">—</td></tr>
+        <tr data-task="2.5"><td>2.5</td><td>Deliver Command Center demo to GHR<br><span class="task-note" contenteditable="true" spellcheck="false">Per Q2 plan: week of April 13</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Cortney</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 13</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-13"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-17"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">2.3, 1.18</td></tr>
+        <tr data-task="2.6"><td>2.6</td><td>Deliver Command Center demo to Atrium<br><span class="task-note" contenteditable="true" spellcheck="false">Per Q2 plan: week of April 13</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Sean</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 13</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-13"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-17"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">2.4, 1.18</td></tr>
+        <tr data-task="2.7"><td>2.7</td><td>Deliver Cross Country Healthcare demo (Transform $12.5K entry)<br><span class="task-note" contenteditable="true" spellcheck="false">Per Q2 plan: week of April 20</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 20</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-20"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 24</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-24"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">1.18</td></tr>
+        <tr data-task="2.8"><td>2.8</td><td>Send written Assess-tier proposal to GHR and/or Atrium<br><span class="task-note" contenteditable="true" spellcheck="false">Per Q2 plan: week of April 20</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 20</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-20"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 24</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-24"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">2.5 or 2.6, 2.2</td></tr>
+        <tr data-task="2.9"><td>2.9</td><td>Negotiate terms and address objections<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Sean</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 24</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-24"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">May 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-05-15"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">2.8</td></tr>
+        <tr data-task="2.10"><td>2.10</td><td>Validate pricing with 3 discovery conversations<br><span class="task-note" contenteditable="true" spellcheck="false">Per Q2 plan: by May 15</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Sean</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 13</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-13"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">May 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-05-15"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">2.5, 2.6</td></tr>
+        <tr class="milestone-row"><td><span class="milestone-marker">&#9670;</span></td><td><strong>MILESTONE: Signed Assess tier LOI / contract</strong></td><td></td><td></td><td class="date-cell"><span class="date-wrap" data-field="due" data-ms="ms-2"><span class="date-display"><strong>May 30</strong></span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-05-30"></span></td><td></td><td class="dep">2.9</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== WS3: LEGAL ========== -->
+  <div class="ws">
+    <div class="ws-header" style="background:#fff7ed;">
+      <h2 style="color:#ea580c;">3. Legal & Entity</h2>
+      <span class="ws-badge" style="background:#ffedd5;color:#c2410c;">Risk Mitigation</span>
+    </div>
+    <table class="task-table">
+      <thead><tr><th style="width:30px;">#</th><th>Task</th><th>Owner</th><th>Start</th><th>Due</th><th>Status</th><th>Dependencies</th></tr></thead>
+      <tbody>
+        <tr data-task="3.1"><td>3.1</td><td>Engage Texas business attorney<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 15</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-15"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 21</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-21"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">—</td></tr>
+        <tr data-task="3.2"><td>3.2</td><td>Execute StaffingAgent LLC Operating Agreement<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Attorney</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 21</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-21"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 4</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-04"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">3.1</td></tr>
+        <tr data-task="3.3"><td>3.3</td><td>Execute IP Assignment Agreement (Newbury → SA)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Attorney</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 21</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-21"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 4</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-04"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">3.1</td></tr>
+        <tr data-task="3.4"><td>3.4</td><td>Execute Inter-Company Services Agreement (cost+15%)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Attorney</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 21</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-21"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 4</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-04"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">3.1</td></tr>
+        <tr data-task="3.5"><td>3.5</td><td>Capital Contribution Agreements (all 5 partners)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 4</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-04"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 11</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-11"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">3.2</td></tr>
+        <tr data-task="3.6"><td>3.6</td><td>Confirmatory IP assignments (Cortney, Renee, Lane, contractors)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Attorney</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 4</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-04"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 11</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-11"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">3.3</td></tr>
+        <tr data-task="3.7"><td>3.7</td><td>Draft platform license agreement template for customers<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Attorney</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 7</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-07"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 18</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-18"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">3.2</td></tr>
+        <tr class="milestone-row"><td><span class="milestone-marker">&#9670;</span></td><td><strong>MILESTONE: Entity fully formed, IP transferred, customer contract ready</strong></td><td></td><td></td><td class="date-cell"><span class="date-wrap" data-field="due" data-ms="ms-3"><span class="date-display"><strong>Apr 18</strong></span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-18"></span></td><td></td><td class="dep">3.7</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== WS4: TEAM ========== -->
+  <div class="ws">
+    <div class="ws-header" style="background:#faf5ff;">
+      <h2 style="color:#7c3aed;">4. Team & Infrastructure</h2>
+      <span class="ws-badge" style="background:#ede9fe;color:#6d28d9;">Capacity</span>
+    </div>
+    <table class="task-table">
+      <thead><tr><th style="width:30px;">#</th><th>Task</th><th>Owner</th><th>Start</th><th>Due</th><th>Status</th><th>Dependencies</th></tr></thead>
+      <tbody>
+        <tr data-task="4.1"><td>4.1</td><td>Post AI/Agent Architect contractor brief (Toptal/Gun.io)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Recruiter</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 11</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-11"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 14</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-14"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">—</td></tr>
+        <tr data-task="4.2"><td>4.2</td><td>Complete Raviteja technical walkthrough — make offer decision<br><span class="task-note" contenteditable="true" spellcheck="false">Per Q2 plan: walkthrough by April 3, decision by April 7</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-17"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 7</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-07"></span></td><td><span class="status status-in-progress" data-default="in-progress">In Progress</span></td><td class="dep">4.1</td></tr>
+        <tr data-task="4.3"><td>4.3</td><td>AI Architect contracted, onboarded, and through discovery<br><span class="task-note" contenteditable="true" spellcheck="false">Per Q2 plan: contract by April 14, discovery complete by April 25, real Bullhorn data by April 30</span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Josh</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Apr 7</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-07"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 30</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-30"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">4.2</td></tr>
+        <tr data-task="4.4"><td>4.4</td><td>Provision AWS production environment (per hosting spec)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Josh</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 24</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-24"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 31</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-31"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">—</td></tr>
+        <tr data-task="4.5"><td>4.5</td><td>Set up CI/CD pipeline (GitHub → AWS deployment)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Josh / AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 31</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-31"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 4</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-04"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">4.4</td></tr>
+        <tr data-task="4.6"><td>4.6</td><td>Brief Cortney and Renee on SA positioning, pricing, brand<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-17"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 21</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-21"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== WS5: MARKETING ========== -->
+  <div class="ws">
+    <div class="ws-header" style="background:#f0fdf4;">
+      <h2 style="color:#16a34a;">5. Marketing & Pipeline</h2>
+      <span class="ws-badge" style="background:#dcfce7;color:#15803d;">Lead Gen</span>
+    </div>
+    <table class="task-table">
+      <thead><tr><th style="width:30px;">#</th><th>Task</th><th>Owner</th><th>Start</th><th>Due</th><th>Status</th><th>Dependencies</th></tr></thead>
+      <tbody>
+        <tr data-task="5.1"><td>5.1</td><td>Update website homepage with Command Center positioning<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-17"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 21</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-21"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">1.6</td></tr>
+        <tr data-task="5.2"><td>5.2</td><td>Create Command Center product page on website<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-17"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 24</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-24"></span></td><td><span class="status status-done" data-default="done">Done</span></td><td class="dep">1.6</td></tr>
+        <tr data-task="5.3"><td>5.3</td><td>LinkedIn posts: Command Center announcement series (3 posts)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / AI Dev</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 17</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-17"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 28</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-28"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">1.6</td></tr>
+        <tr data-task="5.4"><td>5.4</td><td>Email outreach to AI Roundtable companies (25 contacts)<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Sean</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 24</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-24"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Mar 28</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-28"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">2.1, 2.2</td></tr>
+        <tr data-task="5.5"><td>5.5</td><td>Validate pricing with first 3 discovery calls<br><span class="task-note" contenteditable="true" spellcheck="false"></span></td><td><span class="editable-owner" contenteditable="true" spellcheck="false">Chris / Sean</span></td><td class="date-cell"><span class="date-wrap" data-field="start"><span class="date-display">Mar 24</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-03-24"></span></td><td class="date-cell"><span class="date-wrap" data-field="due"><span class="date-display">Apr 7</span><span class="date-cal-icon">📅</span><input type="date" class="date-hidden" value="2026-04-07"></span></td><td><span class="status status-not-started" data-default="not-started">Not Started</span></td><td class="dep">2.5 or 2.6</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CRITICAL PATH -->
+  <div class="notes">
+    <h3>Critical Path to First Signed Customer (Updated April 2, 2026)</h3>
+    <p style="font-size:.88rem;color:#475569;margin-bottom:1rem;">Platform is built and deployed. The critical path now runs through data stabilization → demo delivery → close.</p>
+    <table class="task-table" style="margin-bottom:1rem;">
+      <thead><tr><th>Week</th><th>Gate</th><th>What Must Be True</th></tr></thead>
+      <tbody>
+        <tr style="background:#dcfce7;"><td>✅ Complete</td><td>Platform Built</td><td>Backend live (Phase 1+2). React app deployed to app.staffingagent.ai. CI/CD pipeline active. 4 agents operational. Ava support chat with issue capture. Database migration automation.</td></tr>
+        <tr><td>Apr 2–4</td><td style="color:#dc2626;font-weight:700;">BLOCKER: Josh DB Setup</td><td>Josh must: (1) GRANT DDL to app_user, (2) apply migration 022, (3) add GITHUB_TOKEN. Without this, agents fail with "no data" and "failed to fetch" errors.</td></tr>
+        <tr><td>Apr 4–9</td><td>Data Pipeline Fix</td><td>Agent data issues resolved: tenant UUID alignment, timesheet sync verified, all agents returning real data end-to-end.</td></tr>
+        <tr><td>Apr 7–11</td><td>Demo Ready (Live Data)</td><td>All agents functional with live Bullhorn data. Command Center + agents demonstrable without errors. QA complete.</td></tr>
+        <tr><td>Apr 13–17</td><td>First Demos</td><td>GHR demo delivered (Chris/Cortney). Atrium demo delivered (Chris/Sean). Pain validated. Interest confirmed.</td></tr>
+        <tr><td>Apr 20–24</td><td>Proposals Out</td><td>Cross Country Healthcare demo (Transform tier). Written Assess-tier proposals sent to GHR and/or Atrium.</td></tr>
+        <tr><td>Apr 24–May 15</td><td>Negotiate &amp; Validate</td><td>Pricing validated with 3+ conversations. Terms negotiated. Legal ready.</td></tr>
+        <tr><td>May 15–30</td><td>Close</td><td>Signed LOI or contract. Implementation scheduled (2-3 day deployment).</td></tr>
+      </tbody>
+    </table>
+    <h3 style="margin-top:1.5rem;">Key Risks (Updated)</h3>
+    <ul>
+      <li><strong style="color:#dc2626;">Josh DB setup not done yet</strong> — This is the #1 blocker. Agents are deployed but broken until DDL privileges are granted and migration 022 applied. Mitigation: instructions sent to Josh (deployment-instructions-josh.md); follow up daily until complete.</li>
+      <li><strong>Timesheet data not flowing to agents</strong> — Even after migration, tenant UUID mismatch between Bullhorn sync and user JWT may cause empty results. Mitigation: diagnostic endpoint planned; can debug once migration is applied.</li>
+      <li><strong>Legal delay</strong> — Operating agreement / IP transfer still pending. Can't sign binding customer contract without these. Mitigation: engage Texas attorney immediately; use LOI for initial commitment.</li>
+      <li><strong>AI Architect decision</strong> — Raviteja walkthrough this week. If no-go, post to Toptal/Gun.io same day. Not needed for first customer close, but delays P1 agents.</li>
+      <li><strong>Demo scheduling</strong> — GHR and Atrium demos targeted for week of April 13. Must have agent data issues resolved by then.</li>
+    </ul>
+    <h3 style="margin-top:1.5rem;">What's Been Built (Completed Since Plan Created)</h3>
+    <ul>
+      <li>✅ Full React Command Center app (app.staffingagent.ai) with auth, dashboard, TimeOps, RiskOps, agents, user management</li>
+      <li>✅ 4 active AI agents: Time Anomaly, Risk Alert, Invoice Matching, Collections Communications</li>
+      <li>✅ Agent execution framework with plan → approve → execute workflow and HITL review</li>
+      <li>✅ Ava support chat with Claude tool use — auto-files GitHub Issues for bugs/feature requests</li>
+      <li>✅ AWS infrastructure: ECS, Aurora PostgreSQL, S3, CloudFront, ALB</li>
+      <li>✅ CI/CD: GitHub Actions auto-deploy on push to main (API + frontend)</li>
+      <li>✅ Database migration automation (runs on container startup)</li>
+      <li>✅ Website: homepage, Command Center product page, investor page, demos, assessment, blog</li>
+    </ul>
+    <h3 style="margin-top:1.5rem;">Tracking</h3>
+    <ul>
+      <li>Chris: Update task statuses weekly (every Monday)</li>
+      <li>Primary KPI: Number of demos delivered / week</li>
+      <li>Secondary KPI: Days from first demo to signed contract</li>
+      <li>Project plan URL: <a href="https://staffingagent.ai/project-plan.html" target="_blank">staffingagent.ai/project-plan.html</a></li>
+    </ul>
+  </div>
+
+</div>
+
+<div id="toast">Saved ✓</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'sa-project-plan-v2'; // v2 = calendar dates
+
+  var STATUS_CYCLE   = ['not-started', 'in-progress', 'done', 'blocked'];
+  var STATUS_LABELS  = { 'not-started': 'Not Started', 'in-progress': 'In Progress', 'done': 'Done', 'blocked': 'Blocked' };
+  var STATUS_CLASSES = { 'not-started': 'status-not-started', 'in-progress': 'status-in-progress', 'done': 'status-done', 'blocked': 'status-blocked' };
+
+  /* ---------- Date helpers ---------- */
+  function fmtDate(iso) {
+    if (!iso) return '';
+    // Use noon to prevent timezone day-shift on any UTC offset
+    var d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  /* ---------- Load / Save ---------- */
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveState(state) {
+    state.savedAt = new Date().toISOString();
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    updateLastSaved(new Date());
+    flashToast('Saved ✓');
+  }
+  function updateLastSaved(d) {
+    var s = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' +
+            d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    document.getElementById('last-saved').textContent = 'Last saved: ' + s;
+  }
+
+  /* ---------- Toast ---------- */
+  var toastTimer;
+  function flashToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 1600);
+  }
+
+  /* ---------- Summary counts ---------- */
+  function updateSummary() {
+    var counts = { done: 0, progress: 0, notstarted: 0, blocked: 0 };
+    document.querySelectorAll('tr[data-task] .status').forEach(function (b) {
+      if (b.classList.contains('status-done'))        counts.done++;
+      else if (b.classList.contains('status-in-progress')) counts.progress++;
+      else if (b.classList.contains('status-blocked'))     counts.blocked++;
+      else                                                  counts.notstarted++;
+    });
+    document.getElementById('s-done').textContent       = counts.done;
+    document.getElementById('s-progress').textContent   = counts.progress;
+    document.getElementById('s-notstarted').textContent = counts.notstarted;
+    document.getElementById('s-blocked').textContent    = counts.blocked;
+  }
+
+  /* ---------- Status helpers ---------- */
+  function applyStatus(badge, key) {
+    STATUS_CYCLE.forEach(function (k) { badge.classList.remove(STATUS_CLASSES[k]); });
+    badge.classList.add(STATUS_CLASSES[key]);
+    badge.textContent = STATUS_LABELS[key];
+    badge.setAttribute('data-current', key);
+  }
+
+  /* ---------- Date display update ---------- */
+  function applyDate(wrap, isoValue, isMilestone) {
+    var display = wrap.querySelector('.date-display');
+    var formatted = fmtDate(isoValue);
+    if (isMilestone) {
+      display.innerHTML = '<strong>' + formatted + '</strong>';
+    } else {
+      display.textContent = formatted;
+    }
+  }
+
+  /* ---------- Collect full state ---------- */
+  function collectState() {
+    var state = loadState();
+    if (!state.tasks) state.tasks = {};
+    if (!state.milestones) state.milestones = {};
+
+    document.querySelectorAll('tr[data-task]').forEach(function (row) {
+      var id = row.getAttribute('data-task');
+      if (!state.tasks[id]) state.tasks[id] = {};
+      var badge = row.querySelector('.status');
+      if (badge) state.tasks[id].status = badge.getAttribute('data-current');
+      row.querySelectorAll('.date-wrap').forEach(function (wrap) {
+        var field = wrap.getAttribute('data-field');
+        var input = wrap.querySelector('.date-hidden');
+        if (field && input) state.tasks[id][field] = input.value;
+      });
+      var owner = row.querySelector('.editable-owner');
+      if (owner) state.tasks[id].owner = owner.textContent.trim();
+      var note = row.querySelector('.task-note');
+      if (note) state.tasks[id].note = note.textContent.trim();
+    });
+
+    document.querySelectorAll('.date-wrap[data-ms]').forEach(function (wrap) {
+      var ms = wrap.getAttribute('data-ms');
+      var input = wrap.querySelector('.date-hidden');
+      if (ms && input) state.milestones[ms] = input.value;
+    });
+
+    return state;
+  }
+
+  function persist() {
+    saveState(collectState());
+    updateSummary();
+  }
+
+  /* ---------- Restore ---------- */
+  function restoreState() {
+    var state = loadState();
+    if (!state.tasks && !state.milestones) return;
+
+    document.querySelectorAll('tr[data-task]').forEach(function (row) {
+      var id = row.getAttribute('data-task');
+      var saved = (state.tasks || {})[id];
+      if (!saved) return;
+
+      var badge = row.querySelector('.status');
+      if (badge && saved.status) applyStatus(badge, saved.status);
+
+      row.querySelectorAll('.date-wrap').forEach(function (wrap) {
+        var field = wrap.getAttribute('data-field');
+        var input = wrap.querySelector('.date-hidden');
+        if (field && input && saved[field]) {
+          input.value = saved[field];
+          applyDate(wrap, saved[field], false);
+        }
+      });
+
+      var owner = row.querySelector('.editable-owner');
+      if (owner && saved.owner !== undefined) owner.textContent = saved.owner;
+      var note = row.querySelector('.task-note');
+      if (note && saved.note !== undefined) note.textContent = saved.note;
+    });
+
+    document.querySelectorAll('.date-wrap[data-ms]').forEach(function (wrap) {
+      var ms = wrap.getAttribute('data-ms');
+      var input = wrap.querySelector('.date-hidden');
+      var saved = (state.milestones || {})[ms];
+      if (saved && input) {
+        input.value = saved;
+        applyDate(wrap, saved, true);
+      }
+    });
+
+    if (state.savedAt) updateLastSaved(new Date(state.savedAt));
+    updateSummary();
+  }
+
+  /* ---------- Wire: status badges ---------- */
+  document.querySelectorAll('tr[data-task] .status').forEach(function (badge) {
+    var cur = 'not-started';
+    STATUS_CYCLE.forEach(function (k) { if (badge.classList.contains(STATUS_CLASSES[k])) cur = k; });
+    badge.setAttribute('data-current', cur);
+    badge.addEventListener('click', function () {
+      var idx = STATUS_CYCLE.indexOf(badge.getAttribute('data-current'));
+      applyStatus(badge, STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length]);
+      persist();
+    });
+  });
+
+  /* ---------- Wire: calendar date pickers ---------- */
+  document.querySelectorAll('.date-wrap').forEach(function (wrap) {
+    var input = wrap.querySelector('.date-hidden');
+    var isMilestone = !!wrap.getAttribute('data-ms');
+
+    // Click the visible area → open the native calendar
+    wrap.addEventListener('click', function (e) {
+      if (e.target === input) return; // already handled natively
+      try { input.showPicker(); } catch (err) { input.click(); }
+    });
+
+    input.addEventListener('change', function () {
+      if (input.value) applyDate(wrap, input.value, isMilestone);
+      persist();
+    });
+  });
+
+  /* ---------- Wire: owner ---------- */
+  document.querySelectorAll('.editable-owner').forEach(function (o) {
+    o.addEventListener('blur', persist);
+    o.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); o.blur(); }
+      if (e.key === 'Escape') o.blur();
+    });
+  });
+
+  /* ---------- Wire: notes ---------- */
+  document.querySelectorAll('.task-note').forEach(function (n) {
+    n.addEventListener('blur', persist);
+  });
+
+  /* ---------- Reset ---------- */
+  document.getElementById('btn-reset').addEventListener('click', function () {
+    if (!confirm('Reset all statuses, dates, owners, and notes to their original values?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  });
+
+  /* ---------- Init ---------- */
+  restoreState();
+  updateSummary();
+
+})();
+</script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

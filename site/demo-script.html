@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Command Center Demo Script — StaffingAgent.ai</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; color: #1a1a2e; line-height: 1.7; background: #f8fafc; padding: 2rem; }
+    .container { max-width: 820px; margin: 0 auto; }
+    h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.03em; margin-bottom: .25rem; }
+    .subtitle { color: #64748b; font-size: 1rem; margin-bottom: 2.5rem; }
+    .meta { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 2rem; font-size: .85rem; color: #64748b; }
+    .meta strong { color: #1a1a2e; }
+    .phase { margin-bottom: 3rem; }
+    .phase-header {
+      display: flex; align-items: center; gap: .75rem; margin-bottom: 1.25rem;
+      padding-bottom: .75rem; border-bottom: 2px solid #e2e8f0;
+    }
+    .phase-num {
+      width: 36px; height: 36px; border-radius: 10px; display: flex;
+      align-items: center; justify-content: center; font-weight: 800; font-size: .9rem; color: #fff;
+      flex-shrink: 0;
+    }
+    .phase-title { font-size: 1.2rem; font-weight: 700; }
+    .phase-time { font-size: .78rem; color: #94a3b8; font-weight: 600; margin-left: auto; }
+    .step { margin-bottom: 1.5rem; padding-left: 1.25rem; border-left: 3px solid #e2e8f0; }
+    .step-action { font-weight: 700; color: #0f172a; font-size: .95rem; margin-bottom: .25rem; }
+    .step-say { font-size: .9rem; color: #334155; margin-bottom: .35rem; }
+    .step-say em { font-style: normal; color: var(--sa-accent); font-weight: 600; }
+    .step-note {
+      font-size: .8rem; color: #64748b; background: #f1f5f9; border-radius: 8px;
+      padding: .5rem .75rem; margin-top: .5rem; border-left: 3px solid #cbd5e1;
+    }
+    .step-note strong { color: #475569; }
+    .tip {
+      background: var(--sa-accent-50); border: 1px solid var(--sa-accent-200); border-radius: 12px;
+      padding: 1.25rem; margin: 1.5rem 0; font-size: .88rem;
+    }
+    .tip-label { font-weight: 700; color: var(--sa-accent); font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .35rem; }
+    .objection { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 1.25rem; margin: 1rem 0; font-size: .88rem; }
+    .objection-q { font-weight: 700; color: #c2410c; margin-bottom: .35rem; }
+    .objection-a { color: #475569; }
+    .cta-box {
+      background: linear-gradient(135deg, #0f172a, #1e293b); color: #f1f5f9;
+      border-radius: 16px; padding: 2rem; margin-top: 2rem; text-align: center;
+    }
+    .cta-box h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; }
+    .cta-box p { font-size: .9rem; color: #94a3b8; }
+    @media print {
+      body { padding: .5rem; background: #fff; }
+      .phase { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Command Center Demo Script</h1>
+  <p class="subtitle">Guided walkthrough for CFO / VP Operations buyers</p>
+
+  <div class="meta">
+    <div><strong>Duration:</strong> 30–35 minutes</div>
+    <div><strong>Audience:</strong> CFO, VP Ops, Pay/Bill Manager</div>
+    <div><strong>Goal:</strong> Assess tier signed ($5K/mo) — with Transform upgrade pathway clear</div>
+  </div>
+
+  <!-- PHASE 1 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num" style="background:#6366f1;">1</div>
+      <div class="phase-title">Open: The Pain (3 min)</div>
+      <div class="phase-time">0:00 – 3:00</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Start with their world</div>
+      <div class="step-say">"How many people on your pay/bill team are spending time building reports just to figure out <em>where things stand</em>? Most companies we talk to tell us it's <em>2–4 hours a day</em> per person — pulling data from Bullhorn, cross-referencing in Excel, chasing missing timesheets by email."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Quantify the cost</div>
+      <div class="step-say">"At your size, that's roughly <em>$150K–$300K a year</em> in labor just to get visibility into your own operations. And even then, things slip through — missing timesheets become unbilled revenue, rate mismatches become margin leakage, compliance gaps become audit findings."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Transition to the solution</div>
+      <div class="step-say">"What if your team could see <em>everything</em> — every placement, every timesheet, every risk alert — in one dashboard, updated in real time, with the ability to take action right from that same screen? That's what the Command Center does. Let me show you."</div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num" style="background:var(--sa-accent);">2</div>
+      <div class="phase-title">Main Dashboard Walkthrough (8 min)</div>
+      <div class="phase-time">3:00 – 11:00</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Show the header + filters</div>
+      <div class="step-say">"This is the Command Center. It's embedded directly in Bullhorn — your team never leaves the system they already work in. These filters at the top pull from your actual Bullhorn data: date ranges, branches, employment types, legal entities. Click 'Run' and every panel updates instantly."</div>
+      <div class="step-note"><strong>Click:</strong> Point to each filter. Click 'Run' button to show the animation.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Walk through the 5 Entity Panels (left to right)</div>
+      <div class="step-say">"These five panels give you a complete picture of your pay/bill pipeline — from placement to invoice."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Placement Panel</div>
+      <div class="step-say">"274 active placements. 247 approved. 18 pending. But look here — <em>9 approved placements haven't synced to BTE</em>. That means payroll can't process them. Click 'Details' — 4 are failed syncs, 5 were never attempted. Your team would normally discover this at payroll cutoff. Now they see it in real time."</div>
+      <div class="step-note"><strong>Click:</strong> Expand "Approved Placements Not Synced to BTE" to show the sub-tiles.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Time & Expense Panel</div>
+      <div class="step-say">"1,847 timesheets expected. 86% approved — that's good. But click 'Details' on Open Timesheets — <em>142 are missing</em>. 15 are disputed. 34 had BTL processing failures. Every one of those is money sitting on the table."</div>
+      <div class="step-note"><strong>Click:</strong> Expand "Open Timesheets" to show Missing, Rejected, Disputed, Submitted sub-tiles. Hover over the progress bar.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Payroll + Billing Panels</div>
+      <div class="step-say">"$2.84 million in payable charges — 91.6% processed. But $238K is sitting unprocessed. Same pattern on billing: $440K in billable charges not invoiced. The 'Details' expand shows exactly why — Not Ready, Ready, Processing, Export Errors. Your team can see <em>where</em> each dollar is stuck."</div>
+      <div class="step-note"><strong>Click:</strong> Expand "Payable Charges Not Processed" and "Billable Charges Not Processed" to show sub-statuses.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Invoices Panel</div>
+      <div class="step-say">"962 invoices, $4.58M total. 92.7% finalized. But look at the delivery status: <em>58 invoices worth $298K haven't been delivered to the customer</em>. That's cash that's been billed but the customer doesn't even know they owe it yet. Every day that sits there is another day on your DSO."</div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num" style="background:#f59e0b;">3</div>
+      <div class="phase-title">Risk Panel Deep Dive (5 min)</div>
+      <div class="phase-time">11:00 – 16:00</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Introduce the Risk Panel</div>
+      <div class="step-say">"This is what makes the Command Center different from a report. The Risk Panel is actively scanning for anomalies across <em>seven categories</em>: timesheets, placement alignment, wage compliance, rate mismatches, hours flags, amount flags, and markup analysis."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Click into TimeOps Dashboard</div>
+      <div class="step-say">"Let's click 'Missing Timesheets.' This takes us to the TimeOps Dashboard — your team's command center for chasing missing timesheets. 142 missing. 22 have been excluded (medical leave, client requests). That leaves <em>120 actionable</em>. Select the ones you want, hit 'Send Timesheet Reminders' — done. No more hunting through email."</div>
+      <div class="step-note"><strong>Click:</strong> Navigate to TimeOps. Click "Missing Timesheets After Exclusions" tile. Select a couple rows. Show the Mass Actions dropdown.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Show the audit trail</div>
+      <div class="step-say">"And see this — when someone excludes a timesheet, the system records <em>who</em> did it and <em>when</em>. James O'Brien excluded this one on February 14th. Full accountability. No more 'I thought someone else handled it.'"</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Navigate to RiskOps Dashboard</div>
+      <div class="step-say">"Back to the main dashboard. Now let's click into the RiskOps Dashboard. 127 risk alerts across all categories. I can filter by category — let's look at just the Hours Flags. 46 records where pay hours don't match bill hours, or hours exceed 40, or hours are unusually high."</div>
+      <div class="step-note"><strong>Click:</strong> Back to main dashboard. Click a risk metric. Navigate to RiskOps. Click Hours Flags tile. Show the filtered table.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Show resolution workflow</div>
+      <div class="step-say">"Each alert has a Resolved Status: Open, Pending, or Resolved. Your team works through them, updates the status, adds comments. Mass actions let you update 50 records at once. Filter by 'Open' to see what still needs attention."</div>
+      <div class="step-note"><strong>Click:</strong> Click "Open" pill in the Resolved Status filter. Show a status dropdown on a row. Show Mass Actions.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num" style="background:#ef4444;">4</div>
+      <div class="phase-title">Admin Settings — Configurability (3 min)</div>
+      <div class="phase-time">16:00 – 19:00</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Open Admin Settings</div>
+      <div class="step-say">"Every company has different tolerances. Click Admin Settings. Here you configure your risk thresholds — what counts as 'high pay rate' at your company? $150/hr? $200? You set it. High hours threshold, markup bands, minimum wage — all configurable per customer."</div>
+      <div class="step-note"><strong>Click:</strong> Open Admin Settings modal. Scroll through Risk Tolerances sections.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Show User Access Controls</div>
+      <div class="step-say">"And this is where you control who sees what. Your ATS users can see Placement data but not Payroll. Your PayBill admins can access the RiskOps Dashboard. Only Super Admins can change Admin Settings. It maps directly to your Bullhorn user types."</div>
+      <div class="step-note"><strong>Click:</strong> Scroll to User Entitlements section. Show the role-based access pickers.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Show Configure Filters</div>
+      <div class="step-say">"And these dashboard filters? They're configurable too. If you have a custom Bullhorn field your team uses — a branch code, a product line, a GL segment — you add it here and it shows up in the dashboard header. No custom development needed."</div>
+      <div class="step-note"><strong>Click:</strong> Close Admin. Open Configure Filters modal. Show the filter table.</div>
+    </div>
+  </div>
+
+  <!-- PHASE 5 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num" style="background:var(--sa-accent);">5</div>
+      <div class="phase-title">The AI Agent Vision (4 min)</div>
+      <div class="phase-time">19:00 – 23:00</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Bridge from dashboard to agents</div>
+      <div class="step-say">"Everything I just showed you is Phase 1 — <em>visibility and manual action</em>. Your team can see problems and fix them faster than ever. But here's where it gets powerful."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Paint the agent picture</div>
+      <div class="step-say">"Phase 2 adds AI agents behind this same dashboard. The <em>Time Anomaly Agent</em> automatically detects missing timesheets and sends reminders on a configurable schedule — first reminder, second reminder, escalation to the placement owner. It tracks response rates. Your team just monitors the results."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Describe the Risk Alert Agent</div>
+      <div class="step-say">"The <em>Risk Alert Agent</em> monitors every new timesheet and payable charge against your configured risk tolerances. Rate mismatch? It auto-notifies the placement owner. Pay with no bill? It flags it before it becomes a problem. Your team reviews and approves — the agent does the heavy lifting."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Human-in-the-loop assurance</div>
+      <div class="step-say">"These agents don't make decisions for you — they <em>recommend actions</em> and your team approves. You're always in control. As your team gets comfortable, you can expand the guardrails. But you start with full oversight."</div>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">Key insight for the buyer</div>
+      The dashboard is the product they buy today. The agents are the value they unlock 90 days later — through the same interface. No new tools, no retraining.
+    </div>
+  </div>
+
+  <!-- PHASE 5b — AGENT LIVE DEMO -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num" style="background:#4f46e5;">5b</div>
+      <div class="phase-title">Live Agent Demo — Inside the Command Center (4 min)</div>
+      <div class="phase-time">23:00 – 27:00</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Scroll down to the AI Agents panel</div>
+      <div class="step-say">"Let me show you what this actually looks like. Back on the main dashboard — scroll down below the Risk Panel. See these four tiles? These are the Transform-tier agents. Each one has a status indicator: green for idle, blue when running, purple when complete. They're right here in the dashboard, not a separate tool."</div>
+      <div class="step-note"><strong>Action:</strong> Scroll down to the AI Agents panel on the main dashboard. Point to each of the 4 agent tiles and the status indicators.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Run the Time Anomaly Agent</div>
+      <div class="step-say">"Let's run the Time Anomaly Agent. One click — 'Run Agent.' Notice the status dot on the tile turns blue. The agent is running."</div>
+      <div class="step-note"><strong>Click:</strong> Click "Run Agent" on the Time Anomaly tile. The agent view opens with the animated status badge showing "Running."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Show the agent view and sample data</div>
+      <div class="step-say">"We're now inside the Time Anomaly Agent view — same design system, same header, same blue gradient — but this is the execution layer. Click 'Try with Sample Data.' Watch it process: loading, grouping by employee, checking overtime thresholds, scanning for ghost shift patterns."</div>
+      <div class="step-note"><strong>Click:</strong> Click "Try with Sample Data." Let the processing animation run. The Agent processes 29 timesheet entries across 6 employees in about 3 seconds.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Walk through the results</div>
+      <div class="step-say">"Results. 29 entries. 6 employees analyzed. 4 flagged. Look at the summary cards — purple for totals, red for the alerts. Then the Action Queue: the agent has already generated recommended actions, waiting for approval. 'Send automated overtime alert to Marcus Johnson.' Approve or dismiss — your team stays in control. And then the full results table, purple gradient headers just like the rest of the dashboard, color-coded severity badges."</div>
+      <div class="step-note"><strong>Point to:</strong> Summary cards (purple/red). Action queue with Approve/Dismiss buttons. Results table with HIGH/MED badges. Explain this is the human-in-the-loop workflow.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Navigate back and run another agent</div>
+      <div class="step-say">"Back to dashboard. Notice the Time Anomaly tile now shows purple — it completed. Let's try the Invoice Matching Agent. Same flow. Same interface. This one matches invoices to purchase orders — 20 invoices, 138 auto-matched, 4 flagged for review, $44,000 in total variance identified and queued for approval."</div>
+      <div class="step-note"><strong>Click:</strong> Click "Back to Dashboard." Point to the purple status dot on the Time Anomaly tile. Click Invoice Matching → "Try with Sample Data." Let it run. Point to the action queue.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Reinforce the seamless experience</div>
+      <div class="step-say">"Your team never left the Command Center. The same dashboard they use for visibility every morning is the same dashboard where the agents surface their recommendations. One interface. One audit trail. The agents do the work — your team reviews and approves."</div>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">Deep link shortcut for agent demos</div>
+      You can send prospects directly to a specific agent demo without the full gate flow: add the hash to the URL. Example: <strong>staffingagent.ai/demo-command-center.html#agent-time</strong> loads the dashboard and auto-navigates to the Time Anomaly Agent. Works for <code>#agent-time</code>, <code>#agent-invoice</code>, <code>#agent-vms</code>, <code>#agent-collections</code>.
+    </div>
+  </div>
+
+  <!-- PHASE 6 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num" style="background:#6366f1;">6</div>
+      <div class="phase-title">Close: Pricing & Next Steps (5 min)</div>
+      <div class="phase-time">27:00 – 32:00</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">State the offer</div>
+      <div class="step-say">"The Command Center starts at <em>$5,000 a month</em>. That includes the full dashboard, all the risk alerts, the TimeOps and RiskOps dashboards, capped mass actions, configurable filters and tolerances — everything I showed you. 12-month commitment. Implementation is included — we handle everything. And when you're ready for unlimited mass actions and AI agents, Transform is a straightforward upgrade."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Drop the ROI guarantee</div>
+      <div class="step-say">"And here's our guarantee: you will see <em>100% ROI</em> within your first year. We measure it across six dimensions — time saved, billing accuracy, error reduction, DSO improvement, risk avoidance, and productivity per FTE. We baseline it during onboarding and report quarterly. If we don't hit it, we make you whole."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Create urgency</div>
+      <div class="step-say">"We're onboarding our founding customers right now. Founding customers get implementation included at no additional cost and direct access to our product team. We're limiting that to our first five customers."</div>
+    </div>
+
+    <div class="step">
+      <div class="step-action">Ask for the next step</div>
+      <div class="step-say">"What I'd suggest as a next step is a <em>30-minute technical session</em> with your pay/bill team lead. We walk them through the dashboard with their specific use cases and answer their operational questions. Can we get that scheduled this week?"</div>
+    </div>
+  </div>
+
+  <!-- OBJECTION HANDLING -->
+  <h2 style="font-size:1.3rem;font-weight:800;margin:2.5rem 0 1.25rem;letter-spacing:-.02em;">Common Objections</h2>
+
+  <div class="objection">
+    <div class="objection-q">"We already have Power BI / custom reports for this."</div>
+    <div class="objection-a">"Power BI shows you what happened. The Command Center shows you what to do about it — with one-click mass actions, built-in audit trails, and risk alerts that fire automatically. And it's embedded in Bullhorn, not a separate tool. Your team never has to context-switch."</div>
+  </div>
+
+  <div class="objection">
+    <div class="objection-q">"$5K a month is a lot for a dashboard."</div>
+    <div class="objection-a">"If you have 2 people spending 2 hours a day pulling reports, that's $100K+ a year. The dashboard pays for itself in time savings alone — before you even count the revenue recovered from missing timesheets, billing errors, and compliance gaps. And we guarantee 100% ROI."</div>
+  </div>
+
+  <div class="objection">
+    <div class="objection-q">"We're in the middle of a Bullhorn One migration — bad timing."</div>
+    <div class="objection-a">"Actually, that's the best timing. Companies going through the B1 migration tell us their productivity drops 30–40% during the transition. The Command Center gives your team a single view of everything that's falling through the cracks during migration. We've seen this become the most valuable tool during that transition period."</div>
+  </div>
+
+  <div class="objection">
+    <div class="objection-q">"What about data security?"</div>
+    <div class="objection-a">"The Command Center reads from your Bullhorn data via the same REST API your system already uses. We don't store candidate PII. Risk alert metadata and audit logs are stored in an isolated, encrypted database per customer on AWS. SOC 2 Type II compliant infrastructure."</div>
+  </div>
+
+  <div class="objection">
+    <div class="objection-q">"We need to see it with our data first."</div>
+    <div class="objection-a">"Absolutely. That's what the technical session is for. We connect to your Bullhorn sandbox, pull a sample of your actual placements and timesheets, and show you the dashboard with your data. Takes about 2 business days to set up."</div>
+  </div>
+
+  <div class="cta-box">
+    <h3>Demo Access</h3>
+    <p>staffingagent.ai/demo-command-center.html &nbsp;|&nbsp; Access codes: staffingagent2026, commandcenter, sa2026</p>
+  </div>
+
+</div>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

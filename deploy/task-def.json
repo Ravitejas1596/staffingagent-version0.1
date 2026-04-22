@@ -1,0 +1,95 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "915204717316.dkr.ecr.us-east-1.amazonaws.com/staffingagent-api:latest",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "S3_BUCKET",
+          "value": "staffingagent-uploads-prod"
+        },
+        {
+          "name": "AWS_DEFAULT_REGION",
+          "value": "us-east-1"
+        },
+        {
+          "name": "BULLHORN_CREDS_KEK_VERSION",
+          "value": "1"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:915204717316:secret:staffingagent/prod/api-secrets:DATABASE_URL::"
+        },
+        {
+          "name": "DATABASE_ADMIN_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:915204717316:secret:staffingagent/prod/api-secrets:DATABASE_ADMIN_URL::"
+        },
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:915204717316:secret:staffingagent/prod/api-secrets:ANTHROPIC_API_KEY::"
+        },
+        {
+          "name": "BULLHORN_CLIENT_ID",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:915204717316:secret:staffingagent/prod/api-secrets:BULLHORN_CLIENT_ID::"
+        },
+        {
+          "name": "BULLHORN_CLIENT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:915204717316:secret:staffingagent/prod/api-secrets:BULLHORN_CLIENT_SECRET::"
+        },
+        {
+          "name": "BULLHORN_API_USER",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:915204717316:secret:staffingagent/prod/api-secrets:BULLHORN_API_USER::"
+        },
+        {
+          "name": "BULLHORN_API_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:915204717316:secret:staffingagent/prod/api-secrets:BULLHORN_API_PASSWORD::"
+        },
+        {
+          "name": "GITHUB_TOKEN",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:915204717316:secret:staffingagent/prod/api-secrets:GITHUB_TOKEN::"
+        },
+        {
+          "name": "JWT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:915204717316:secret:staffingagent/prod/jwt-secret-g1uOAc"
+        },
+        {
+          "name": "BULLHORN_CREDS_KEK",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:915204717316:secret:staffingagent/prod/bullhorn-creds-kek-5zx3HD"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/staffingagent-api",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "api"
+        }
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "staffingagent-api",
+  "taskRoleArn": "arn:aws:iam::915204717316:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::915204717316:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "volumes": [],
+  "placementConstraints": [],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024"
+}

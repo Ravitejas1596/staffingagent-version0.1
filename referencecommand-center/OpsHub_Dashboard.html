@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>OpsHub: Pay &amp; Bill Operations Dashboard - Phase 1</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(1000px 600px at 40% -200px, #1d4ed8 0%, #0b3350 45%, #0a3048 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .view { display: none; }
+    .view.active { display: block; }
+    .dashboard-container { max-width: 1600px; margin: 0 auto; width: 100%; }
+    .back-button {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px; background: #2563eb; color: white;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s ease; margin-bottom: 20px;
+    }
+    .back-button:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .header-section {
+      background: #ffffff; border: 1px solid #e5e7eb; border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08); padding: 20px; margin-bottom: 20px; position: relative;
+    }
+    .header-title { color: #2563eb; font-size: 28px; font-weight: 800; margin-bottom: 20px; }
+    .settings-button {
+      position:absolute; top:18px; right:18px;
+      display:flex; align-items:center; gap:8px;
+      padding:6px 14px; border:1px solid #d1d5db; border-radius:9999px;
+      background:#F15A29; color:white; font-weight:600; cursor:pointer;
+      box-shadow:0 1px 3px rgba(2,6,23,.08); transition: background 0.2s ease;
+    }
+    .settings-button:hover { background:#d94e23; }
+    .settings-button svg { width:20px; height:20px; fill:white; }
+    .filters-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; align-items: end; }
+    .filter-group { display: flex; flex-direction: column; }
+    .filter-label { color: #6b7280; font-size: 12px; font-weight: 500; margin-bottom: 5px; text-transform: uppercase; }
+    select, input { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background: white; }
+
+    /* ── Panel Grouping ── */
+    .metrics-wrapper {
+      display: flex; gap: 16px; margin-top: 20px; align-items: flex-start;
+    }
+    .panel-group {
+      position: relative; border-radius: 20px; padding: 32px 12px 12px 12px;
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    }
+    .entity-group {
+      flex: 1 1 0; min-width: 0;
+    }
+    .risk-group {
+      flex: 0 0 270px;
+      padding: 0;
+      background: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: none;
+      box-shadow: none;
+    }
+    .risk-group .group-badge { display: none; }
+    .group-badge {
+      position: absolute; top: 10px; left: 0; right: 0;
+      text-align: center;
+      font-size: 13px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+      color: rgba(255,255,255,0.55); white-space: nowrap;
+      background: none; border: none; padding: 0;
+    }
+    .entity-panels {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 11px;
+    }
+
+    .metric-card {
+      background: #ffffff; border: 1px solid #e5e7eb; border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08); padding: 16px 14px 18px 14px;
+      overflow: hidden; position: relative; transition: all 0.3s ease; min-width: 0;
+    }
+    .metric-card::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 6px; opacity: .9;
+    }
+    .metric-card.placement::before   { background: linear-gradient(90deg, #0ea5e9, #06b6d4); }
+    .metric-card.time-expense::before { background: linear-gradient(90deg, #2563eb, #0ea5e9); }
+    .metric-card.payroll::before      { background: linear-gradient(90deg, #0ea5e9, #14b8a6); }
+    .metric-card.billing::before      { background: linear-gradient(90deg, #2563eb, #06b6d4); }
+    .metric-card.invoices::before     { background: linear-gradient(90deg, #06b6d4, #0ea5e9); }
+    .metric-card.compliance::before { background: linear-gradient(90deg, #ef4444, #f59e0b); }
+    .card-header {
+      display:flex; align-items:center; gap:10px; margin: 2px 2px 12px 2px;
+      padding:10px 12px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 1.5px solid #cbd5e1; border-radius: 12px;
+      box-shadow: inset 0 1px 0 rgba(2,6,23,.06), 0 1px 6px rgba(2,6,23,.04);
+    }
+    .card-icon { width: 22px; height: 22px; color: #334155; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 9999px; padding: 4px; box-shadow: 0 1px 0 rgba(255,255,255,.6) inset; }
+    .card-title { font-size: 16px; font-weight: 900; letter-spacing: .2px; color: #0f172a; }
+    .metric-item {
+      background: #ffffff; border: 1.5px solid #c0c8d2; border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 2px 10px rgba(2,6,23,.04);
+      margin: 12px 2px;
+    }
+    .metric-label { font-size: 12px; font-weight: 800; color: #1f2937; margin-bottom: 6px; display:block; letter-spacing: .1px; }
+    .metric-value { font-size: 20px; font-weight: 600; color: #6d28d9; line-height: 1.05; }
+    .metric-value.large { font-size: 28px; }
+    .metric-value.medium { font-size: 20px; }
+    .metric-value.small { font-size: 14px; }
+    .metric-card.time-expense .metric-item:not(.nb-collapsible),
+    .metric-card.payroll      .metric-item:not(.nb-collapsible),
+    .metric-card.billing      .metric-item:not(.nb-collapsible),
+    .metric-card.invoices     .metric-item:not(.nb-collapsible) {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      grid-template-rows: auto auto;
+      column-gap: 8px;
+      row-gap: 3px;
+      align-items: start;
+    }
+    .metric-card.time-expense .metric-item:not(.nb-collapsible) > .metric-label,
+    .metric-card.payroll      .metric-item:not(.nb-collapsible) > .metric-label,
+    .metric-card.billing      .metric-item:not(.nb-collapsible) > .metric-label,
+    .metric-card.invoices     .metric-item:not(.nb-collapsible) > .metric-label { grid-column:1/3; grid-row:1; margin-bottom:0; }
+    .metric-card.time-expense .metric-item:not(.nb-collapsible) > .metric-value,
+    .metric-card.payroll      .metric-item:not(.nb-collapsible) > .metric-value,
+    .metric-card.billing      .metric-item:not(.nb-collapsible) > .metric-value,
+    .metric-card.invoices     .metric-item:not(.nb-collapsible) > .metric-value { grid-column:3; grid-row:1; text-align:right; align-self:center; }
+    .metric-card.time-expense .metric-item:not(.nb-collapsible) > .percentage,
+    .metric-card.payroll      .metric-item:not(.nb-collapsible) > .percentage,
+    .metric-card.billing      .metric-item:not(.nb-collapsible) > .percentage,
+    .metric-card.invoices     .metric-item:not(.nb-collapsible) > .percentage { grid-column:1; grid-row:2; text-align:left; margin-left:0; }
+    .metric-card.time-expense .metric-item:not(.nb-collapsible) > .amount,
+    .metric-card.payroll      .metric-item:not(.nb-collapsible) > .amount,
+    .metric-card.billing      .metric-item:not(.nb-collapsible) > .amount,
+    .metric-card.invoices     .metric-item:not(.nb-collapsible) > .amount { grid-column:3; grid-row:2; text-align:right; margin-top:0; }
+    .metric-card.placement .metric-item .metric-label,
+    .metric-card.placement .metric-item .percentage,
+    .metric-card.placement .metric-item .amount,
+    .metric-card.time-expense .metric-item .metric-label,
+    .metric-card.time-expense .metric-item .percentage,
+    .metric-card.time-expense .metric-item .amount,
+    .metric-card.payroll .metric-item .metric-label,
+    .metric-card.payroll .metric-item .percentage,
+    .metric-card.payroll .metric-item .amount,
+    .metric-card.billing .metric-item .metric-label,
+    .metric-card.billing .metric-item .percentage,
+    .metric-card.billing .metric-item .amount,
+    .metric-card.invoices .metric-item .metric-label,
+    .metric-card.invoices .metric-item .percentage,
+    .metric-card.invoices .metric-item .amount { font-size: 12px !important; line-height: 1.4; }
+    .metric-card.placement .metric-item .metric-value,
+    .metric-card.placement .metric-item .metric-value.large,
+    .metric-card.placement .metric-item .metric-value.medium,
+    .metric-card.placement .metric-item .metric-value.small,
+    .metric-card.time-expense .metric-item .metric-value,
+    .metric-card.time-expense .metric-item .metric-value.large,
+    .metric-card.time-expense .metric-item .metric-value.medium,
+    .metric-card.time-expense .metric-item .metric-value.small,
+    .metric-card.payroll .metric-item .metric-value,
+    .metric-card.payroll .metric-item .metric-value.large,
+    .metric-card.payroll .metric-item .metric-value.medium,
+    .metric-card.payroll .metric-item .metric-value.small,
+    .metric-card.billing .metric-item .metric-value,
+    .metric-card.billing .metric-item .metric-value.large,
+    .metric-card.billing .metric-item .metric-value.medium,
+    .metric-card.billing .metric-item .metric-value.small,
+    .metric-card.invoices .metric-item .metric-value,
+    .metric-card.invoices .metric-item .metric-value.large,
+    .metric-card.invoices .metric-item .metric-value.medium,
+    .metric-card.invoices .metric-item .metric-value.small { font-size: 20px !important; font-weight: 800; line-height: 1.2; }
+    .metric-card.time-expense .metric-item:not(.nb-collapsible) > .sub-metric,
+    .metric-card.payroll      .metric-item:not(.nb-collapsible) > .sub-metric,
+    .metric-card.billing      .metric-item:not(.nb-collapsible) > .sub-metric,
+    .metric-card.invoices     .metric-item:not(.nb-collapsible) > .sub-metric { grid-column:1/-1; }
+    .sub-metric {
+      background: #f9fafb; padding: 8px 10px; border-radius: 10px; margin: 6px 0;
+      border: 1.5px solid #c0c8d2; cursor: pointer; transition: all 0.2s ease;
+    }
+    .sub-metric:hover { background: #eef2ff; border-color: #c7d2fe; transform: translateX(2px); }
+    .sub-metric .metric-label { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+    .sub-metric .metric-value { font-size: 16px; font-weight: 800; }
+    .percentage { color: #2563eb; font-size: 12px; font-weight: 800; margin-left: 6px; }
+    .percentage.red { color: #2563eb; }
+    .percentage.orange { color: #2563eb; }
+    .amount { color: #16a34a; display: block; margin-top: 2px; font-size: 14px; font-weight: 800; }
+    .alert-box { background: #fff7f7; border: 2px solid #fecaca; border-radius: 12px; padding: 8px; margin: 8px 0;
+      display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .alert-box .metric-label { margin-bottom:0; }
+    .alert-value { font-size: 16px; font-weight: bold; color: #dc2626; }
+    .progress-bar { width: 100%; height: 6px; background: #eef2f7; border-radius: 6px; margin-top: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #10b981; transition: width 0.3s ease; border-radius: 6px; }
+    .progress-fill.warning { background: #f59e0b; }
+    .progress-fill.danger { background: #ef4444; }
+    .tile-grid { display: flex; flex-direction: column; gap: 10px; }
+    .tile {
+      display: flex; align-items: center; justify-content: space-between;
+      text-decoration: none; color: inherit; background: #ffffff;
+      border: 1.5px solid #c0c8d2; border-radius: 14px; padding: 12px 14px;
+      box-shadow: 0 2px 10px rgba(2,6,23,.04);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+    }
+    .tile:hover { background: #eef2ff; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); border-color: #c7d2fe; }
+    .tile:active { transform: translateY(0); }
+    .tile .tile-value { font-size: 20px; font-weight: 800; color: #6d28d9; }
+    .tile .tile-header { font-size: 12px; font-weight: 800; color: #1f2937; letter-spacing: .1px; }
+    .nb-collapsible { position:relative; }
+    .nb-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; border-bottom:1px solid #eef2f7; padding-bottom:6px; margin-bottom:6px; }
+    .nb-left { min-width: 0; }
+    .nb-left .metric-label { white-space: normal; }
+    .nb-right { display:flex; align-items:baseline; gap:10px; }
+    .nb-stack-metrics { display:flex; align-items:baseline; gap:10px; margin-top:4px; }
+    .nb-button { display:inline-flex; align-items:center; gap:8px; padding:6px 9px; border:1px solid #cbd5e1; border-radius:10px; background:#f3f4f6; color:#374151; font-weight:700; cursor:pointer; transition: background .15s ease; font-size:12px; line-height: 1; }
+    .nb-button:hover { background:#e5e7eb; }
+    .nb-chev { width:12px; height:12px; transition: transform .2s ease; }
+    .nb-collapsible[aria-expanded="true"] .nb-chev { transform: rotate(180deg); }
+    .nb-panel { background:#f8fafc; max-height:0; overflow:hidden; transition:max-height .25s ease; border-radius:10px; }
+    .nb-collapsible[aria-expanded="true"] .nb-panel { max-height:800px; }
+    .nb-subgrid { display:grid; gap:8px; padding:10px; }
+    .nb-subtile { display:flex; align-items:center; justify-content:space-between; gap:12px; background:#fff; border:1px solid #e6eef7; border-radius:10px; padding:8px 10px; }
+    .nb-subtile .nb-label { color:#475569; font-weight:700; font-size:12px; }
+    .nb-subtile .nb-nums { display:flex; align-items:baseline; gap:10px; }
+    .nb-subtile .nb-num { color:#6d28d9; font-weight:800; font-size: 16px; }
+    .nb-subtile .nb-pp { color:#16a34a; font-weight:800; font-size:12px; }
+    .nb-bar { height:6px; background:#eef2f7; border-radius:6px; overflow:hidden; margin:8px 10px 10px; }
+    .nb-fill { height:100%; width:0; background:linear-gradient(90deg,#34d399,#22d3ee); border-radius:6px; transition:width .4s ease; }
+    .metric-card.compliance .ops-section-label {
+      font-size: 10px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 6px; display: inline-block; margin: 10px 2px 4px;
+    }
+    .metric-card.compliance .ops-section-label.timeops { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+    .metric-card.compliance .ops-section-label.riskops { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+    .metric-card.compliance .ops-divider { border: none; border-top: 1.5px dashed #e2e8f0; margin: 8px 2px; }
+    .metric-card.compliance .nb-risk-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .metric-card.compliance .nb-risk-title {
+      font-weight: 900; letter-spacing: .2px; font-size: 11px; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 6px; display: inline-block;
+    }
+    .metric-card.compliance .nb-risk.timeops-card .nb-risk-title { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+    .metric-card.compliance .nb-risk:not(.timeops-card) .nb-risk-title { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+    .metric-card.compliance .nb-badge { font-size:10px; font-weight:900; padding:3px 8px; border-radius:999px; border:1px solid transparent; }
+    .metric-card.compliance .nb-badge.HIGH { background:#ffe4e6; border-color:#fecdd3; color:#be123c; }
+    .metric-card.compliance .nb-badge.MED  { background:#ffedd5; border-color:#fed7aa; color:#b45309; }
+    .metric-card.compliance .nb-badge.CRT  { background:#fee2e2; border-color:#fecaca; color:#b91c1c; }
+    .metric-card.compliance .nb-badge.LOW  { background:#dcfce7; border-color:#bbf7d0; color:#065f46; }
+    .metric-card.compliance .nb-risk.timeops-card .nb-pill { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+    .metric-card.compliance .nb-risk.timeops-card .nb-row:hover { background: #eff6ff; border-color: #93c5fd; }
+    .metric-card.compliance .nb-row { display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e9eef7; border-radius:10px; padding:8px 10px; cursor: pointer; transition: all 0.2s ease; }
+    .metric-card.compliance .nb-row:hover { background:#eef2ff; border-color:#c7d2fe; transform: translateX(2px); }
+    .metric-card.compliance .nb-label { color:#475569; font-weight:700; font-size:12px; }
+    .metric-card.compliance .nb-pill { font-weight:900; font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid #fdba74; color:#b45309; background:#fff7ed; }
+    .metric-card.compliance .nb-pill.good { border-color:#86efac; color:#16a34a; background:#f0fdf4; }
+    .metric-card.placement .card-header svg.card-icon { display:none; }
+    .metric-card.placement .card-header .card-title { position: relative; padding-left: 26px; }
+    .metric-card.placement .card-header .card-title::before { content: "★"; position: absolute; left: 0; top: 2px; font-size: 16px; line-height: 1; color: #111827; }
+    .metric-card.time-expense .card-header svg.card-icon { display: none; }
+    .metric-card.time-expense .card-header .card-title { position: relative; padding-left: 30px; }
+    .metric-card.time-expense .card-header .card-title::before { content: ""; position: absolute; left: 0; top: 0; width: 20px; height: 20px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/><circle cx="16" cy="16" r="5"/><polyline points="16,13 16,16 18,18"/></svg>') no-repeat center; background-size: contain; }
+    .metric-card.payroll .card-header svg.card-icon { display: none; }
+    .metric-card.payroll .card-header .card-title { position: relative; padding-left: 28px; }
+    .metric-card.payroll .card-header .card-title::before { content: ""; position: absolute; left: 0; top: 1px; width: 18px; height: 18px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M14 2v6h6"/><line x1="12" y1="17" x2="12" y2="11"/><polyline points="9 14 12 11 15 14"/></svg>') no-repeat center; background-size: contain; }
+    .metric-card.billing .card-header svg.card-icon { display: none; }
+    .metric-card.billing .card-header .card-title { position: relative; padding-left: 28px; }
+    .metric-card.billing .card-header .card-title::before { content: ""; position: absolute; left: 0; top: 1px; width: 18px; height: 18px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M14 2v6h6"/><line x1="12" y1="11" x2="12" y2="17"/><polyline points="9 14 12 17 15 14"/></svg>') no-repeat center; background-size: contain; }
+    .metric-card.invoices .card-header svg.card-icon { display: none; }
+    .metric-card.invoices .card-header .card-title { position: relative; padding-left: 28px; }
+    .metric-card.invoices .card-header .card-title::before { content: ""; position: absolute; left: 0; top: 1px; width: 18px; height: 18px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M14 2v6h6"/><text x="9" y="17" font-size="8" font-family="Arial" fill="black">$</text></svg>') no-repeat center; background-size: contain; }
+    .metric-card.compliance .card-header svg.card-icon { display: none; }
+    .metric-card.compliance .card-header .card-title { position: relative; padding-left: 28px; }
+    .metric-card.compliance .card-header .card-title::before { content: ""; position: absolute; left: 0; top: 1px; width: 18px; height: 18px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L22 19 H2 Z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="1"/></svg>') no-repeat center; background-size: contain; }
+    .header { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header h1 { font-size: 2.5rem; color: #2563eb; margin-bottom: 8px; font-weight: bold; }
+    .header p { color: #666; font-size: 1.1rem; }
+    .mass-actions-container { position: relative; }
+    .mass-actions-btn { background: #ea580c; color: white; border: none; border-radius: 8px; padding: 12px 20px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
+    .mass-actions-btn:hover { background: #dc2626; transform: translateY(-1px); }
+    .mass-actions-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border: 1.5px solid #e5e7eb; min-width: 300px; z-index: 1000; display: none; padding: 10px; gap: 6px; flex-direction: column; }
+    .mass-actions-dropdown.show { display: flex; }
+    .mass-action-item { padding: 8px 14px; cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; color: #374151; background: #f3f4f6; border: 1.5px solid #d1d5db; border-radius: 999px; letter-spacing: 0.1px; }
+    .mass-action-item:hover { background: #e5e7eb; border-color: #9ca3af; color: #111827; transform: translateX(2px); }
+    .rma-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; background: #6b7280; color: white; border-radius: 999px; font-size: 0.72rem; font-weight: 900; line-height: 1; }
+    .search-section { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .search-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 20px; }
+    .search-row:last-child { margin-bottom: 0; }
+    .search-group { display: flex; flex-direction: column; }
+    .search-group label { font-weight: 600; margin-bottom: 8px; color: #6b7280; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .search-select, .search-input { padding: 12px; border: 2px solid #d1d5db; border-radius: 8px; background: white; font-size: 1rem; transition: all 0.2s ease; color: #374151; }
+    .search-select:focus, .search-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .content-section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px; }
+    .data-table-container { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 16px rgba(0,0,0,0.05); width: 100%; }
+    .data-table { width: 100%; min-width: 1600px; border-collapse: collapse; font-size: 0.85rem; }
+    .data-table th { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 12px 8px; text-align: left; font-weight: 600; font-size: 0.8rem; white-space: nowrap; }
+    .data-table td { padding: 12px 8px; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+    .data-table tbody tr:hover { background: #f8fafc; }
+    .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; text-align: center; min-width: 80px; }
+    .status-overdue { background: #fee2e2; color: #dc2626; }
+    .status-missing { background: #fef3c7; color: #d97706; }
+    .status-pending { background: #dbeafe; color: #2563eb; }
+    .excluded-no  { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; text-align: center; min-width: 80px; background: #fee2e2; color: #dc2626; }
+    .excluded-yes { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; text-align: center; min-width: 80px; background: #dcfce7; color: #16a34a; }
+    .row-select { width: 16px; height: 16px; cursor: pointer; }
+    .audit-user { font-size:0.78rem; font-weight:600; color:#374151; }
+    .audit-date { font-size:0.75rem; color:#6b7280; }
+    .audit-empty { color:#d1d5db; font-size:0.75rem; }
+    .ts-excluded-select { padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:700; cursor:pointer; border:1.5px solid; transition:all .2s; appearance:none; -webkit-appearance:none; text-align:center; min-width:64px; }
+    .ts-comment-input { width:100%; min-width:160px; padding:5px 8px; border:1.5px solid #e5e7eb; border-radius:6px; font-size:0.8rem; color:#374151; transition:border-color .2s; background:white; }
+    .ts-comment-input:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+    .image-view-container { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px; }
+    .image-view-header { margin-bottom: 20px; }
+    .image-view-header h1 { font-size: 2.5rem; color: #2563eb; margin-bottom: 8px; font-weight: bold; }
+    .image-view-header p { color: #666; font-size: 1.1rem; }
+    .mini-picker-container { display: flex; flex-direction: column; gap: 10px; }
+    .mini-picker-selected { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; min-height: 48px; }
+    .mini-picker-tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #EEF2FF; color: #4F46E5; border: 1px solid #C7D2FE; border-radius: 6px; font-size: 13px; font-weight: 600; }
+    .mini-picker-tag-remove { cursor: pointer; font-weight: 700; font-size: 16px; line-height: 1; transition: color 0.2s; }
+    .mini-picker-tag-remove:hover { color: #DC2626; }
+    .mini-picker-add-dropdown { padding: 10px 14px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 14px; font-weight: 500; color: #374151; background: white; cursor: pointer; transition: all 0.2s; }
+    .mini-picker-add-dropdown:hover { border-color: #2563eb; }
+    .mini-picker-add-dropdown:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .rt-input { width:100%; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:600; color:#111827; transition:all .2s; }
+    .rt-input:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+    @media (max-width: 1400px) { .entity-panels { grid-template-columns: repeat(5, minmax(160px, 1fr)); } .risk-group { flex: 0 0 250px; } }
+    @media (max-width: 1200px) { .metrics-wrapper { flex-direction: column; } .entity-panels { grid-template-columns: repeat(3, 1fr); } .risk-group { width: 100%; flex: unset; } }
+    @media (max-width: 768px) { .filters-grid { grid-template-columns: repeat(2, 1fr); } .entity-panels { grid-template-columns: 1fr; } .search-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- ========== DASHBOARD VIEW ========== -->
+<div id="dashboardView" class="view active">
+  <div class="dashboard-container">
+    <div class="header-section">
+      <h1 class="header-title">OpsHub: PayBill Dashboard</h1>
+      <button aria-label="Admin Settings" class="settings-button admin-settings-button" type="button" style="right:220px;">
+        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/></svg>
+        <span>Admin Settings</span>
+      </button>
+      <button aria-label="Dashboard Settings" class="settings-button dashboard-settings-button" type="button">
+        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M11.983 1.566a1 1 0 0 0-1.966 0l-.21 1.579a7.006 7.006 0 0 0-1.593.922l-1.507-.754a1 1 0 0 0-1.341.447L3.1 6.07a1 1 0 0 0 .447 1.34l1.506.754a7.025 7.025 0 0 0 0 1.846l-1.506.754a1 1 0 0 0-.447 1.34l1.266 2.31a1 1 0 0 0 1.34.447l1.507-.754c.48.37 1.02.678 1.593.922l.21 1.579a1 1 0 0 0 1.966 0l.21-1.579a7.006 7.006 0 0 0 1.593-.922l1.507.754a1 1 0 0 0 1.34-.447l1.267-2.31a1 1 0 0 0-.447-1.34l-1.507-.754a7.025 7.025 0 0 0 0-1.846l1.507-.754a1 1 0 0 0 .447-1.34l-1.267-2.31a1 1 0 0 0-1.34-.447l-1.507.754a7.006 7.006 0 0 0-1.593-.922l-.21-1.579ZM10 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z"/></svg>
+        <span>Configure Filters</span>
+      </button>
+      <div class="filters-grid">
+        <div class="filter-group"><label class="filter-label">Date Type</label><select><option>Period End Date</option><option>Date Added</option><option>Transaction Date</option><option>Systematic Accounting Date</option></select></div>
+        <div class="filter-group"><label class="filter-label">Time Frame</label><select><option>Date Range</option><option>YTD</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option><option>All Time</option></select></div>
+        <div class="filter-group"><label class="filter-label">Date From</label><input type="date" value="2025-01-01"/></div>
+        <div class="filter-group"><label class="filter-label">Date To</label><input type="date" value="2025-09-08"/></div>
+        <div class="filter-group"><label class="filter-label">BTE Branch</label><select><option>All Branches</option><option>North Region</option><option>South Region</option><option>East Region</option><option>West Region</option></select></div>
+        <div class="filter-group"><label class="filter-label">Employment Type</label><select><option>All Types</option><option>Temporary</option><option>Contract</option><option>Permanent</option></select></div>
+        <div class="filter-group"><label class="filter-label">Employee Type</label><select><option>All Types</option><option>W2</option><option>1099</option></select></div>
+        <div class="filter-group"><label class="filter-label">Legal Entity</label><select><option>All Entities</option><option>Corporate HQ</option><option>Regional Office</option><option>Subsidiary</option></select></div>
+        <div class="filter-group"><label class="filter-label">GL Segment</label><select><option>All Segments</option><option>Operations</option><option>Administrative</option><option>IT Services</option></select></div>
+        <div class="filter-group"><label class="filter-label">Product/Service Code</label><select><option>All Codes</option><option>Product A</option><option>Product B</option><option>Service X</option></select></div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+        <button id="runDashboardBtn" onclick="runDashboard()" style="display:inline-flex;align-items:center;gap:8px;padding:10px 28px;background:#2563eb;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,0.3);transition:all 0.2s ease;letter-spacing:0.3px;" onmouseover="this.style.background='#1d4ed8';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(37,99,235,0.4)';" onmouseout="this.style.background='#2563eb';this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(37,99,235,0.3)';">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+          Run
+        </button>
+      </div>
+    </div>
+
+    <!-- ── NEW: Panel Groups Wrapper ── -->
+    <div class="metrics-wrapper">
+
+      <!-- Entity Panels Group -->
+      <div class="panel-group entity-group">
+        <span class="group-badge">Entity Panels</span>
+        <div class="entity-panels">
+
+          <!-- Placement -->
+          <div class="metric-card placement">
+            <div class="card-header"><svg class="card-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><h3 class="card-title">Placement</h3></div>
+            <div class="tile-grid">
+              <a class="tile" data-key="total-active-placements" href="#"><span class="tile-header">Total Active Placements</span><span class="tile-value">274</span></a>
+              <a class="tile" data-key="approved-placements" href="#"><span class="tile-header">Approved Placements</span><span class="tile-value">247</span></a>
+              <a class="tile" data-key="pending-placements" href="#"><span class="tile-header">Pending Placements</span><span class="tile-value">18</span></a>
+              <a class="tile" data-key="candidates-at-approved" href="#"><span class="tile-header">Candidates at Approved Placements</span><span class="tile-value">189</span></a>
+              <a class="tile" data-key="customers-at-approved" href="#"><span class="tile-header">Customers at Approved Placements</span><span class="tile-value">73</span></a>
+              <a class="tile" data-key="placement-starts" href="#"><span class="tile-header">Placement Starts</span><span class="tile-value">42</span></a>
+              <a class="tile" data-key="placement-ends" href="#"><span class="tile-header">Placement Ends</span><span class="tile-value">15</span></a>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">Approved Placements Not Synced to BTE</div>
+              <div class="metric-value small">9</div>
+              <div class="sub-metric"><div class="metric-label">Failed</div><div class="metric-value small">4</div></div>
+              <div class="sub-metric"><div class="metric-label">Not Synced</div><div class="metric-value small">5</div></div>
+              <div class="sub-metric"><div class="metric-label">Pending</div><div class="metric-value small">0</div></div>
+            </div>
+          </div>
+
+          <!-- Time & Expense -->
+          <div class="metric-card time-expense">
+            <div class="card-header"><svg class="card-icon" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" fill-rule="evenodd"/></svg><h3 class="card-title">Time &amp; Expense</h3></div>
+            <div class="metric-item"><div class="metric-label">Total Timesheets Expected</div><div class="metric-value large">1,847</div></div>
+            <div class="metric-item"><div class="metric-label">Approved Timesheets</div><div class="metric-value medium">1,589</div><div class="percentage">86.0%</div></div>
+            <div class="metric-item">
+              <div class="metric-label">Open Timesheets</div><div class="metric-value medium orange">173</div><div class="percentage orange">9.4%</div>
+              <div class="sub-metric"><div class="metric-label">Missing Timesheets</div><div class="metric-value small">142</div></div>
+              <div class="sub-metric"><div class="metric-label">Rejected Timesheets</div><div class="metric-value small">8</div></div>
+              <div class="sub-metric"><div class="metric-label">Disputed Timesheets</div><div class="metric-value small">15</div></div>
+              <div class="sub-metric"><div class="metric-label">Submitted Timesheets</div><div class="metric-value small">1,652</div></div>
+            </div>
+            <div class="metric-item"><div class="metric-label">Did Not Work Timesheets</div><div class="metric-value small">22</div><div class="percentage">1.2%</div></div>
+            <div class="metric-item"><div class="metric-label">BTL Processing Failures</div><div class="metric-value small orange">34</div><div class="percentage orange">2.1%</div></div>
+            <div class="metric-item"><div class="metric-label">Approved Expense Reports</div><div class="metric-value small">89</div><div class="amount">$24,350</div></div>
+          </div>
+
+          <!-- Payroll -->
+          <div class="metric-card payroll">
+            <div class="card-header"><svg class="card-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/><path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" fill-rule="evenodd"/></svg><h3 class="card-title">Payroll</h3></div>
+            <div class="metric-item"><div class="metric-label">Total Payable Charges</div><div class="metric-value large">1,589</div><div class="amount">$2.84M</div></div>
+            <div class="metric-item"><div class="metric-label">Payable Charges Processed (Exported)</div><div class="metric-value medium">1,456</div><div class="percentage">91.6%</div><div class="amount">$2.60M</div></div>
+            <div class="metric-item">
+              <div class="metric-label">Payable Charges Not Processed</div><div class="metric-value medium orange">133</div><div class="percentage orange">8.4%</div><div class="amount">$238,560</div>
+              <div class="sub-metric"><div class="metric-label">Not Ready to Pay</div><div class="metric-value small">85</div></div>
+              <div class="sub-metric"><div class="metric-label">Ready to Pay</div><div class="metric-value small">32</div></div>
+              <div class="sub-metric"><div class="metric-label">Processing / Waiting on Payroll Provider</div><div class="metric-value small">12</div></div>
+              <div class="sub-metric"><div class="metric-label">Export Error</div><div class="metric-value small">4</div></div>
+            </div>
+            <div class="metric-item"><div class="metric-label">Payable Charges Has Adjustments</div><div class="metric-value medium">47</div><div class="percentage">3.0%</div><div class="amount">$18.9K</div></div>
+          </div>
+
+          <!-- Billing -->
+          <div class="metric-card billing">
+            <div class="card-header"><svg class="card-icon" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" fill-rule="evenodd"/></svg><h3 class="card-title">Billing</h3></div>
+            <div class="metric-item"><div class="metric-label">Total Billable Charges</div><div class="metric-value large">1,589</div><div class="amount">$3.46M</div></div>
+            <div class="metric-item"><div class="metric-label">Billable Charges Processed (Invoiced)</div><div class="metric-value medium">1,387</div><div class="percentage">87.3%</div><div class="amount">$3.02M</div></div>
+            <div class="metric-item">
+              <div class="metric-label">Billable Charges Not Processed</div><div class="metric-value medium orange">202</div><div class="percentage orange">12.7%</div><div class="amount">$440K</div>
+              <div class="sub-metric"><div class="metric-label">Not Ready to Bill</div><div class="metric-value small">89</div></div>
+              <div class="sub-metric"><div class="metric-label">Ready to Bill</div><div class="metric-value small">45</div></div>
+              <div class="sub-metric"><div class="metric-label">Processing / Needs Review</div><div class="metric-value small">28</div></div>
+              <div class="sub-metric"><div class="metric-label">Invoicing</div><div class="metric-value small">15</div></div>
+              <div class="sub-metric"><div class="metric-label">Unbillable</div><div class="metric-value small">12</div></div>
+              <div class="sub-metric"><div class="metric-label">Processing Failed</div><div class="metric-value small">8</div></div>
+              <div class="sub-metric"><div class="metric-label">On Hold</div><div class="metric-value small">5</div></div>
+            </div>
+            <div class="metric-item"><div class="metric-label">Billable Charges Has Adjustments</div><div class="metric-value medium">52</div><div class="percentage">3.3%</div><div class="amount">$24.7K</div></div>
+          </div>
+
+          <!-- Invoices -->
+          <div class="metric-card invoices">
+            <div class="card-header"><svg class="card-icon" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" fill-rule="evenodd"/></svg><h3 class="card-title">Invoices</h3></div>
+            <div class="metric-item"><div class="metric-label">Total Invoices</div><div class="metric-value large">962</div><div class="amount">$4.58M</div></div>
+            <div class="metric-item"><div class="metric-label">Invoices Processed (Finalized)</div><div class="metric-value medium">892</div><div class="percentage">92.7%</div><div class="amount">$3.23M</div></div>
+            <div class="metric-item">
+              <div class="metric-label">Invoices Not Processed</div><div class="metric-value medium orange">70</div><div class="percentage orange">7.3%</div><div class="amount">$1.35M</div>
+              <div class="sub-metric"><div class="metric-label">New</div><div class="metric-value small">35</div></div>
+              <div class="sub-metric"><div class="metric-label">Ready</div><div class="metric-value small">18</div></div>
+              <div class="sub-metric"><div class="metric-label">Hold</div><div class="metric-value small">12</div></div>
+              <div class="sub-metric"><div class="metric-label">Finalization in Error</div><div class="metric-value small">3</div></div>
+              <div class="sub-metric"><div class="metric-label">Finalization in Progress</div><div class="metric-value small">2</div></div>
+            </div>
+            <div class="metric-item"><div class="metric-label">General Ledger Export Processed (Export Successful)</div><div class="metric-value medium">840</div><div class="percentage">87.3%</div><div class="amount">$4.00M</div></div>
+            <div class="metric-item">
+              <div class="metric-label">General Ledger Export Not Processed</div><div class="metric-value small orange">122</div><div class="percentage orange">12.7%</div><div class="amount">$582K</div>
+              <div class="sub-metric"><div class="metric-label">Not Ready to Export</div><div class="metric-value small">78</div></div>
+              <div class="sub-metric"><div class="metric-label">Ready to Export</div><div class="metric-value small">32</div></div>
+              <div class="sub-metric"><div class="metric-label">Export in Progress</div><div class="metric-value small">8</div></div>
+              <div class="sub-metric"><div class="metric-label">Export Failed</div><div class="metric-value small">4</div></div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">Invoice Delivery Status</div>
+              <div class="sub-metric" style="display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:start;gap:0 8px;"><div class="metric-label" style="grid-column:1;grid-row:1;margin-bottom:0;">Invoice Delivered</div><div class="metric-value small" style="grid-column:2;grid-row:1;text-align:right;">834</div><div class="percentage" style="grid-column:1;grid-row:2;margin-left:0;">93.5%</div><div class="amount" style="grid-column:2;grid-row:2;text-align:right;margin-top:0;">$4.28M</div></div>
+              <div class="sub-metric" style="display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:start;gap:0 8px;"><div class="metric-label" style="grid-column:1;grid-row:1;margin-bottom:0;">Invoice Not Delivered</div><div class="metric-value small" style="grid-column:2;grid-row:1;text-align:right;">58</div><div class="percentage" style="grid-column:1;grid-row:2;margin-left:0;">6.5%</div><div class="amount" style="grid-column:2;grid-row:2;text-align:right;margin-top:0;">$298K</div></div>
+            </div>
+          </div>
+
+        </div><!-- /entity-panels -->
+      </div><!-- /entity-group -->
+
+      <!-- Risk Panel Group -->
+      <div class="panel-group risk-group">
+        <span class="group-badge">⚠️ Risk Panel</span>
+
+        <!-- Risk Alerts -->
+        <div class="metric-card compliance">
+          <div class="card-header"><svg class="card-icon" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" fill-rule="evenodd"/></svg><h3 class="card-title">Risk Panel</h3></div>
+          <div class="metric-item"><div class="metric-label">Timesheets</div><div class="sub-metric"><div class="metric-label">Timesheets Excluded from Missing</div><div class="metric-value small">22</div></div><div class="sub-metric"><div class="metric-label">Missing Timesheets After Exclusions</div><div class="metric-value small orange">120</div></div></div>
+          <div class="metric-item"><div class="metric-label">Placement Alignment</div><div class="sub-metric"><div class="metric-label">Active Placement Date Mismatches</div><div class="metric-value small orange">12</div></div><div class="sub-metric"><div class="metric-label">Inactive Placements Date Mismatches</div><div class="metric-value small orange">8</div></div><div class="sub-metric"><div class="metric-label">Rate Card Missing</div><div class="metric-value small orange">0</div></div></div>
+          <div class="metric-item"><div class="metric-label">Minimum Wage Compliance</div><div class="sub-metric"><div class="metric-label">Below Federal Min Wage</div><div class="metric-value small red">4</div></div></div>
+          <div class="metric-item"><div class="metric-label">Rate Flags</div><div class="sub-metric"><div class="metric-label">Rate Card Mismatch</div><div class="metric-value small orange">5</div></div><div class="sub-metric"><div class="metric-label">High Pay Rate</div><div class="metric-value small orange">0</div></div><div class="sub-metric"><div class="metric-label">High Bill Rate</div><div class="metric-value small orange">0</div></div></div>
+          <div class="metric-item"><div class="metric-label">Hours Flags</div><div class="sub-metric"><div class="metric-label">Pay ≠ Bill Hours</div><div class="metric-value small orange">23</div></div><div class="sub-metric"><div class="metric-label">Hours > 40</div><div class="metric-value small orange">15</div></div><div class="sub-metric"><div class="metric-label">High Hours</div><div class="metric-value small orange">8</div></div></div>
+          <div class="metric-item"><div class="metric-label">Amounts Flags</div><div class="sub-metric"><div class="metric-label">High Pay Amounts</div><div class="metric-value small orange">6</div></div><div class="sub-metric"><div class="metric-label">High Bill Amounts</div><div class="metric-value small orange">4</div></div><div class="sub-metric"><div class="metric-label">Pay Amount with No Bill Amount</div><div class="metric-value small red">7</div></div><div class="sub-metric"><div class="metric-label">Bill Amount with No Pay Amount</div><div class="metric-value small red">3</div></div><div class="sub-metric"><div class="metric-label">Negative Pay Amounts</div><div class="metric-value small red">2</div></div><div class="sub-metric"><div class="metric-label">Negative Bill Amounts</div><div class="metric-value small red">1</div></div></div>
+          <div class="metric-item"><div class="metric-label">Markup Analysis</div><div class="sub-metric"><div class="metric-label">Negative Markup</div><div class="metric-value small red">2</div></div><div class="sub-metric"><div class="metric-label">Low Markup</div><div class="metric-value small orange">18</div></div><div class="sub-metric"><div class="metric-label">High Markup</div><div class="metric-value small orange">9</div></div></div>
+        </div>
+
+      </div><!-- /risk-group -->
+
+    </div><!-- /metrics-wrapper -->
+
+  </div>
+
+  <!-- DASHBOARD SETTINGS MODAL -->
+  <div class="modal" id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:16px;width:900px;max-width:95%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <div style="padding:24px 28px;border-bottom:2px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+        <div><h2 style="margin:0;color:#2563eb;font-size:24px;font-weight:800;">Filter Configuration Settings</h2><p style="margin:6px 0 0;color:#6b7280;font-size:14px;">Configure which filters appear on your dashboard and set default values</p></div>
+        <button id="close-settings" style="background:none;border:none;font-size:28px;color:#9ca3af;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:4px;">×</button>
+      </div>
+      <div style="padding:24px 28px;overflow-y:auto;flex:1;">
+        <div style="margin-bottom:32px;">
+          <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0 0 16px 0;display:flex;align-items:center;gap:8px;"><span style="background:#e0e7ff;color:#4f46e5;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:800;">SYSTEM</span>Required Date Filters</h3>
+          <div style="background:#f9fafb;border:2px solid #e5e7eb;border-radius:12px;padding:16px;">
+            <table style="width:100%;border-collapse:collapse;">
+              <thead><tr style="border-bottom:2px solid #e5e7eb;"><th style="text-align:left;padding:10px 12px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;">Filter Name</th><th style="text-align:left;padding:10px 12px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;">Field Type</th><th style="text-align:left;padding:10px 12px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;">Status</th></tr></thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px;color:#9ca3af;font-weight:600;">Date Type</td><td style="padding:12px;color:#9ca3af;">Dropdown</td><td style="padding:12px;"><span style="background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;">REQUIRED</span></td></tr>
+                <tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px;color:#9ca3af;font-weight:600;">Time Frame</td><td style="padding:12px;color:#9ca3af;">Dropdown</td><td style="padding:12px;"><span style="background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;">REQUIRED</span></td></tr>
+                <tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:12px;color:#9ca3af;font-weight:600;">Date From</td><td style="padding:12px;color:#9ca3af;">Date Picker</td><td style="padding:12px;"><span style="background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;">REQUIRED</span></td></tr>
+                <tr><td style="padding:12px;color:#9ca3af;font-weight:600;">Date To</td><td style="padding:12px;color:#9ca3af;">Date Picker</td><td style="padding:12px;"><span style="background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;">REQUIRED</span></td></tr>
+              </tbody>
+            </table>
+            <p style="margin:12px 0 0;font-size:12px;color:#6b7280;font-style:italic;">These date filters are required and cannot be modified or removed.</p>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0;display:flex;align-items:center;gap:8px;"><span style="background:#dcfce7;color:#15803d;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:800;">CUSTOM</span>Configured Filters</h3>
+            <button onclick="addNewFilter()" style="background:#F15A29;color:white;border:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;">+ Add Filter</button>
+          </div>
+          <div style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+            <table id="filters-table" style="width:100%;border-collapse:collapse;">
+              <thead><tr style="background:#f9fafb;border-bottom:2px solid #e5e7eb;"><th style="text-align:left;padding:12px 16px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;">Filter Name</th><th style="text-align:left;padding:12px 16px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;">Bullhorn Field</th><th style="text-align:left;padding:12px 16px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;">Field Type</th><th style="text-align:left;padding:12px 16px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;">Default Value</th><th style="text-align:center;padding:12px 16px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;width:120px;">Actions</th></tr></thead>
+              <tbody id="filters-tbody">
+                <tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:14px 16px;font-weight:600;color:#1f2937;">BTE Branch</td><td style="padding:14px 16px;color:#6b7280;font-family:monospace;font-size:13px;">customText1</td><td style="padding:14px 16px;color:#6b7280;">Dropdown</td><td style="padding:14px 16px;color:#6b7280;">All Branches</td><td style="padding:14px 16px;text-align:center;"><button onclick="editFilter(this)" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Edit</button><button onclick="deleteFilter(this)" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Delete</button></td></tr>
+                <tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:14px 16px;font-weight:600;color:#1f2937;">Employment Type</td><td style="padding:14px 16px;color:#6b7280;font-family:monospace;font-size:13px;">employmentType</td><td style="padding:14px 16px;color:#6b7280;">Dropdown</td><td style="padding:14px 16px;color:#6b7280;">All Types</td><td style="padding:14px 16px;text-align:center;"><button onclick="editFilter(this)" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Edit</button><button onclick="deleteFilter(this)" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Delete</button></td></tr>
+                <tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:14px 16px;font-weight:600;color:#1f2937;">Employee Type</td><td style="padding:14px 16px;color:#6b7280;font-family:monospace;font-size:13px;">customText2</td><td style="padding:14px 16px;color:#6b7280;">Dropdown</td><td style="padding:14px 16px;color:#6b7280;">All Types</td><td style="padding:14px 16px;text-align:center;"><button onclick="editFilter(this)" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Edit</button><button onclick="deleteFilter(this)" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Delete</button></td></tr>
+                <tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:14px 16px;font-weight:600;color:#1f2937;">Legal Entity</td><td style="padding:14px 16px;color:#6b7280;font-family:monospace;font-size:13px;">customText3</td><td style="padding:14px 16px;color:#6b7280;">Dropdown</td><td style="padding:14px 16px;color:#6b7280;">All Entities</td><td style="padding:14px 16px;text-align:center;"><button onclick="editFilter(this)" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Edit</button><button onclick="deleteFilter(this)" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Delete</button></td></tr>
+                <tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:14px 16px;font-weight:600;color:#1f2937;">GL Segment</td><td style="padding:14px 16px;color:#6b7280;font-family:monospace;font-size:13px;">customText4</td><td style="padding:14px 16px;color:#6b7280;">Dropdown</td><td style="padding:14px 16px;color:#6b7280;">All Segments</td><td style="padding:14px 16px;text-align:center;"><button onclick="editFilter(this)" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Edit</button><button onclick="deleteFilter(this)" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Delete</button></td></tr>
+                <tr><td style="padding:14px 16px;font-weight:600;color:#1f2937;">Product/Service Code</td><td style="padding:14px 16px;color:#6b7280;font-family:monospace;font-size:13px;">customText5</td><td style="padding:14px 16px;color:#6b7280;">Dropdown</td><td style="padding:14px 16px;color:#6b7280;">All Codes</td><td style="padding:14px 16px;text-align:center;"><button onclick="editFilter(this)" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Edit</button><button onclick="deleteFilter(this)" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Delete</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div style="padding:20px 28px;border-top:2px solid #e5e7eb;display:flex;justify-content:flex-end;gap:12px;background:#f9fafb;">
+        <button id="cancel-settings" style="padding:12px 24px;border:2px solid #d1d5db;border-radius:8px;background:white;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancel</button>
+        <button onclick="saveSettings()" style="padding:12px 24px;border:none;border-radius:8px;background:#2563eb;color:white;font-weight:600;font-size:14px;cursor:pointer;">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN SETTINGS MODAL -->
+  <div class="modal" id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:16px;width:1050px;max-width:95%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <div style="padding:24px 28px;border-bottom:2px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+        <div><h2 style="margin:0;color:#2563eb;font-size:24px;font-weight:800;">Admin Settings</h2></div>
+        <button id="close-admin" style="background:none;border:none;font-size:28px;color:#9ca3af;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:4px;">×</button>
+      </div>
+      <div style="padding:24px 28px;overflow-y:auto;flex:1;">
+        <div style="margin-bottom:40px;">
+          <h3 style="font-size:18px;font-weight:700;color:#374151;margin:0 0 8px 0;">Risk Tolerances Configuration</h3>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+              <div style="padding:10px 18px 8px;border-bottom:1.5px solid #fde68a;background:#fffbeb;"><span style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Placement Alignment</span></div>
+              <div style="padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;">Approved Placement Statuses</label><input type="text" id="approvedStatuses" value="Active, Confirmed, In Progress, Working" class="rt-input" style="padding:9px 12px;" oninput="computeActiveStatuses()"></div>
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;">Pending Placement Statuses</label><input type="text" id="pendingStatuses" value="Draft, Onboarding, Pending Start, Under Review" class="rt-input" style="padding:9px 12px;" oninput="computeActiveStatuses()"></div>
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;">Inactive Placement Statuses</label><input type="text" id="inactiveStatuses" value="Closed, Ended, Terminated, Cancelled" class="rt-input" style="padding:9px 12px;"></div>
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;">Active Placement Statuses <span style="background:#e0e7ff;color:#4f46e5;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800;">SYSTEM GENERATED</span></label><textarea id="activeStatuses" readonly rows="2" style="width:100%;padding:9px 12px;border:2px solid #e5e7eb;border-radius:8px;font-size:13px;color:#6b7280;background:#f9fafb;resize:none;cursor:default;"></textarea></div>
+              </div>
+            </div>
+            <div style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+              <div style="padding:10px 18px 8px;border-bottom:1.5px solid #86efac;background:#f0fdf4;"><span style="background:#dcfce7;color:#14532d;border:1px solid #86efac;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Wage Compliance</span></div>
+              <div style="padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;text-transform:uppercase;">Below Federal Min Wage</label><div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:#6b7280;">$</span><input type="number" value="7.25" min="0" step="0.01" class="rt-input" style="padding:9px 12px 9px 26px;"></div></div>
+              </div>
+            </div>
+            <div style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+              <div style="padding:10px 18px 8px;border-bottom:1.5px solid #93c5fd;background:#eff6ff;"><span style="background:#dbeafe;color:#1e3a8a;border:1px solid #93c5fd;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Rate Flags</span></div>
+              <div style="padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;text-transform:uppercase;">High Pay Rate</label><div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:#6b7280;">$</span><input type="number" value="150" min="0" step="5" class="rt-input" style="padding:9px 44px 9px 26px;"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;color:#6b7280;">/hr</span></div></div>
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;text-transform:uppercase;">High Bill Rate</label><div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:#6b7280;">$</span><input type="number" value="225" min="0" step="5" class="rt-input" style="padding:9px 44px 9px 26px;"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;color:#6b7280;">/hr</span></div></div>
+              </div>
+            </div>
+            <div style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+              <div style="padding:10px 18px 8px;border-bottom:1.5px solid #fdba74;background:#fff7ed;"><span style="background:#ffedd5;color:#7c2d12;border:1px solid #fdba74;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Hours Flags</span></div>
+              <div style="padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;text-transform:uppercase;">High Hours</label><div style="position:relative;"><input type="number" value="60" min="0" step="1" class="rt-input" style="padding:9px 40px 9px 12px;"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;color:#6b7280;">hrs</span></div></div>
+              </div>
+            </div>
+            <div style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+              <div style="padding:10px 18px 8px;border-bottom:1.5px solid #fca5a5;background:#fff1f2;"><span style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Amounts Flags</span></div>
+              <div style="padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;text-transform:uppercase;">High Pay Amounts</label><div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:#6b7280;">$</span><input type="number" value="5000" min="0" step="100" class="rt-input" style="padding:9px 12px 9px 26px;"></div></div>
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;text-transform:uppercase;">High Bill Amounts</label><div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:#6b7280;">$</span><input type="number" value="7500" min="0" step="100" class="rt-input" style="padding:9px 12px 9px 26px;"></div></div>
+              </div>
+            </div>
+            <div style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+              <div style="padding:10px 18px 8px;border-bottom:1.5px solid #c4b5fd;background:#faf5ff;"><span style="background:#ede9fe;color:#4c1d95;border:1px solid #c4b5fd;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Markup Analysis</span></div>
+              <div style="padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;text-transform:uppercase;">Low Markup</label><div style="position:relative;"><input type="number" value="10" min="0" max="100" step="0.5" class="rt-input" style="padding:9px 40px 9px 12px;"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;color:#6b7280;">%</span></div></div>
+                <div><label style="display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;text-transform:uppercase;">High Markup</label><div style="position:relative;"><input type="number" value="60" min="0" step="0.5" class="rt-input" style="padding:9px 40px 9px 12px;"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;color:#6b7280;">%</span></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size:18px;font-weight:700;color:#374151;margin:0 0 20px 0;">User Access Control</h3>
+
+          <!-- Entity Panel Access -->
+          <div style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+            <div style="padding:10px 18px 8px;border-bottom:1.5px solid #bfdbfe;background:#eff6ff;">
+              <span style="background:#dbeafe;color:#1e3a8a;border:1px solid #93c5fd;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Entity Panel Access</span>
+            </div>
+            <div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;align-items:flex-start;padding:12px;background:#f9fafb;border-radius:8px;gap:16px;"><label style="flex:0 0 180px;font-weight:600;color:#1f2937;padding-top:16px;">Placement</label><div class="mini-picker-container" style="flex:1;" data-picker="access-placement"><div class="mini-picker-selected"><span class="mini-picker-tag">ATS Standard User <span class="mini-picker-tag-remove" data-value="ATS Standard User">×</span></span><span class="mini-picker-tag">ATS Manager User <span class="mini-picker-tag-remove" data-value="ATS Manager User">×</span></span><span class="mini-picker-tag">ATS Admin User <span class="mini-picker-tag-remove" data-value="ATS Admin User">×</span></span><span class="mini-picker-tag">PayBill Manager User <span class="mini-picker-tag-remove" data-value="PayBill Manager User">×</span></span><span class="mini-picker-tag">PayBill Admin User <span class="mini-picker-tag-remove" data-value="PayBill Admin User">×</span></span><span class="mini-picker-tag">Super Admin User <span class="mini-picker-tag-remove" data-value="Super Admin User">×</span></span></div><select class="mini-picker-add-dropdown"><option value="">+ Add User Type</option><option value="PayBill Standard User">PayBill Standard User</option></select></div></div>
+              <div style="display:flex;align-items:flex-start;padding:12px;background:#f9fafb;border-radius:8px;gap:16px;"><label style="flex:0 0 180px;font-weight:600;color:#1f2937;padding-top:16px;">Time &amp; Expense</label><div class="mini-picker-container" style="flex:1;" data-picker="access-time-expense"><div class="mini-picker-selected"><span class="mini-picker-tag">ATS Manager User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">ATS Admin User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Standard User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Manager User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Admin User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">Super Admin User <span class="mini-picker-tag-remove">×</span></span></div><select class="mini-picker-add-dropdown"><option value="">+ Add User Type</option><option value="ATS Standard User">ATS Standard User</option></select></div></div>
+              <div style="display:flex;align-items:flex-start;padding:12px;background:#f9fafb;border-radius:8px;gap:16px;"><label style="flex:0 0 180px;font-weight:600;color:#1f2937;padding-top:16px;">Payroll</label><div class="mini-picker-container" style="flex:1;" data-picker="access-payroll"><div class="mini-picker-selected"><span class="mini-picker-tag">PayBill Standard User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Manager User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Admin User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">Super Admin User <span class="mini-picker-tag-remove">×</span></span></div><select class="mini-picker-add-dropdown"><option value="">+ Add User Type</option><option value="ATS Standard User">ATS Standard User</option><option value="ATS Manager User">ATS Manager User</option><option value="ATS Admin User">ATS Admin User</option></select></div></div>
+              <div style="display:flex;align-items:flex-start;padding:12px;background:#f9fafb;border-radius:8px;gap:16px;"><label style="flex:0 0 180px;font-weight:600;color:#1f2937;padding-top:16px;">Billing</label><div class="mini-picker-container" style="flex:1;" data-picker="access-billing"><div class="mini-picker-selected"><span class="mini-picker-tag">PayBill Standard User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Manager User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Admin User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">Super Admin User <span class="mini-picker-tag-remove">×</span></span></div><select class="mini-picker-add-dropdown"><option value="">+ Add User Type</option><option value="ATS Standard User">ATS Standard User</option><option value="ATS Manager User">ATS Manager User</option><option value="ATS Admin User">ATS Admin User</option></select></div></div>
+              <div style="display:flex;align-items:flex-start;padding:12px;background:#f9fafb;border-radius:8px;gap:16px;"><label style="flex:0 0 180px;font-weight:600;color:#1f2937;padding-top:16px;">Invoices</label><div class="mini-picker-container" style="flex:1;" data-picker="access-invoices"><div class="mini-picker-selected"><span class="mini-picker-tag">PayBill Standard User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Manager User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Admin User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">Super Admin User <span class="mini-picker-tag-remove">×</span></span></div><select class="mini-picker-add-dropdown"><option value="">+ Add User Type</option><option value="ATS Standard User">ATS Standard User</option><option value="ATS Manager User">ATS Manager User</option><option value="ATS Admin User">ATS Admin User</option></select></div></div>
+            </div>
+          </div>
+
+          <!-- Risk Panel Access -->
+          <div style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+            <div style="padding:10px 18px 8px;border-bottom:1.5px solid #fdba74;background:#fff7ed;">
+              <span style="background:#ffedd5;color:#7c2d12;border:1px solid #fdba74;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Risk Panel Access</span>
+            </div>
+            <div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;align-items:flex-start;padding:12px;background:#f9fafb;border-radius:8px;gap:16px;"><label style="flex:0 0 180px;font-weight:600;color:#1f2937;padding-top:16px;">TimeOps Dashboard</label><div class="mini-picker-container" style="flex:1;" data-picker="access-timeops"><div class="mini-picker-selected"><span class="mini-picker-tag">ATS Manager User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">ATS Admin User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Standard User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Manager User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Admin User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">Super Admin User <span class="mini-picker-tag-remove">×</span></span></div><select class="mini-picker-add-dropdown"><option value="">+ Add User Type</option><option value="ATS Standard User">ATS Standard User</option></select></div></div>
+              <div style="display:flex;align-items:flex-start;padding:12px;background:#f9fafb;border-radius:8px;gap:16px;"><label style="flex:0 0 180px;font-weight:600;color:#1f2937;padding-top:16px;">RiskOps Dashboard</label><div class="mini-picker-container" style="flex:1;" data-picker="access-riskops"><div class="mini-picker-selected"><span class="mini-picker-tag">PayBill Manager User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">PayBill Admin User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">Super Admin User <span class="mini-picker-tag-remove">×</span></span></div><select class="mini-picker-add-dropdown"><option value="">+ Add User Type</option><option value="ATS Standard User">ATS Standard User</option><option value="ATS Manager User">ATS Manager User</option><option value="ATS Admin User">ATS Admin User</option><option value="PayBill Standard User">PayBill Standard User</option></select></div></div>
+            </div>
+          </div>
+
+          <!-- Admin Settings Access -->
+          <div style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+            <div style="padding:10px 18px 8px;border-bottom:1.5px solid #fca5a5;background:#fff1f2;">
+              <span style="background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Admin Settings Access</span>
+            </div>
+            <div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;align-items:flex-start;padding:12px;background:#f9fafb;border-radius:8px;gap:16px;"><label style="flex:0 0 180px;font-weight:600;color:#1f2937;padding-top:16px;">Admin Settings</label><div class="mini-picker-container" style="flex:1;" data-picker="access-admin"><div class="mini-picker-selected"><span class="mini-picker-tag">PayBill Admin User <span class="mini-picker-tag-remove">×</span></span><span class="mini-picker-tag">Super Admin User <span class="mini-picker-tag-remove">×</span></span></div><select class="mini-picker-add-dropdown"><option value="">+ Add User Type</option><option value="ATS Standard User">ATS Standard User</option><option value="ATS Manager User">ATS Manager User</option><option value="ATS Admin User">ATS Admin User</option><option value="PayBill Standard User">PayBill Standard User</option><option value="PayBill Manager User">PayBill Manager User</option></select></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div style="padding:20px 28px;border-top:2px solid #e5e7eb;display:flex;justify-content:flex-end;gap:12px;background:#f9fafb;">
+        <button id="cancel-admin" style="padding:12px 24px;border:2px solid #d1d5db;border-radius:8px;background:white;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancel</button>
+        <button onclick="saveAdminSettings()" style="padding:12px 24px;border:none;border-radius:8px;background:#2563eb;color:white;font-weight:600;font-size:14px;cursor:pointer;">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MISSING TIMESHEET VIEW -->
+<div id="timesheetView" class="view">
+  <div class="dashboard-container">
+    <button class="back-button" onclick="showDashboard()">← Back to Dashboard</button>
+    <div class="header"><h1>OpsHub: TimeOps Dashboard</h1><p>Track and Manage Missing Timesheets</p></div>
+    <div class="search-section">
+      <div class="search-row">
+        <div class="search-group"><label>DATE TYPE</label><select class="search-select"><option>Period End Date</option><option>Date Added</option><option>Transaction Date</option><option>Systematic Accounting Date</option></select></div>
+        <div class="search-group"><label>TIME FRAME</label><select class="search-select"><option>Date Range</option><option>YTD</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option><option>All Time</option></select></div>
+        <div class="search-group"><label>DATE FROM</label><input type="date" class="search-input" value="2025-01-01"></div>
+        <div class="search-group"><label>DATE TO</label><input type="date" class="search-input" value="2025-09-08"></div>
+        <div class="search-group"><label>BTE BRANCH</label><select class="search-select"><option>All Branches</option><option>North Region</option><option>South Region</option><option>East Region</option><option>West Region</option></select></div>
+      </div>
+      <div class="search-row">
+        <div class="search-group"><label>EMPLOYMENT TYPE</label><select class="search-select"><option>All Types</option><option>Temporary</option><option>Contract</option><option>Permanent</option></select></div>
+        <div class="search-group"><label>EMPLOYEE TYPE</label><select class="search-select"><option>All Types</option><option>W2</option><option>1099</option></select></div>
+        <div class="search-group"><label>LEGAL ENTITY</label><select class="search-select"><option>All Entities</option><option>Corporate HQ</option><option>Regional Office</option><option>Subsidiary</option></select></div>
+        <div class="search-group"><label>GL SEGMENT</label><select class="search-select"><option>All Segments</option><option>Operations</option><option>Administrative</option><option>IT Services</option></select></div>
+        <div class="search-group"><label>PRODUCT/SERVICE CODE</label><select class="search-select"><option>All Codes</option><option>Product A</option><option>Product B</option><option>Service X</option></select></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <button id="runTimesheetBtn" onclick="runTimesheetDashboard()" style="display:inline-flex;align-items:center;gap:8px;padding:10px 28px;background:#2563eb;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,0.3);transition:all 0.2s ease;letter-spacing:0.3px;" onmouseover="this.style.background='#1d4ed8';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(37,99,235,0.4)';" onmouseout="this.style.background='#2563eb';this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(37,99,235,0.3)';">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+          Run
+        </button>
+      </div>
+    </div>
+    <div class="content-section">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+        <div id="tile-all" onclick="applyTimesheetFilter('all')" style="background:#fff;border:1.5px solid #c0c8d2;border-radius:14px;padding:16px 20px;box-shadow:0 2px 10px rgba(2,6,23,.06);display:flex;align-items:center;justify-content:space-between;flex:1;cursor:pointer;position:relative;transition:border-color .2s,box-shadow .2s;">
+          <div><div style="font-size:12px;font-weight:800;color:#1f2937;text-transform:uppercase;letter-spacing:.1px;margin-bottom:6px;">Missing Timesheets</div><div style="font-size:28px;font-weight:800;color:#6d28d9;line-height:1.1;">142</div></div>
+          <div id="badge-all" style="display:none;position:absolute;top:8px;right:8px;background:#2563eb;color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;letter-spacing:.3px;">✓ Active</div>
+        </div>
+        <div id="tile-excluded" onclick="applyTimesheetFilter('excluded')" style="background:#fff;border:1.5px solid #c0c8d2;border-radius:14px;padding:16px 20px;box-shadow:0 2px 10px rgba(2,6,23,.06);display:flex;align-items:center;justify-content:space-between;flex:1;cursor:pointer;position:relative;transition:border-color .2s,box-shadow .2s;">
+          <div><div style="font-size:12px;font-weight:800;color:#1f2937;text-transform:uppercase;letter-spacing:.1px;margin-bottom:6px;">Timesheets Excluded from Missing</div><div style="font-size:28px;font-weight:800;color:#6d28d9;line-height:1.1;">22</div></div>
+          <div id="badge-excluded" style="display:none;position:absolute;top:8px;right:8px;background:#16a34a;color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;letter-spacing:.3px;">✓ Active</div>
+        </div>
+        <div id="tile-not-excluded" onclick="applyTimesheetFilter('not-excluded')" style="background:#fff;border:1.5px solid #c0c8d2;border-radius:14px;padding:16px 20px;box-shadow:0 2px 10px rgba(2,6,23,.06);display:flex;align-items:center;justify-content:space-between;flex:1;cursor:pointer;position:relative;transition:border-color .2s,box-shadow .2s;">
+          <div><div style="font-size:12px;font-weight:800;color:#1f2937;text-transform:uppercase;letter-spacing:.1px;margin-bottom:6px;">Missing Timesheets After Exclusions</div><div style="font-size:28px;font-weight:800;color:#6d28d9;line-height:1.1;">120</div></div>
+          <div id="badge-not-excluded" style="display:none;position:absolute;top:8px;right:8px;background:#dc2626;color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;letter-spacing:.3px;">✓ Active</div>
+        </div>
+        <div class="mass-actions-container" style="flex-shrink:0;align-self:center;">
+          <button class="mass-actions-btn" onclick="toggleMassActions()">⚙️ Mass Actions</button>
+          <div class="mass-actions-dropdown" id="massActionsDropdown">
+            <div class="mass-action-item" id="tma-reminders" onclick="sendTimesheetReminders()">Send Timesheet Reminders to <span id="tma-count-reminders" class="rma-count">0</span></div>
+            <div class="mass-action-item" id="tma-exclude" onclick="excludeFromMissing()">Exclude <span id="tma-count-exclude" class="rma-count">0</span> from Missing Timesheet for Pay Period</div>
+            <div class="mass-action-item" id="tma-export" onclick="exportToExcel()">Export <span id="tma-count-export" class="rma-count">0</span> to Excel</div>
+          </div>
+        </div>
+      </div>
+      <div class="data-table-container">
+        <table class="data-table">
+          <thead><tr><th><input type="checkbox" id="selectAllTimesheets" onchange="timesheetSelectAll(this)"></th>            <th>Timesheet ID</th><th>Excluded?</th><th>Last Reminder Sent</th><th>Placement ID</th><th>Customer Name</th><th>Job Title</th><th>Candidate Name</th><th>Placement Start</th><th>Placement End</th><th>Period End Date</th><th>Candidate Email</th><th>Comments</th><th>Excluded By</th><th>Excluded Date</th></tr></thead>
+          <tbody>
+            <tr data-excluded="no"><td><input type="checkbox" class="row-select"></td><td><a href="#" style="color:#2196f3;text-decoration:none;">TS-2025-001</a></td><td><select class="ts-excluded-select" onchange="onExcludedChange(this)"><option value="No" selected>No</option><option value="Yes">Yes</option></select></td><td>09/25/2025</td><td><a href="#" style="color:#2196f3;text-decoration:none;">PL-8901</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">ACME Corporation</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Senior Software Engineer</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">John Smith</a></td><td>08/15/2025</td><td>12/15/2025</td><td>09/22/2025</td><td>john.smith@email.com</td><td><input type="text" class="ts-comment-input" value="Candidate contacted, awaiting response" placeholder="Add comment..."></td><td class="audit-empty">—</td><td class="audit-empty">—</td></tr>
+            <tr data-excluded="no"><td><input type="checkbox" class="row-select"></td><td><a href="#" style="color:#2196f3;text-decoration:none;">TS-2025-002</a></td><td><select class="ts-excluded-select" onchange="onExcludedChange(this)"><option value="No" selected>No</option><option value="Yes">Yes</option></select></td><td>09/24/2025</td><td><a href="#" style="color:#2196f3;text-decoration:none;">PL-8902</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Tech Solutions Inc</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Marketing Specialist</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Emily Davis</a></td><td>09/01/2025</td><td>11/30/2025</td><td>09/22/2025</td><td>emily.davis@email.com</td><td><input type="text" class="ts-comment-input" value="First reminder sent" placeholder="Add comment..."></td><td class="audit-empty">—</td><td class="audit-empty">—</td></tr>
+            <tr data-excluded="yes"><td><input type="checkbox" class="row-select"></td><td><a href="#" style="color:#2196f3;text-decoration:none;">TS-2025-003</a></td><td><select class="ts-excluded-select" onchange="onExcludedChange(this)"><option value="No">No</option><option value="Yes" selected>Yes</option></select></td><td>09/26/2025</td><td><a href="#" style="color:#2196f3;text-decoration:none;">PL-8903</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Global Systems LLC</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Business Analyst</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Alex Wilson</a></td><td>08/20/2025</td><td>01/20/2026</td><td>09/22/2025</td><td>alex.wilson@email.com</td><td><input type="text" class="ts-comment-input" value="Client requested exclusion - medical leave" placeholder="Add comment..."></td><td class="audit-user">James O'Brien</td><td class="audit-date">02/14/2026 9:32 AM</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BULLHORN VIEW -->
+<div id="bullhornView" class="view">
+  <div class="dashboard-container">
+    <button class="back-button" onclick="showDashboard()">← Back to Dashboard</button>
+    <div class="image-view-container">
+      <div class="image-view-header"><h1>Submitted Timesheets - Bullhorn View</h1><p>View and manage submitted timesheets in Bullhorn</p></div>
+      <div style="width:100%;border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.1);background:#f5f5f5;">
+        <div style="background:#3d4f6d;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:8px;"><svg width="30" height="30" viewBox="0 0 40 40" style="fill:#ff6b35;"><path d="M20 5 L35 15 L35 25 L20 35 L5 25 L5 15 Z"/></svg><div><div style="color:white;font-weight:700;font-size:18px;">Bullhorn</div><div style="color:#ff6b35;font-size:11px;font-weight:600;">Non-Production</div></div></div>
+        </div>
+        <div style="padding:20px;background:#fafafa;">
+          <div style="background:white;border:1px solid #e0e0e0;border-radius:4px;overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead><tr style="background:#f8f9fa;border-bottom:2px solid #e0e0e0;"><th style="padding:12px 8px;text-align:left;font-weight:600;color:#333;">ID</th><th style="padding:12px 8px;text-align:left;font-weight:600;color:#333;">Status</th><th style="padding:12px 8px;text-align:left;font-weight:600;color:#333;">Placement</th><th style="padding:12px 8px;text-align:left;font-weight:600;color:#333;">Job</th><th style="padding:12px 8px;text-align:left;font-weight:600;color:#333;">Timesheet Period</th><th style="padding:12px 8px;text-align:left;font-weight:600;color:#333;">Hours Worked</th></tr></thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #e0e0e0;"><td style="padding:12px 8px;"><a href="#" style="color:#2196f3;text-decoration:none;">155514</a></td><td style="padding:12px 8px;">Submitted</td><td style="padding:12px 8px;"><a href="#" style="color:#2196f3;text-decoration:none;">#22385</a></td><td style="padding:12px 8px;"><a href="#" style="color:#2196f3;text-decoration:none;">#72401 | Remote ED Coder</a></td><td style="padding:12px 8px;">06/15/2025 - 06/21/2025</td><td style="padding:12px 8px;">16.00</td></tr>
+                <tr style="border-bottom:1px solid #e0e0e0;"><td style="padding:12px 8px;"><a href="#" style="color:#2196f3;text-decoration:none;">155513</a></td><td style="padding:12px 8px;">Submitted</td><td style="padding:12px 8px;"><a href="#" style="color:#2196f3;text-decoration:none;">#41834</a></td><td style="padding:12px 8px;"><a href="#" style="color:#2196f3;text-decoration:none;">#359656 | Med Tech - Hospital</a></td><td style="padding:12px 8px;">06/15/2025 - 06/21/2025</td><td style="padding:12px 8px;">38.00</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RISKOPS DASHBOARD VIEW -->
+<div id="riskManagementView" class="view">
+  <div class="dashboard-container">
+    <button class="back-button" onclick="showDashboard()">← Back to Dashboard</button>
+    <div class="header"><h1>OpsHub: RiskOps Dashboard</h1><p>Identify and Manage Risk in your PayBill Process</p></div>
+    <div class="search-section">
+      <div class="search-row">
+        <div class="search-group"><label>DATE TYPE</label><select class="search-select"><option>Period End Date</option></select></div>
+        <div class="search-group"><label>TIME FRAME</label><select class="search-select"><option>Date Range</option></select></div>
+        <div class="search-group"><label>DATE FROM</label><input type="date" class="search-input" value="2025-01-01"></div>
+        <div class="search-group"><label>DATE TO</label><input type="date" class="search-input" value="2025-09-08"></div>
+        <div class="search-group"><label>BTE BRANCH</label><select class="search-select"><option>All Branches</option></select></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <button id="runRiskOpsBtn" onclick="runRiskOpsDashboard()" style="display:inline-flex;align-items:center;gap:8px;padding:10px 28px;background:#2563eb;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,0.3);transition:all 0.2s ease;letter-spacing:0.3px;" onmouseover="this.style.background='#1d4ed8';this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#2563eb';this.style.transform='translateY(0)';">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+          Run
+        </button>
+      </div>
+    </div>
+    <div class="content-section">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:24px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:120px;display:flex;flex-direction:column;">
+          <div id="rtile-all" onclick="applyRiskFilter('all',null)" style="background:#fff;border:1.5px solid #c0c8d2;border-radius:14px;padding:12px 14px;box-shadow:0 2px 10px rgba(2,6,23,.06);display:flex;align-items:center;justify-content:space-between;cursor:pointer;position:relative;transition:all .2s;">
+            <div><div style="font-size:10px;font-weight:800;color:#1f2937;text-transform:uppercase;letter-spacing:.1px;margin-bottom:3px;">All</div><div style="font-size:22px;font-weight:800;color:#6d28d9;line-height:1.1;">127</div></div>
+            <div id="rbadge-all" style="display:none;position:absolute;top:5px;right:5px;background:#6d28d9;color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;">✓</div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:130px;display:flex;flex-direction:column;">
+          <div id="rtile-placement-alignment" onclick="applyRiskFilter('placement-alignment',null)" style="background:#fff;border:1.5px solid #c0c8d2;border-radius:14px 14px 0 0;padding:12px 14px;box-shadow:0 2px 10px rgba(2,6,23,.06);display:flex;align-items:center;justify-content:space-between;cursor:pointer;position:relative;transition:all .2s;border-bottom:none;">
+            <div><div style="font-size:10px;font-weight:800;color:#1f2937;text-transform:uppercase;letter-spacing:.1px;margin-bottom:3px;">Placement Alignment</div><div style="font-size:22px;font-weight:800;color:#6d28d9;line-height:1.1;">20</div></div>
+            <button onclick="event.stopPropagation();toggleRiskSubPanel('placement-alignment')" id="rchev-placement-alignment" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:10px;padding:0;line-height:1;transition:transform .2s;">▼</button>
+            <div id="rbadge-placement-alignment" style="display:none;position:absolute;top:5px;right:5px;background:#f59e0b;color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;">✓</div>
+          </div>
+          <div id="rsubpanel-placement-alignment" style="display:none;background:#fffbeb;border:1.5px solid #c0c8d2;border-top:1px solid #fde68a;border-radius:0 0 14px 14px;padding:8px;flex-direction:column;gap:4px;">
+            <div class="rerror-chip" data-cat="placement-alignment" data-error="Active Placement Date Mismatches" onclick="applyRiskFilter('placement-alignment','Active Placement Date Mismatches')" style="font-size:11px;font-weight:700;color:#92400e;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:5px 8px;cursor:pointer;">Active Placement Date Mismatches</div>
+            <div class="rerror-chip" data-cat="placement-alignment" data-error="Inactive Placements Date Mismatches" onclick="applyRiskFilter('placement-alignment','Inactive Placements Date Mismatches')" style="font-size:11px;font-weight:700;color:#92400e;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:5px 8px;cursor:pointer;">Inactive Placements Date Mismatches</div>
+            <div class="rerror-chip" data-cat="placement-alignment" data-error="Rate Card Missing" onclick="applyRiskFilter('placement-alignment','Rate Card Missing')" style="font-size:11px;font-weight:700;color:#92400e;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:5px 8px;cursor:pointer;">Rate Card Missing</div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:120px;display:flex;flex-direction:column;">
+          <div id="rtile-wage-compliance" onclick="applyRiskFilter('wage-compliance',null)" style="background:#fff;border:1.5px solid #c0c8d2;border-radius:14px 14px 0 0;padding:12px 14px;box-shadow:0 2px 10px rgba(2,6,23,.06);display:flex;align-items:center;justify-content:space-between;cursor:pointer;position:relative;transition:all .2s;border-bottom:none;">
+            <div><div style="font-size:10px;font-weight:800;color:#1f2937;text-transform:uppercase;margin-bottom:3px;">Wage Compliance</div><div style="font-size:22px;font-weight:800;color:#6d28d9;">4</div></div>
+            <button onclick="event.stopPropagation();toggleRiskSubPanel('wage-compliance')" id="rchev-wage-compliance" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:10px;padding:0;">▼</button>
+            <div id="rbadge-wage-compliance" style="display:none;position:absolute;top:5px;right:5px;background:#16a34a;color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;">✓</div>
+          </div>
+          <div id="rsubpanel-wage-compliance" style="display:none;background:#f0fdf4;border:1.5px solid #c0c8d2;border-top:1px solid #bbf7d0;border-radius:0 0 14px 14px;padding:8px;flex-direction:column;gap:4px;">
+            <div class="rerror-chip" data-cat="wage-compliance" data-error="Below Federal Min Wage" onclick="applyRiskFilter('wage-compliance','Below Federal Min Wage')" style="font-size:11px;font-weight:700;color:#14532d;background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:5px 8px;cursor:pointer;">Below Federal Min Wage</div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:120px;display:flex;flex-direction:column;">
+          <div id="rtile-rate-flags" onclick="applyRiskFilter('rate-flags',null)" style="background:#fff;border:1.5px solid #c0c8d2;border-radius:14px 14px 0 0;padding:12px 14px;box-shadow:0 2px 10px rgba(2,6,23,.06);display:flex;align-items:center;justify-content:space-between;cursor:pointer;position:relative;transition:all .2s;border-bottom:none;">
+            <div><div style="font-size:10px;font-weight:800;color:#1f2937;text-transform:uppercase;margin-bottom:3px;">Rate Flags</div><div style="font-size:22px;font-weight:800;color:#6d28d9;">5</div></div>
+            <button onclick="event.stopPropagation();toggleRiskSubPanel('rate-flags')" id="rchev-rate-flags" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:10px;padding:0;">▼</button>
+            <div id="rbadge-rate-flags" style="display:none;position:absolute;top:5px;right:5px;background:#2563eb;color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;">✓</div>
+          </div>
+          <div id="rsubpanel-rate-flags" style="display:none;background:#eff6ff;border:1.5px solid #c0c8d2;border-top:1px solid #bfdbfe;border-radius:0 0 14px 14px;padding:8px;flex-direction:column;gap:4px;">
+            <div class="rerror-chip" data-cat="rate-flags" data-error="Rate Card Mismatch" onclick="applyRiskFilter('rate-flags','Rate Card Mismatch')" style="font-size:11px;font-weight:700;color:#1e3a8a;background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:5px 8px;cursor:pointer;">Rate Card Mismatch</div>
+            <div class="rerror-chip" data-cat="rate-flags" data-error="High Pay Rate" onclick="applyRiskFilter('rate-flags','High Pay Rate')" style="font-size:11px;font-weight:700;color:#1e3a8a;background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:5px 8px;cursor:pointer;">High Pay Rate</div>
+            <div class="rerror-chip" data-cat="rate-flags" data-error="High Bill Rate" onclick="applyRiskFilter('rate-flags','High Bill Rate')" style="font-size:11px;font-weight:700;color:#1e3a8a;background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:5px 8px;cursor:pointer;">High Bill Rate</div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:120px;display:flex;flex-direction:column;">
+          <div id="rtile-hours-flags" onclick="applyRiskFilter('hours-flags',null)" style="background:#fff;border:1.5px solid #c0c8d2;border-radius:14px 14px 0 0;padding:12px 14px;box-shadow:0 2px 10px rgba(2,6,23,.06);display:flex;align-items:center;justify-content:space-between;cursor:pointer;position:relative;transition:all .2s;border-bottom:none;">
+            <div><div style="font-size:10px;font-weight:800;color:#1f2937;text-transform:uppercase;margin-bottom:3px;">Hours Flags</div><div style="font-size:22px;font-weight:800;color:#6d28d9;">46</div></div>
+            <button onclick="event.stopPropagation();toggleRiskSubPanel('hours-flags')" id="rchev-hours-flags" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:10px;padding:0;">▼</button>
+            <div id="rbadge-hours-flags" style="display:none;position:absolute;top:5px;right:5px;background:#ea580c;color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;">✓</div>
+          </div>
+          <div id="rsubpanel-hours-flags" style="display:none;background:#fff7ed;border:1.5px solid #c0c8d2;border-top:1px solid #fdba74;border-radius:0 0 14px 14px;padding:8px;flex-direction:column;gap:4px;">
+            <div class="rerror-chip" data-cat="hours-flags" data-error="Pay ≠ Bill Hours" onclick="applyRiskFilter('hours-flags','Pay ≠ Bill Hours')" style="font-size:11px;font-weight:700;color:#7c2d12;background:#ffedd5;border:1px solid #fdba74;border-radius:8px;padding:5px 8px;cursor:pointer;">Pay ≠ Bill Hours</div>
+            <div class="rerror-chip" data-cat="hours-flags" data-error="Hours > 40" onclick="applyRiskFilter('hours-flags','Hours > 40')" style="font-size:11px;font-weight:700;color:#7c2d12;background:#ffedd5;border:1px solid #fdba74;border-radius:8px;padding:5px 8px;cursor:pointer;">Hours &gt; 40</div>
+            <div class="rerror-chip" data-cat="hours-flags" data-error="High Hours" onclick="applyRiskFilter('hours-flags','High Hours')" style="font-size:11px;font-weight:700;color:#7c2d12;background:#ffedd5;border:1px solid #fdba74;border-radius:8px;padding:5px 8px;cursor:pointer;">High Hours</div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:120px;display:flex;flex-direction:column;">
+          <div id="rtile-amounts-flags" onclick="applyRiskFilter('amounts-flags',null)" style="background:#fff;border:1.5px solid #c0c8d2;border-radius:14px 14px 0 0;padding:12px 14px;box-shadow:0 2px 10px rgba(2,6,23,.06);display:flex;align-items:center;justify-content:space-between;cursor:pointer;position:relative;transition:all .2s;border-bottom:none;">
+            <div><div style="font-size:10px;font-weight:800;color:#1f2937;text-transform:uppercase;margin-bottom:3px;">Amounts Flags</div><div style="font-size:22px;font-weight:800;color:#6d28d9;">23</div></div>
+            <button onclick="event.stopPropagation();toggleRiskSubPanel('amounts-flags')" id="rchev-amounts-flags" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:10px;padding:0;">▼</button>
+            <div id="rbadge-amounts-flags" style="display:none;position:absolute;top:5px;right:5px;background:#dc2626;color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;">✓</div>
+          </div>
+          <div id="rsubpanel-amounts-flags" style="display:none;background:#fff1f2;border:1.5px solid #c0c8d2;border-top:1px solid #fca5a5;border-radius:0 0 14px 14px;padding:8px;flex-direction:column;gap:4px;">
+            <div class="rerror-chip" data-cat="amounts-flags" data-error="High Pay Amounts" onclick="applyRiskFilter('amounts-flags','High Pay Amounts')" style="font-size:11px;font-weight:700;color:#7f1d1d;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;">High Pay Amounts</div>
+            <div class="rerror-chip" data-cat="amounts-flags" data-error="High Bill Amounts" onclick="applyRiskFilter('amounts-flags','High Bill Amounts')" style="font-size:11px;font-weight:700;color:#7f1d1d;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;">High Bill Amounts</div>
+            <div class="rerror-chip" data-cat="amounts-flags" data-error="Pay Amount with No Bill Amount" onclick="applyRiskFilter('amounts-flags','Pay Amount with No Bill Amount')" style="font-size:11px;font-weight:700;color:#7f1d1d;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;">Pay Amount with No Bill Amount</div>
+            <div class="rerror-chip" data-cat="amounts-flags" data-error="Bill Amount with No Pay Amount" onclick="applyRiskFilter('amounts-flags','Bill Amount with No Pay Amount')" style="font-size:11px;font-weight:700;color:#7f1d1d;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;">Bill Amount with No Pay Amount</div>
+            <div class="rerror-chip" data-cat="amounts-flags" data-error="Negative Pay Amounts" onclick="applyRiskFilter('amounts-flags','Negative Pay Amounts')" style="font-size:11px;font-weight:700;color:#7f1d1d;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;">Negative Pay Amounts</div>
+            <div class="rerror-chip" data-cat="amounts-flags" data-error="Negative Bill Amounts" onclick="applyRiskFilter('amounts-flags','Negative Bill Amounts')" style="font-size:11px;font-weight:700;color:#7f1d1d;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;">Negative Bill Amounts</div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:120px;display:flex;flex-direction:column;">
+          <div id="rtile-markup-analysis" onclick="applyRiskFilter('markup-analysis',null)" style="background:#fff;border:1.5px solid #c0c8d2;border-radius:14px 14px 0 0;padding:12px 14px;box-shadow:0 2px 10px rgba(2,6,23,.06);display:flex;align-items:center;justify-content:space-between;cursor:pointer;position:relative;transition:all .2s;border-bottom:none;">
+            <div><div style="font-size:10px;font-weight:800;color:#1f2937;text-transform:uppercase;margin-bottom:3px;">Markup Analysis</div><div style="font-size:22px;font-weight:800;color:#6d28d9;">29</div></div>
+            <button onclick="event.stopPropagation();toggleRiskSubPanel('markup-analysis')" id="rchev-markup-analysis" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:10px;padding:0;">▼</button>
+            <div id="rbadge-markup-analysis" style="display:none;position:absolute;top:5px;right:5px;background:#7c3aed;color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;">✓</div>
+          </div>
+          <div id="rsubpanel-markup-analysis" style="display:none;background:#faf5ff;border:1.5px solid #c0c8d2;border-top:1px solid #d8b4fe;border-radius:0 0 14px 14px;padding:8px;flex-direction:column;gap:4px;">
+            <div class="rerror-chip" data-cat="markup-analysis" data-error="Negative Markup" onclick="applyRiskFilter('markup-analysis','Negative Markup')" style="font-size:11px;font-weight:700;color:#4c1d95;background:#ede9fe;border:1px solid #c4b5fd;border-radius:8px;padding:5px 8px;cursor:pointer;">Negative Markup</div>
+            <div class="rerror-chip" data-cat="markup-analysis" data-error="Low Markup" onclick="applyRiskFilter('markup-analysis','Low Markup')" style="font-size:11px;font-weight:700;color:#4c1d95;background:#ede9fe;border:1px solid #c4b5fd;border-radius:8px;padding:5px 8px;cursor:pointer;">Low Markup</div>
+            <div class="rerror-chip" data-cat="markup-analysis" data-error="High Markup" onclick="applyRiskFilter('markup-analysis','High Markup')" style="font-size:11px;font-weight:700;color:#4c1d95;background:#ede9fe;border:1px solid #c4b5fd;border-radius:8px;padding:5px 8px;cursor:pointer;">High Markup</div>
+          </div>
+        </div>
+        <div class="mass-actions-container" style="flex-shrink:0;align-self:flex-start;margin-top:2px;">
+          <button class="mass-actions-btn" id="riskMassActionsBtn" onclick="toggleRiskMassActions()">⚙️ Mass Actions</button>
+          <div class="mass-actions-dropdown" id="riskMassActionsDropdown">
+            <div class="mass-action-item" id="rma-export" onclick="riskMassAction('export')">Export <span id="rma-count-export" class="rma-count">0</span> to Excel</div>
+            <div class="mass-action-item" id="rma-pending" onclick="riskMassAction('pending')">Update <span id="rma-count-pending" class="rma-count">0</span> Resolved Status to Pending</div>
+            <div class="mass-action-item" id="rma-resolved" onclick="riskMassAction('resolved')">Update <span id="rma-count-resolved" class="rma-count">0</span> Resolved Status to Resolved</div>
+            <div class="mass-action-item" id="rma-comment" onclick="riskMassAction('comment')">Update <span id="rma-count-comment" class="rma-count">0</span> Comment</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px 16px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;flex-wrap:wrap;">
+        <span style="font-size:11px;font-weight:900;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;">Resolved Status</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="resolvedStatusPills">
+          <button class="resolved-status-pill" data-status="All" onclick="applyResolvedFilter('All')" style="padding:5px 16px;border-radius:999px;border:1.5px solid #2563eb;background:#2563eb;color:white;font-size:12px;font-weight:900;cursor:pointer;transition:all .15s;letter-spacing:.2px;box-shadow:0 2px 8px #2563eb55;">All</button>
+          <button class="resolved-status-pill" data-status="Open" onclick="applyResolvedFilter('Open')" style="padding:5px 16px;border-radius:999px;border:1.5px solid #d1d5db;background:white;color:#374151;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.2px;">Open</button>
+          <button class="resolved-status-pill" data-status="Pending" onclick="applyResolvedFilter('Pending')" style="padding:5px 16px;border-radius:999px;border:1.5px solid #d1d5db;background:white;color:#374151;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.2px;">Pending</button>
+          <button class="resolved-status-pill" data-status="Resolved" onclick="applyResolvedFilter('Resolved')" style="padding:5px 16px;border-radius:999px;border:1.5px solid #d1d5db;background:white;color:#374151;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.2px;">Resolved</button>
+        </div>
+      </div>
+      <div class="data-table-container">
+        <table class="data-table">
+          <thead><tr>
+            <th><input type="checkbox" id="selectAllRisks" onchange="riskSelectAll(this)"></th>
+            <th>Timesheet ID</th><th>Resolved Status</th><th>Risk Category</th><th>Risk Error</th>
+            <th>Customer Name</th><th>Candidate</th><th>Placement ID</th><th>TS Period</th>
+            <th>Hours Worked</th><th>Pay Hours</th><th>Bill Hours</th><th>Paid</th><th>Billed</th>
+            <th>Mark-Up%</th><th>Comments</th><th>Resolved Status Updated Last By</th><th>Resolved Status Update Last Date</th>
+          </tr></thead>
+          <tbody>
+            <tr data-category="placement-alignment"><td><input type="checkbox" class="row-select" onchange="updateRiskCounts()"></td><td><a href="#" style="color:#2196f3;text-decoration:none;">TS-2025-001</a></td><td><select style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:13px;" onchange="onStatusChange(this)"><option selected>Open</option><option>Pending</option><option>Resolved</option></select></td><td>Placement Alignment</td><td>Active Placement Date Mismatches</td><td><a href="#" style="color:#2196f3;text-decoration:none;">ACME Corporation</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">John Smith</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">PL-8901</a></td><td>09/22/2025</td><td>40.0</td><td>40.0</td><td>40.0</td><td>$2,400</td><td>$2,400</td><td>0.00%</td><td><input type="text" style="width:140px;padding:5px;border:1px solid #ddd;border-radius:3px;" placeholder="Add comment..."></td><td class="audit-empty">—</td><td class="audit-empty">—</td></tr>
+            <tr data-category="placement-alignment"><td><input type="checkbox" class="row-select" onchange="updateRiskCounts()"></td><td><a href="#" style="color:#2196f3;text-decoration:none;">TS-2025-007</a></td><td><select style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:13px;" onchange="onStatusChange(this)"><option selected>Open</option><option>Pending</option><option>Resolved</option></select></td><td>Placement Alignment</td><td>Active Placement Date Mismatches</td><td><a href="#" style="color:#2196f3;text-decoration:none;">Summit Industries</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Brenda Walsh</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">PL-8910</a></td><td>09/15/2025</td><td>32.0</td><td>32.0</td><td>32.0</td><td>$1,920</td><td>$1,920</td><td>0.00%</td><td><input type="text" style="width:140px;padding:5px;border:1px solid #ddd;border-radius:3px;" placeholder="Add comment..."></td><td class="audit-empty">—</td><td class="audit-empty">—</td></tr>
+            <tr data-category="wage-compliance"><td><input type="checkbox" class="row-select" onchange="updateRiskCounts()"></td><td><a href="#" style="color:#2196f3;text-decoration:none;">TS-2025-003</a></td><td><select style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:13px;" onchange="onStatusChange(this)"><option selected>Open</option><option>Pending</option><option>Resolved</option></select></td><td>Wage Compliance</td><td>Below Federal Min Wage</td><td><a href="#" style="color:#2196f3;text-decoration:none;">Riverside Health</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Marcus Lee</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">PL-8903</a></td><td>09/22/2025</td><td>38.0</td><td>38.0</td><td>38.0</td><td>$256</td><td>$380</td><td>48.44%</td><td><input type="text" style="width:140px;padding:5px;border:1px solid #ddd;border-radius:3px;" placeholder="Add comment..."></td><td class="audit-empty">—</td><td class="audit-empty">—</td></tr>
+            <tr data-category="rate-flags"><td><input type="checkbox" class="row-select" onchange="updateRiskCounts()"></td><td><a href="#" style="color:#2196f3;text-decoration:none;">TS-2025-004</a></td><td><select style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:13px;" onchange="onStatusChange(this)"><option selected>Open</option><option>Pending</option><option>Resolved</option></select></td><td>Rate Flags</td><td>Rate Card Mismatch</td><td><a href="#" style="color:#2196f3;text-decoration:none;">Pinnacle Group</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Sarah Chen</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">PL-8904</a></td><td>09/22/2025</td><td>40.0</td><td>40.0</td><td>40.0</td><td>$6,200</td><td>$8,000</td><td>29.03%</td><td><input type="text" style="width:140px;padding:5px;border:1px solid #ddd;border-radius:3px;" placeholder="Add comment..."></td><td class="audit-empty">—</td><td class="audit-empty">—</td></tr>
+            <tr data-category="hours-flags"><td><input type="checkbox" class="row-select" onchange="updateRiskCounts()"></td><td><a href="#" style="color:#2196f3;text-decoration:none;">TS-2025-002</a></td><td><select style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:13px;" onchange="onStatusChange(this)"><option>Open</option><option selected>Pending</option><option>Resolved</option></select></td><td>Hours Flags</td><td>Pay ≠ Bill Hours</td><td><a href="#" style="color:#2196f3;text-decoration:none;">Tech Solutions Inc</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Emily Davis</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">PL-8902</a></td><td>09/22/2025</td><td>45.0</td><td>42.0</td><td>45.0</td><td>$2,520</td><td>$3,150</td><td>25.00%</td><td><input type="text" style="width:140px;padding:5px;border:1px solid #ddd;border-radius:3px;" placeholder="Add comment..."></td><td class="audit-user">James O'Brien</td><td class="audit-date">02/20/2026 2:47 PM</td></tr>
+            <tr data-category="amounts-flags"><td><input type="checkbox" class="row-select" onchange="updateRiskCounts()"></td><td><a href="#" style="color:#2196f3;text-decoration:none;">TS-2025-005</a></td><td><select style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:13px;" onchange="onStatusChange(this)"><option selected>Open</option><option>Pending</option><option>Resolved</option></select></td><td>Amounts Flags</td><td>Pay Amount with No Bill Amount</td><td><a href="#" style="color:#2196f3;text-decoration:none;">Metro Staffing Co</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">David Torres</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">PL-8905</a></td><td>09/22/2025</td><td>40.0</td><td>40.0</td><td>0.0</td><td>$2,800</td><td>$0</td><td>—</td><td><input type="text" style="width:140px;padding:5px;border:1px solid #ddd;border-radius:3px;" placeholder="Add comment..."></td><td class="audit-empty">—</td><td class="audit-empty">—</td></tr>
+            <tr data-category="markup-analysis"><td><input type="checkbox" class="row-select" onchange="updateRiskCounts()"></td><td><a href="#" style="color:#2196f3;text-decoration:none;">TS-2025-006</a></td><td><select style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:13px;" onchange="onStatusChange(this)"><option selected>Open</option><option>Pending</option><option>Resolved</option></select></td><td>Markup Analysis</td><td>Low Markup</td><td><a href="#" style="color:#2196f3;text-decoration:none;">Nexus Consulting</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">Priya Patel</a></td><td><a href="#" style="color:#2196f3;text-decoration:none;">PL-8906</a></td><td>09/22/2025</td><td>40.0</td><td>40.0</td><td>40.0</td><td>$3,200</td><td>$3,480</td><td>8.75%</td><td><input type="text" style="width:140px;padding:5px;border:1px solid #ddd;border-radius:3px;" placeholder="Add comment..."></td><td class="audit-empty">—</td><td class="audit-empty">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function colorExcludedSelect(sel) {
+    var isYes = sel.value === 'Yes';
+    sel.style.background   = isYes ? '#dcfce7' : '#fee2e2';
+    sel.style.color        = isYes ? '#16a34a' : '#dc2626';
+    sel.style.borderColor  = isYes ? '#86efac' : '#fca5a5';
+    sel.style.fontWeight   = '700';
+    sel.style.borderRadius = '20px';
+    sel.style.padding      = '4px 10px';
+    sel.style.border       = '1.5px solid';
+    sel.style.borderColor  = isYes ? '#86efac' : '#fca5a5';
+    sel.style.cursor       = 'pointer';
+    sel.style.fontSize     = '0.8rem';
+    sel.style.minWidth     = '64px';
+    sel.style.textAlign    = 'center';
+    sel.style.appearance   = 'none';
+    sel.style.webkitAppearance = 'none';
+    var arrowColor = isYes ? '%2316a34a' : '%23dc2626';
+    sel.style.backgroundImage = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='" + arrowColor + "'/%3E%3C/svg%3E\")";
+    sel.style.backgroundRepeat = 'no-repeat';
+    sel.style.backgroundPosition = 'right 8px center';
+    sel.style.paddingRight = '24px';
+  }
+  function onExcludedChange(sel) {
+    var row = sel.closest('tr');
+    var cells = row.querySelectorAll('td');
+    var byCell   = cells[cells.length - 2];
+    var dateCell = cells[cells.length - 1];
+    if (sel.value === 'Yes') {
+      row.setAttribute('data-excluded', 'yes');
+      byCell.className = 'audit-user'; byCell.textContent = 'Current User';
+      var n=new Date(),mo=n.getMonth()+1,d=n.getDate(),yr=n.getFullYear(),h=n.getHours(),mi=n.getMinutes(),ap=h>=12?'PM':'AM';h=h%12||12;
+      dateCell.className = 'audit-date';
+      dateCell.textContent = (mo<10?'0':'')+mo+'/'+(d<10?'0':'')+d+'/'+yr+' '+h+':'+(mi<10?'0':'')+mi+' '+ap;
+    } else {
+      row.setAttribute('data-excluded', 'no');
+      byCell.className = 'audit-empty'; byCell.textContent = '—';
+      dateCell.className = 'audit-empty'; dateCell.textContent = '—';
+    }
+    colorExcludedSelect(sel);
+    if (typeof applyTimesheetFilter === 'function') {
+      var active = Object.entries({all:'badge-all',excluded:'badge-excluded','not-excluded':'badge-not-excluded'}).find(function(e){return document.getElementById(e[1])&&document.getElementById(e[1]).style.display!=='none';});
+      if (active) applyTimesheetFilter(active[0]);
+    }
+  }
+  function colorStatusSelect(sel) {
+    var s = ({Open:{bg:'#fee2e2',color:'#dc2626',border:'#fca5a5'},Pending:{bg:'#fef9c3',color:'#b45309',border:'#fde047'},Resolved:{bg:'#dcfce7',color:'#16a34a',border:'#86efac'}})[sel.value]||{bg:'#f3f4f6',color:'#374151',border:'#d1d5db'};
+    sel.style.background=s.bg; sel.style.color=s.color; sel.style.borderColor=s.border;
+    sel.style.fontWeight='700'; sel.style.borderRadius='20px'; sel.style.padding='4px 10px';
+  }
+  function onStatusChange(sel) {
+    var row=sel.closest('tr'), cells=row.querySelectorAll('td');
+    var uC=cells[cells.length-2], dC=cells[cells.length-1];
+    if(sel.value==='Open'){uC.className='audit-empty';uC.textContent='—';dC.className='audit-empty';dC.textContent='—';}
+    else{
+      uC.className='audit-user';uC.textContent='Current User';
+      var n=new Date(),mo=n.getMonth()+1,d=n.getDate(),yr=n.getFullYear(),h=n.getHours(),mi=n.getMinutes(),ap=h>=12?'PM':'AM';h=h%12||12;
+      dC.className='audit-date';dC.textContent=(mo<10?'0':'')+mo+'/'+(d<10?'0':'')+d+'/'+yr+' '+h+':'+(mi<10?'0':'')+mi+' '+ap;
+    }
+    colorStatusSelect(sel);
+    if(typeof applyRiskRowVisibility==='function') applyRiskRowVisibility();
+  }
+  var pendingRiskFilter=null,pendingRiskError=null;
+  var RISK_CATS=['all','placement-alignment','wage-compliance','rate-flags','hours-flags','amounts-flags','markup-analysis'];
+  var RISK_COLORS={all:'#6d28d9','placement-alignment':'#f59e0b','wage-compliance':'#16a34a','rate-flags':'#2563eb','hours-flags':'#ea580c','amounts-flags':'#dc2626','markup-analysis':'#7c3aed'};
+  var RISK_LABEL_MAP={'Active Placement Date Mismatches':'placement-alignment','Inactive Placements Date Mismatches':'placement-alignment','Rate Card Missing':'placement-alignment','Below Federal Min Wage':'wage-compliance','Rate Card Mismatch':'rate-flags','High Pay Rate':'rate-flags','High Bill Rate':'rate-flags','Pay ≠ Bill Hours':'hours-flags','Hours > 40':'hours-flags','High Hours':'hours-flags','High Pay Amounts':'amounts-flags','High Bill Amounts':'amounts-flags','Pay Amount with No Bill Amount':'amounts-flags','Bill Amount with No Pay Amount':'amounts-flags','Negative Pay Amounts':'amounts-flags','Negative Bill Amounts':'amounts-flags','Negative Markup':'markup-analysis','Low Markup':'markup-analysis','High Markup':'markup-analysis'};
+  var riskCategoryFilter='all',riskErrorFilter=null,resolvedStatusFilter='All';
+  function toggleRiskSubPanel(cat){var p=document.getElementById('rsubpanel-'+cat),c=document.getElementById('rchev-'+cat);if(!p)return;var o=p.style.display==='flex';p.style.display=o?'none':'flex';if(c)c.style.transform=o?'rotate(0deg)':'rotate(180deg)';}
+  function applyRiskRowVisibility(){document.querySelectorAll('#riskManagementView .data-table tbody tr').forEach(function(r){var cm=(riskCategoryFilter==='all')||(r.getAttribute('data-category')===riskCategoryFilter);var em=!riskErrorFilter;if(riskErrorFilter){var c=r.querySelectorAll('td')[4];em=c&&c.textContent.trim()===riskErrorFilter;}var sm=(resolvedStatusFilter==='All');if(!sm){var s=r.querySelector('select');sm=s&&s.value===resolvedStatusFilter;}r.style.display=(cm&&em&&sm)?'':' none';});}
+  function applyResolvedFilter(status){resolvedStatusFilter=status;var PC={All:'#2563eb',Open:'#dc2626',Pending:'#d97706',Resolved:'#16a34a'};var col=PC[status]||'#2563eb';document.querySelectorAll('.resolved-status-pill').forEach(function(p){var a=p.getAttribute('data-status')===status;p.style.background=a?col:'white';p.style.color=a?'white':'#374151';p.style.borderColor=a?col:'#d1d5db';p.style.fontWeight=a?'900':'600';p.style.boxShadow=a?'0 2px 8px '+col+'55':'none';});applyRiskRowVisibility();}
+  function applyRiskFilter(cat,err){riskCategoryFilter=cat;riskErrorFilter=err||null;RISK_CATS.forEach(function(k){var t=document.getElementById('rtile-'+k),b=document.getElementById('rbadge-'+k);if(t){t.style.borderColor='#c0c8d2';t.style.boxShadow='0 2px 10px rgba(2,6,23,.06)';t.style.background='#fff';}if(b)b.style.display='none';});document.querySelectorAll('.rerror-chip').forEach(function(c){c.style.fontWeight='700';c.style.boxShadow='none';});var col=RISK_COLORS[cat]||'#6d28d9';var at=document.getElementById('rtile-'+cat),ab=document.getElementById('rbadge-'+cat);if(at){at.style.borderColor=col;at.style.boxShadow='0 4px 16px '+col+'44';at.style.background='#fafafe';}if(ab)ab.style.display='block';if(err){var p=document.getElementById('rsubpanel-'+cat),c=document.getElementById('rchev-'+cat);if(p)p.style.display='flex';if(c)c.style.transform='rotate(180deg)';document.querySelectorAll('.rerror-chip[data-cat="'+cat+'"][data-error="'+err+'"]').forEach(function(ch){ch.style.fontWeight='900';ch.style.boxShadow='0 0 0 2px '+col;});}applyRiskRowVisibility();}
+  function showRiskManagementViewWithFilter(err){var cat=err?(RISK_LABEL_MAP[err]||'all'):'all';pendingRiskFilter=cat;pendingRiskError=err||null;resolvedStatusFilter='All';switchView('riskManagementView');}
+  function toggleRiskMassActions(){document.getElementById('riskMassActionsDropdown').classList.toggle('show');}
+  function getRiskSelected(){return Array.from(document.querySelectorAll('#riskManagementView .data-table tbody tr:not([style*="none"]) .row-select:checked'));}
+  function updateRiskCounts(){var n=getRiskSelected().length;['export','pending','resolved','comment'].forEach(function(k){var e=document.getElementById('rma-count-'+k);if(e)e.textContent=n;});}
+  function riskSelectAll(cb){document.querySelectorAll('#riskManagementView .data-table tbody tr').forEach(function(r){if(r.style.display==='none')return;var c=r.querySelector('.row-select');if(c)c.checked=cb.checked;});updateRiskCounts();}
+  function riskMassAction(type){var sel=getRiskSelected(),n=sel.length;if(!n){alert('Please select at least one record first.');return;}var now=new Date(),mo=now.getMonth()+1,d=now.getDate(),yr=now.getFullYear(),h=now.getHours(),mi=now.getMinutes(),ap=h>=12?'PM':'AM';h=h%12||12;var st=(mo<10?'0':'')+mo+'/'+(d<10?'0':'')+d+'/'+yr+' '+h+':'+(mi<10?'0':'')+mi+' '+ap;if(type==='export'){alert('Exporting '+n+' record(s) to Excel…');}else if(type==='pending'||type==='resolved'){var ns=type==='pending'?'Pending':'Resolved';sel.forEach(function(ck){var r=ck.closest('tr'),s=r.querySelector('select');if(s){s.value=ns;colorStatusSelect(s);}var cells=r.querySelectorAll('td');cells[cells.length-2].className='audit-user';cells[cells.length-2].textContent='Current User';cells[cells.length-1].className='audit-date';cells[cells.length-1].textContent=st;});alert('Updated '+n+' record(s) to '+ns+'.');}else if(type==='comment'){var c=prompt('Enter comment for '+n+' record(s):');if(!c)return;sel.forEach(function(ck){var i=ck.closest('tr').querySelector('input[type="text"]');if(i)i.value=c;});alert('Comment applied to '+n+' record(s).');}document.getElementById('riskMassActionsDropdown').classList.remove('show');}
+  function runRiskOpsDashboard(){var btn=document.getElementById('runRiskOpsBtn'),orig=btn.innerHTML;btn.disabled=true;btn.style.background='#1e40af';btn.innerHTML='Running…';setTimeout(function(){btn.disabled=false;btn.style.background='#16a34a';btn.innerHTML='✓ Done!';setTimeout(function(){btn.style.background='#2563eb';btn.innerHTML=orig;},1500);},1200);}
+  function showTimesheetView(filter){switchView('timesheetView');applyTimesheetFilter(filter||'all');}
+  function applyTimesheetFilter(filter){var ti={all:'tile-all',excluded:'tile-excluded','not-excluded':'tile-not-excluded'},bi={all:'badge-all',excluded:'badge-excluded','not-excluded':'badge-not-excluded'},cl={all:'#2563eb',excluded:'#16a34a','not-excluded':'#dc2626'};Object.values(ti).forEach(function(id){var e=document.getElementById(id);if(e){e.style.borderColor='#c0c8d2';e.style.boxShadow='0 2px 10px rgba(2,6,23,.06)';}});Object.values(bi).forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});var at=document.getElementById(ti[filter]);if(at){at.style.borderColor=cl[filter];at.style.boxShadow='0 4px 16px '+cl[filter]+'44';}var ab=document.getElementById(bi[filter]);if(ab)ab.style.display='block';document.querySelectorAll('#timesheetView .data-table tbody tr').forEach(function(r){var ex=r.getAttribute('data-excluded');var show=true;if(filter==='excluded')show=ex==='yes';else if(filter==='not-excluded')show=ex==='no';r.style.display=show?'':'none';});}
+  function showBullhornView(){switchView('bullhornView');}
+  function showRiskManagementView(err){showRiskManagementViewWithFilter(err);}
+  function showDashboard(){switchView('dashboardView');}
+  function switchView(id){document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='riskManagementView'){if(pendingRiskFilter!==null){applyRiskFilter(pendingRiskFilter,pendingRiskError);pendingRiskFilter=null;pendingRiskError=null;}applyResolvedFilter(resolvedStatusFilter);}}
+  function computeActiveStatuses(){var a=document.getElementById('approvedStatuses'),p=document.getElementById('pendingStatuses'),ac=document.getElementById('activeStatuses');if(!a||!p||!ac)return;var parse=function(s){return s.split(',').map(function(v){return v.trim();}).filter(Boolean);};var combined=[...new Set([...parse(a.value),...parse(p.value)])];ac.value=combined.join(', ');}
+  function runDashboard(){var btn=document.getElementById('runDashboardBtn'),orig=btn.innerHTML;btn.disabled=true;btn.style.background='#1e40af';btn.innerHTML='Running…';setTimeout(function(){btn.disabled=false;btn.style.background='#16a34a';btn.innerHTML='✓ Done!';setTimeout(function(){btn.style.background='#2563eb';btn.innerHTML=orig;},1500);},1200);}
+  function addNewFilter(){var n=prompt('Filter display name:');if(!n)return;var f=prompt('Bullhorn field name:');if(!f)return;var d=prompt('Default value:')||'None';var tbody=document.getElementById('filters-tbody');var row=document.createElement('tr');row.style.borderBottom='1px solid #e5e7eb';row.innerHTML='<td style="padding:14px 16px;font-weight:600;color:#1f2937;">'+n+'</td><td style="padding:14px 16px;color:#6b7280;font-family:monospace;font-size:13px;">'+f+'</td><td style="padding:14px 16px;color:#6b7280;">Dropdown</td><td style="padding:14px 16px;color:#6b7280;">'+d+'</td><td style="padding:14px 16px;text-align:center;"><button onclick="editFilter(this)" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Edit</button><button onclick="deleteFilter(this)" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:6px 10px;border-radius:6px;font-weight:600;font-size:13px;">Delete</button></td>';tbody.appendChild(row);}
+  function editFilter(btn){var row=btn.closest('tr'),cells=row.querySelectorAll('td');var n=prompt('Edit filter name:',cells[0].textContent);if(n)cells[0].textContent=n;}
+  function deleteFilter(btn){if(confirm('Delete this filter?'))btn.closest('tr').remove();}
+  function saveSettings(){document.getElementById('settings-modal').style.display='none';alert('Filter configuration saved!');}
+  function saveAdminSettings(){document.getElementById('admin-modal').style.display='none';alert('Admin settings saved!');}
+  function toggleMassActions(){document.getElementById('massActionsDropdown').classList.toggle('show');}
+  function timesheetSelectAll(cb){document.querySelectorAll('#timesheetView .data-table tbody tr').forEach(function(r){if(r.style.display==='none')return;var c=r.querySelector('.row-select');if(c)c.checked=cb.checked;});updateTimesheetCounts();}
+  function updateTimesheetCounts(){var n=document.querySelectorAll('#timesheetView .data-table tbody tr:not([style*="none"]) .row-select:checked').length;['reminders','exclude','export'].forEach(function(k){var e=document.getElementById('tma-count-'+k);if(e)e.textContent=n;});}
+  function sendTimesheetReminders(){alert('Reminders sent.');document.getElementById('massActionsDropdown').classList.remove('show');}
+  function excludeFromMissing(){alert('Records excluded.');document.getElementById('massActionsDropdown').classList.remove('show');}
+  function exportToExcel(){alert('Exporting to Excel…');document.getElementById('massActionsDropdown').classList.remove('show');}
+  function runTimesheetDashboard(){var btn=document.getElementById('runTimesheetBtn'),orig=btn.innerHTML;btn.disabled=true;btn.style.background='#1e40af';btn.innerHTML='Running…';setTimeout(function(){btn.disabled=false;btn.style.background='#16a34a';btn.innerHTML='✓ Done!';setTimeout(function(){btn.style.background='#2563eb';btn.innerHTML=orig;},1500);},1200);}
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.metric-card').forEach(function(card){
+      card.addEventListener('mouseenter',function(){card.style.transform='translateY(-2px)';card.style.boxShadow='0 8px 30px rgba(0,0,0,.12)';});
+      card.addEventListener('mouseleave',function(){card.style.transform='translateY(0)';card.style.boxShadow='0 8px 24px rgba(2,6,23,.08)';});
+    });
+    document.querySelectorAll('.tile').forEach(function(tile){
+      tile.addEventListener('click',function(e){e.preventDefault();alert(tile.querySelector('.tile-header').textContent.trim()+': '+tile.querySelector('.tile-value').textContent.trim());});
+    });
+    var dsBtn=document.querySelector('.dashboard-settings-button'),dsMod=document.getElementById('settings-modal');
+    if(dsBtn&&dsMod){dsBtn.addEventListener('click',function(){dsMod.style.display='flex';});document.getElementById('close-settings').addEventListener('click',function(){dsMod.style.display='none';});document.getElementById('cancel-settings').addEventListener('click',function(){dsMod.style.display='none';});dsMod.addEventListener('click',function(e){if(e.target===dsMod)dsMod.style.display='none';});}
+    var adBtn=document.querySelector('.admin-settings-button'),adMod=document.getElementById('admin-modal');
+    if(adBtn&&adMod){adBtn.addEventListener('click',function(){adMod.style.display='flex';computeActiveStatuses();});document.getElementById('close-admin').addEventListener('click',function(){adMod.style.display='none';});document.getElementById('cancel-admin').addEventListener('click',function(){adMod.style.display='none';});adMod.addEventListener('click',function(e){if(e.target===adMod)adMod.style.display='none';});}
+    document.addEventListener('click',function(e){if(!e.target.closest('.mass-actions-container')){var m=document.getElementById('massActionsDropdown');if(m)m.classList.remove('show');var r=document.getElementById('riskMassActionsDropdown');if(r)r.classList.remove('show');}});
+    document.querySelectorAll('.mini-picker-container').forEach(function(container){var sel=container.querySelector('.mini-picker-selected'),drop=container.querySelector('.mini-picker-add-dropdown');if(!sel||!drop)return;drop.addEventListener('change',function(){if(!this.value)return;var tag=document.createElement('span');tag.className='mini-picker-tag';tag.innerHTML=this.value+' <span class="mini-picker-tag-remove" data-value="'+this.value+'">×</span>';sel.appendChild(tag);var opt=this.querySelector('option[value="'+this.value+'"]');if(opt)opt.remove();this.value='';});sel.addEventListener('click',function(e){if(!e.target.classList.contains('mini-picker-tag-remove'))return;var val=e.target.dataset.value||e.target.closest('.mini-picker-tag').textContent.replace('×','').trim();e.target.closest('.mini-picker-tag').remove();var opt=document.createElement('option');opt.value=val;opt.textContent=val;drop.appendChild(opt);});});
+    updateTimesheetCounts();
+    updateRiskCounts();
+    computeActiveStatuses();
+    document.querySelectorAll('#riskManagementView .data-table tbody tr select').forEach(colorStatusSelect);
+    document.querySelectorAll('#timesheetView .ts-excluded-select').forEach(colorExcludedSelect);
+  });
+
+  // Risk Management column transform
+  (function(){
+    function norm(t){return(t||'').replace(/\s+/g,' ').trim().toLowerCase();}
+    function transform(){
+      var col=document.querySelector('.metric-card.compliance');if(!col)return;
+      col.querySelectorAll(':scope > .metric-item').forEach(function(item,idx){
+        var titleEl=item.querySelector(':scope > .metric-label');if(!titleEl)return;
+        var title=titleEl.textContent.trim(),key=norm(title);
+        if(idx===0){var lbl=document.createElement('div');lbl.className='ops-section-label timeops';lbl.textContent='⏱ TimeOps Dashboard';col.insertBefore(lbl,item);}
+        if(idx===1){var div=document.createElement('hr');div.className='ops-divider';col.insertBefore(div,item);var lbl2=document.createElement('div');lbl2.className='ops-section-label riskops';lbl2.textContent='⚠️ RiskOps Dashboard';col.insertBefore(lbl2,item);}
+        var card=document.createElement('div');card.className='nb-risk';
+        if(key==='timesheets')card.classList.add('timeops-card');
+        var head=document.createElement('div');head.className='nb-risk-head';
+        var htxt=document.createElement('div');htxt.className='nb-risk-title';htxt.textContent=title;
+        head.append(htxt);card.appendChild(head);
+        var list=document.createElement('div');list.className='nb-list';
+        if(key==='timesheets'){var mr=document.createElement('div');mr.className='nb-row';mr.onclick=showTimesheetView;mr.innerHTML='<div class="nb-label">Missing Timesheets</div><div class="nb-pill">142</div>';list.appendChild(mr);}
+        item.querySelectorAll(':scope > .sub-metric').forEach(function(sm){
+          var lab=(sm.querySelector('.metric-label')||{}).textContent||'',val=(sm.querySelector('.metric-value')||{}).textContent||'';
+          lab=lab.trim();val=val.trim();
+          var row=document.createElement('div');row.className='nb-row';
+          row.innerHTML='<div class="nb-label">'+lab+'</div><div class="nb-pill">'+val+'</div>';
+          if(key==='timesheets'){var fmap={'Timesheets Excluded from Missing':'excluded','Missing Timesheets After Exclusions':'not-excluded'};row.onclick=function(){showTimesheetView(fmap[lab]||'all');};}
+          else{row.onclick=function(){showRiskManagementView(lab);};}
+          list.appendChild(row);
+        });
+        card.appendChild(list);item.innerHTML='';item.appendChild(card);
+      });
+    }
+    document.addEventListener('DOMContentLoaded',transform);
+  })();
+
+  // Collapsible metric items
+  (function(){
+    var TARGETS=new Set(['Open Timesheets','Payable Charges Not Processed','Billable Charges Not Processed','Invoices Not Processed','General Ledger Export Not Processed','Approved Placements Not Synced to BTE']);
+    var DENOMS={'Open Timesheets':'Total Timesheets Expected','Payable Charges Not Processed':'Total Payable Charges','Billable Charges Not Processed':'Total Billable Charges','Invoices Not Processed':'Total Invoices','General Ledger Export Not Processed':'Invoices Processed (Finalized)','Approved Placements Not Synced to BTE':'Approved Placements'};
+    function norm(t){return(t||'').replace(/\s+/g,' ').trim();}
+    function parseNum(t){var m=(t||'').replace(/[,$KMkb]/gi,'').match(/-?\d+(?:\.\d+)?/);return m?parseFloat(m[0]):NaN;}
+    function fmtPct(p){return(Math.round(p*10)/10).toFixed(1)+'%';}
+    function pct(n,d){return d>0?n/d*100:0;}
+    function getVal(label){for(var it of document.querySelectorAll('.metric-item')){var lab=it.querySelector(':scope > .metric-label');if(lab&&norm(lab.textContent)===label){var v=it.querySelector(':scope > .metric-value');if(v)return parseNum(v.textContent);}}return NaN;}
+    function makeBtn(){var btn=document.createElement('button');btn.className='nb-button';btn.type='button';btn.innerHTML='Details <svg class="nb-chev" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z"/></svg>';return btn;}
+    function build(item){
+      var titleEl=item.querySelector(':scope > .metric-label');if(!titleEl)return;
+      var title=norm(titleEl.textContent);if(!TARGETS.has(title))return;
+      var countEl=item.querySelector(':scope > .metric-value');
+      var total=countEl?parseNum(countEl.textContent):NaN;
+      var denom=getVal(DENOMS[title]);if(!isFinite(denom)||denom<=0)denom=total;
+      if(!isFinite(total)||!isFinite(denom))return;
+      var card=item.closest('.metric-card');
+      var isRow=card&&['placement','time-expense','payroll','billing','invoices'].some(function(c){return card.classList.contains(c);});
+      var ep=item.querySelector(':scope > .percentage');if(ep)ep.remove();
+      var ea=item.querySelector(':scope > .amount');if(ea)ea.remove();
+      var pctEl=document.createElement('div');pctEl.className='percentage';pctEl.textContent=fmtPct(pct(total,denom));
+      var head=document.createElement('div');
+      item.classList.add('nb-collapsible');item.setAttribute('aria-expanded','false');
+      function toggle(){var ex=item.getAttribute('aria-expanded')==='true';item.setAttribute('aria-expanded',String(!ex));}
+      if(isRow){
+        head.style.cssText='border-bottom:1px solid #eef2f7;padding-bottom:8px;margin-bottom:6px;';
+        var l1=document.createElement('div');l1.style.cssText='display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;';titleEl.style.marginBottom='0';l1.appendChild(titleEl);if(countEl)l1.appendChild(countEl);head.appendChild(l1);
+        var l2=document.createElement('div');l2.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;';pctEl.style.marginLeft='0';l2.appendChild(pctEl);var sp=document.createElement('span');sp.style.flex='1';l2.appendChild(sp);if(ea){ea.style.marginTop='0';l2.appendChild(ea);}head.appendChild(l2);
+        var l3=document.createElement('div');l3.style.cssText='display:flex;justify-content:center;align-items:center;';var btn=makeBtn();l3.appendChild(btn);head.appendChild(l3);
+        btn.addEventListener('click',function(e){e.stopPropagation();toggle();});head.addEventListener('click',function(e){if(e.target.closest('.nb-button'))return;toggle();});
+      } else {
+        head.className='nb-head';
+        var left=document.createElement('div');left.className='nb-left';var right=document.createElement('div');right.className='nb-right';
+        left.appendChild(titleEl);var metrics=document.createElement('div');metrics.className='nb-stack-metrics';if(countEl)metrics.appendChild(countEl);metrics.appendChild(pctEl);left.appendChild(metrics);
+        var btn=makeBtn();right.appendChild(btn);head.append(left,right);
+        btn.addEventListener('click',function(e){e.stopPropagation();toggle();});head.addEventListener('click',function(e){if(e.target.closest('.nb-button'))return;toggle();});
+      }
+      var subs=Array.from(item.querySelectorAll(':scope > .sub-metric'));
+      var panel=document.createElement('div');panel.className='nb-panel';
+      var grid=document.createElement('div');grid.className='nb-subgrid';
+      subs.forEach(function(sm){
+        var labEl=sm.querySelector('.metric-label'),valEl=sm.querySelector('.metric-value');if(!labEl||!valEl)return;
+        var labelText=labEl.textContent.trim(),cnt=parseNum(valEl.textContent);
+        var row=document.createElement('div');row.className='nb-subtile';
+        row.innerHTML='<div style="display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;gap:0 8px;width:100%;align-items:start;"><div class="nb-label" style="grid-column:1;grid-row:1;">'+labelText+'</div><div class="nb-num" style="grid-column:2;grid-row:1;text-align:right;">'+valEl.textContent.trim()+'</div><div class="percentage" style="grid-column:1;grid-row:2;margin-left:0;font-size:12px;">'+fmtPct(pct(cnt,denom))+'</div></div>';
+        if(labelText.toLowerCase().includes('submitted timesheets')){row.style.cursor='pointer';row.onclick=showBullhornView;}
+        grid.appendChild(row);sm.remove();
+      });
+      panel.appendChild(grid);
+      var bar=document.createElement('div');bar.className='nb-bar';var fill=document.createElement('div');fill.className='nb-fill';bar.appendChild(fill);panel.appendChild(bar);
+      item.prepend(head);item.appendChild(panel);
+      requestAnimationFrame(function(){fill.style.width=Math.min(100,pct(total,denom)).toFixed(1)+'%';});
+    }
+    document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('.metric-item').forEach(build);});
+  })();
+</script>
+</body>
+</html>

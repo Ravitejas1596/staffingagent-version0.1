@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /invest.html
+Disallow: /demo-script.html
+Disallow: /project-plan.html
+Disallow: /proposal-assess.html
+Disallow: /the-brain.html
+Disallow: /architecture.html
+Sitemap: https://staffingagent.ai/sitemap.xml

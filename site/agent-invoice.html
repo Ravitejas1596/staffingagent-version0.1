@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Matching Agent &mdash; line-level tolerance release | StaffingAgent.ai</title>
+  <meta name="description" content="The Invoice Matching Agent releases invoices that match cleanly inside tolerance, and flags rate variances, missing OT lines, and PO discrepancies to the HITL queue. Every release is reversible for 7 days.">
+  <link rel="canonical" href="https://staffingagent.ai/agent-invoice.html">
+  <meta property="og:title" content="Invoice Matching Agent — StaffingAgent.ai">
+  <meta property="og:description" content="Line-level tolerance release on clean invoices; rate variances, missing OT lines, and PO discrepancies escalate to HITL.">
+  <meta property="og:url" content="https://staffingagent.ai/agent-invoice.html">
+  <meta property="og:image" content="https://staffingagent.ai/images/cc/alert-queue.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://staffingagent.ai/images/cc/alert-queue.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260404">
+  <style>
+    .agent-page-tag { display: inline-block; font-size: .72rem; font-weight: 700; padding: .3rem .9rem; border-radius: 10px; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 1rem; }
+    .tag-green { background: rgba(16,185,129,.15); color: #34d399; }
+    .agent-hero { padding: 9rem 0 3rem; background: linear-gradient(175deg, #0f172a 0%, #1e293b 100%); color: #f1f5f9; text-align: center; }
+    .agent-hero h1 { font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 800; letter-spacing: -.03em; margin-bottom: .75rem; }
+    .agent-hero p.agent-sub { font-size: 1.05rem; color: #94a3b8; max-width: 680px; margin: 0 auto 1.25rem; }
+    .agent-hero .hero-badges { display: flex; justify-content: center; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .agent-hero-shot { margin: 2rem auto 0; max-width: 960px; }
+    .agent-hero-shot img { width: 100%; height: auto; border-radius: 14px; box-shadow: 0 40px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(148,163,184,.18); display: block; }
+    .agent-hero-shot-caption { color: #94a3b8; font-size: .85rem; text-align: center; margin-top: .65rem; }
+    .agent-detail { max-width: 760px; margin: 0 auto; }
+    .agent-detail h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; }
+    .agent-detail p { font-size: 1.05rem; color: #475569; line-height: 1.7; margin-bottom: 1rem; }
+    .section-dark .agent-detail h2 { color: #f1f5f9; }
+    .section-dark .agent-detail p { color: #cbd5e1; }
+    .agent-cta { text-align: center; padding: 2rem 0; }
+    .agent-cta .btn { margin: .5rem; }
+
+    .lane-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 2rem 0 0; }
+    .lane-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.4rem 1.25rem; border-top: 4px solid transparent; }
+    .lane-card.lane-green { border-top-color: #10b981; }
+    .lane-card.lane-amber { border-top-color: #f59e0b; }
+    .lane-card.lane-red { border-top-color: #ef4444; }
+    .lane-card h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: .4rem; }
+    .lane-card p { font-size: .9rem; color: #64748b; line-height: 1.55; margin: 0; }
+    .lane-tag { display: inline-block; font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: .2rem .55rem; border-radius: 999px; margin-bottom: .6rem; }
+    .lane-green .lane-tag { background: rgba(16,185,129,.12); color: #047857; }
+    .lane-amber .lane-tag { background: rgba(245,158,11,.14); color: #b45309; }
+    .lane-red .lane-tag { background: rgba(239,68,68,.12); color: #b91c1c; }
+
+    .check-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .9rem; margin: 2rem 0 0; }
+    .check-item { background: rgba(255,255,255,.04); border: 1px solid rgba(148,163,184,.18); border-radius: 12px; padding: 1rem 1rem; display: flex; gap: .8rem; align-items: flex-start; }
+    .check-icon { color: #34d399; font-weight: 700; font-size: 1rem; line-height: 1.3; flex: 0 0 auto; }
+    .check-item h4 { font-size: .95rem; color: #f1f5f9; margin: 0 0 .25rem; font-weight: 700; }
+    .check-item p { font-size: .82rem; color: #94a3b8; margin: 0; line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<nav class="nav scrolled">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="the-command-center.html">Command Center</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+    </div>
+    <a href="index.html" class="btn btn-sm" style="background:#1e293b;color:#94a3b8">&larr; Back to Site</a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<header class="agent-hero">
+  <div class="container">
+    <div class="hero-badges">
+      <span class="agent-page-tag tag-green">Billing Automation</span>
+      <span class="agent-status-badge active">Active</span>
+    </div>
+    <h1>Invoice Matching Agent</h1>
+    <p class="agent-sub">Line-level tolerance release on invoices that match cleanly. Rate variances, missing OT lines, and PO discrepancies escalate to the HITL queue with full context. Every automated release is reversible for 7 days &mdash; with a permanent audit trail.</p>
+    <div class="agent-hero-shot">
+      <picture>
+        <source srcset="/images/cc/alert-queue.webp" type="image/webp">
+        <img src="/images/cc/alert-queue.png" alt="Alert Queue showing prioritized invoice and timesheet alerts with severity, dollar impact, and state filters." width="1440" height="900" loading="eager" fetchpriority="high">
+      </picture>
+      <div class="agent-hero-shot-caption">Invoice Matching alerts flow into the same Alert Queue as every other agent &mdash; with the 7-day reversal window in the footer.</div>
+    </div>
+  </div>
+</header>
+
+<!-- Problem -->
+<section class="section">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Problem</span>
+      <h2>Most invoices match cleanly. The ones that don&rsquo;t are where the money lives.</h2>
+      <p>The majority of invoices coming out of Bullhorn against approved timesheets and active POs match within pennies. Releasing those by hand is pure toil. The residual &mdash; rate variances, missing overtime lines, PO amount or expiry issues &mdash; is where billing errors and disputes actually happen, and those are the ones you want a human looking at with full context, not buried under the clean ones.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Decision lanes -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Decision</span>
+      <h2>Three lanes. Tolerance release, human review, or block.</h2>
+      <p>For every invoice, the agent performs line-level matching against timesheets, active placements, and the governing PO. The output is one of three decisions &mdash; each routed appropriately, each logged, each reversible inside the 7-day window.</p>
+    </div>
+    <div class="lane-grid">
+      <div class="lane-card lane-green">
+        <span class="lane-tag">Release</span>
+        <h3>Clean match &mdash; inside tolerance</h3>
+        <p>Every line matches an approved timesheet line, rate equals the active placement rate, total is within the PO&rsquo;s remaining balance. Released automatically. Reversible for 7 days.</p>
+      </div>
+      <div class="lane-card lane-amber">
+        <span class="lane-tag">Review</span>
+        <h3>Variance &mdash; HITL queue</h3>
+        <p>Rate variance, missing OT line, misaligned pay period, or PO discrepancy. Escalates to the Alert Queue with full context: which line, what&rsquo;s off, by how much, and what the agent thinks the correction is.</p>
+      </div>
+      <div class="lane-card lane-red">
+        <span class="lane-tag">Block</span>
+        <h3>Material failure &mdash; block invoice</h3>
+        <p>PO expired, PO balance insufficient, placement closed before the pay period, or duplicate invoice detected. Invoice is held and the alert fires with &ldquo;CRITICAL&rdquo; severity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Checks -->
+<section class="section">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Checks</span>
+      <h2>Every invoice gets the same line-level scrutiny as your best billing analyst.</h2>
+      <p>The Invoice Matching Agent runs the same set of checks on every invoice. No invoice is ever released without passing all of them. No invoice is blocked without a named reason. Everything writes to the audit log.</p>
+    </div>
+    <div class="check-grid">
+      <div class="check-item" style="background:#f8fafc;border-color:#e2e8f0">
+        <span class="check-icon" style="color:var(--sa-accent)">&#10003;</span>
+        <div><h4 style="color:#0f172a">Line-to-timesheet match</h4><p style="color:#64748b">Every invoice line reconciled to an approved timesheet line by date, hours, and category.</p></div>
+      </div>
+      <div class="check-item" style="background:#f8fafc;border-color:#e2e8f0">
+        <span class="check-icon" style="color:var(--sa-accent)">&#10003;</span>
+        <div><h4 style="color:#0f172a">Rate alignment</h4><p style="color:#64748b">Bill rate equals the active placement bill rate for the period, with OT multiplier applied where applicable.</p></div>
+      </div>
+      <div class="check-item" style="background:#f8fafc;border-color:#e2e8f0">
+        <span class="check-icon" style="color:var(--sa-accent)">&#10003;</span>
+        <div><h4 style="color:#0f172a">OT presence</h4><p style="color:#64748b">Any timesheet line flagged OT produces a corresponding OT invoice line. Missing OT lines escalate.</p></div>
+      </div>
+      <div class="check-item" style="background:#f8fafc;border-color:#e2e8f0">
+        <span class="check-icon" style="color:var(--sa-accent)">&#10003;</span>
+        <div><h4 style="color:#0f172a">PO coverage</h4><p style="color:#64748b">PO is active, not expired, and has remaining balance &ge; invoice total.</p></div>
+      </div>
+      <div class="check-item" style="background:#f8fafc;border-color:#e2e8f0">
+        <span class="check-icon" style="color:var(--sa-accent)">&#10003;</span>
+        <div><h4 style="color:#0f172a">Duplicate detection</h4><p style="color:#64748b">Hash over client + period + placement + amount blocks accidental re-bills.</p></div>
+      </div>
+      <div class="check-item" style="background:#f8fafc;border-color:#e2e8f0">
+        <span class="check-icon" style="color:var(--sa-accent)">&#10003;</span>
+        <div><h4 style="color:#0f172a">Tolerance window</h4><p style="color:#64748b">Per-tenant tolerance in $ and %; anything outside the window lands in HITL, never auto-releases.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="container text-center">
+    <span class="section-tag">Included in Transform &amp; Enterprise</span>
+    <h2>Release clean invoices. Escalate the ones that actually need a human.</h2>
+    <p class="section-sub">The Invoice Matching Agent is bundled with the Transform tier. Dry-run on every tenant before first live release.</p>
+    <div class="agent-cta">
+      <a href="demo-command-center.html" class="btn btn-primary btn-lg">See the Command Center</a>
+      <a href="demo-invoice.html" class="btn btn-outline btn-lg">Try Invoice Demo</a>
+    </div>
+    <p style="font-size:.9rem;color:#64748b"><a href="the-command-center.html" style="color:var(--sa-accent)">How agents work inside the Command Center &rarr;</a></p>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+      <p>&copy; 2026 StaffingAgent LLC. All rights reserved.</p>
+      <p class="footer-newbury">Built by the team behind <a href="https://www.newburypartners.com" target="_blank" rel="noopener">Newbury Partners</a></p>
+    </div>
+    <div class="footer-links">
+      <a href="the-command-center.html">Command Center</a>
+      <a href="index.html#how-it-works">How It Works</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="demos.html">Demos</a>
+      <a href="demo-command-center.html">Command Center Demo</a>
+      <a href="assessment.html">AI Readiness Assessment</a>
+      <a href="blog-middle-office-whitespace.html">Blog</a>
+      <a href="https://meetings-na2.hubspot.com/chris-scowden" target="_blank" rel="noopener">Book a Meeting</a>
+      <a href="invest.html">Investors</a>
+    </div>
+    <div class="footer-contact">
+      <a href="mailto:chris.scowden@staffingagent.ai">chris.scowden@staffingagent.ai</a>
+      <a href="https://www.linkedin.com/in/chrisscowden/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+var t = document.getElementById('nav-toggle'), l = document.getElementById('nav-links');
+t.addEventListener('click', function () { l.classList.toggle('open'); t.classList.toggle('open'); });
+</script>
+<script type="text/javascript" id="hs-script-loader" async defer src="//js-na2.hs-scripts.com/245521589.js"></script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+You are creating an SEO-optimized blog post outline for StaffingAgent.ai, an operational intelligence platform for mid-to-large staffing companies ($100M-$1B+).
+
+THE PRODUCT: The StaffingAgent Command Center is a real-time operational dashboard embedded in Bullhorn One. It provides visibility into placements, timesheets, payroll, billing, and invoices — plus automated risk detection across 7 categories and mass-action workflows.
+
+TARGET KEYWORD: {keyword}
+AUDIENCE: {persona_title} at staffing firms
+TOPIC: {topic}
+TARGET LENGTH: {word_count} words
+
+Generate a detailed blog outline with:
+
+1. TITLE: SEO-optimized, under 60 characters. Include the target keyword naturally.
+2. META DESCRIPTION: Under 155 characters. Compelling, includes keyword.
+3. STRUCTURE:
+   - Introduction (hook + thesis, ~100 words)
+   - H2 sections (3-5 main sections, each with 2-3 key points to cover)
+   - Conclusion with CTA
+4. For each H2 section, provide:
+   - The heading text
+   - 2-3 bullet points of what to cover
+   - One data point or example to include
+   - Internal link suggestion (to existing StaffingAgent.ai pages where relevant)
+
+EXISTING PAGES TO LINK TO:
+- https://staffingagent.ai/ (main site)
+- https://staffingagent.ai/the-brain.html (knowledge base)
+- https://staffingagent.ai/assessment.html (AI readiness assessment)
+- https://staffingagent.ai/roi.html (ROI calculator)
+- https://staffingagent.ai/demos.html (live demos — including Command Center)
+- https://staffingagent.ai/demo-command-center.html (Command Center live demo — password gated)
+- https://staffingagent.ai/agent-vms.html (VMS reconciliation agent)
+- https://staffingagent.ai/agent-time.html (time anomaly agent)
+- https://staffingagent.ai/agent-invoice.html (invoice matching agent)
+- https://staffingagent.ai/agent-compliance.html (compliance agent)
+- https://staffingagent.ai/agent-collections.html (collections agent)
+- https://staffingagent.ai/agent-payment.html (payment prediction agent)
+
+RULES:
+- Write for a staffing industry audience, not a general business audience
+- Reference specific industry dynamics (Bullhorn One, VMS, pay/bill operations, missing timesheets)
+- Every section should provide actionable insight, not filler
+- Tone: authoritative, data-driven, practical
+- Reference the Command Center as the solution where natural — but don't make every post a product pitch

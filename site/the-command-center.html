@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inside the Command Center — the cockpit + agent fleet that recovers revenue | StaffingAgent.ai</title>
+  <meta name="description" content="The cockpit embedded in Bullhorn One, with a fleet of four live AI agents and three on the 2026 roadmap. Plan → Approve → Execute on every action. Every gateway action reversible for 7 days. Live in 2–3 business days.">
+  <link rel="canonical" href="https://staffingagent.ai/the-command-center.html">
+  <meta property="og:title" content="Inside the Command Center — StaffingAgent.ai">
+  <meta property="og:description" content="The cockpit embedded in Bullhorn One with an AI agent fleet. Plan → Approve → Execute on every action. 7-day reversal window. Live in 2–3 business days.">
+  <meta property="og:url" content="https://staffingagent.ai/the-command-center.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://staffingagent.ai/images/cc/cockpit-hero.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://staffingagent.ai/images/cc/cockpit-hero.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="/images/cc/cockpit-hero.webp" type="image/webp">
+  <link rel="stylesheet" href="styles.css?v=20260404">
+  <style>
+    .cc-hero { padding: 9rem 0 3rem; background: linear-gradient(175deg, #0f172a 0%, #1e293b 100%); color: #f1f5f9; }
+    .cc-hero h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -.03em; margin-bottom: .75rem; }
+    .cc-hero p.cc-hero-sub { font-size: 1.1rem; color: #94a3b8; max-width: 740px; margin: 0 auto 1.5rem; }
+    .cc-hero .btn { margin: 0 .5rem .5rem; }
+    .cc-hero-shot { margin: 2.5rem auto 0; max-width: 1120px; }
+    .cc-hero-shot img { width: 100%; height: auto; display: block; border-radius: 16px; box-shadow: 0 40px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(148,163,184,.18); }
+    .cc-hero-shot-caption { color: #94a3b8; font-size: .85rem; text-align: center; margin-top: .75rem; }
+
+    .cc-detail { max-width: 760px; margin: 0 auto; }
+    .cc-detail h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 1rem; }
+    .cc-detail p { font-size: 1.05rem; color: #475569; line-height: 1.7; margin-bottom: 1rem; }
+    .cc-detail ul { margin: 1rem 0 1.5rem; }
+    .cc-detail li { font-size: .95rem; padding: .4rem 0 .4rem 1.5rem; position: relative; color: #334155; line-height: 1.6; }
+    .cc-detail li::before { content: '\2713'; position: absolute; left: 0; color: var(--sa-accent); font-weight: 700; }
+    .section-dark .cc-detail h2 { color: #f1f5f9; }
+    .section-dark .cc-detail p { color: #cbd5e1; }
+    .section-dark .cc-detail li { color: #cbd5e1; }
+    .section-dark .cc-detail li::before { color: #34d399; }
+
+    .cc-shot-wrap { max-width: 1120px; margin: 2rem auto 0; }
+    .cc-shot-wrap img { width: 100%; height: auto; border-radius: 14px; box-shadow: 0 24px 50px -15px rgba(15,23,42,.35), 0 0 0 1px rgba(148,163,184,.18); display: block; }
+    .section-dark .cc-shot-wrap img { box-shadow: 0 40px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(148,163,184,.18); }
+    .cc-shot-caption { font-size: .85rem; color: #64748b; text-align: center; margin-top: .75rem; }
+    .section-dark .cc-shot-caption { color: #94a3b8; }
+
+    .fleet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 2rem 0 0; }
+    .fleet-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.4rem 1.25rem; transition: transform .15s ease, box-shadow .15s ease; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: .6rem; }
+    .fleet-card:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -10px rgba(15,23,42,.15); }
+    .fleet-card-head { display: flex; align-items: center; gap: .7rem; }
+    .fleet-card-icon { font-size: 1.5rem; }
+    .fleet-card h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; flex: 1; }
+    .fleet-card-tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: .18rem .5rem; border-radius: 999px; background: rgba(14,165,233,.12); color: #0369a1; }
+    .fleet-card p { font-size: .9rem; color: #475569; margin: 0; line-height: 1.55; }
+    .fleet-card-link { font-size: .85rem; color: var(--sa-accent); font-weight: 600; margin-top: auto; }
+
+    .phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 2rem 0 1rem; }
+    .phase { background: rgba(255,255,255,.05); border: 1px solid rgba(148,163,184,.18); border-radius: 12px; padding: 1.1rem 1rem; }
+    .phase-num { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background: rgba(34,211,238,.15); color: var(--sa-accent-bright); font-weight: 700; font-size: .85rem; margin-bottom: .6rem; }
+    .phase h4 { font-size: .95rem; color: #f1f5f9; margin-bottom: .3rem; }
+    .phase p { font-size: .85rem; color: #94a3b8; line-height: 1.55; margin: 0; }
+
+    .impl-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin: 2rem 0 0; }
+    .impl-step { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.4rem 1.25rem; display: flex; gap: .9rem; align-items: flex-start; }
+    .impl-step-num { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; background: var(--sa-accent); color: #fff; font-weight: 700; display: grid; place-items: center; font-size: .95rem; }
+    .impl-step h4 { font-size: 1rem; font-weight: 700; margin-bottom: .3rem; color: #0f172a; }
+    .impl-step p { font-size: .88rem; color: #64748b; line-height: 1.55; margin: 0; }
+    .impl-step .impl-step-duration { font-size: .75rem; color: var(--sa-accent); font-weight: 700; margin-top: .4rem; display: block; }
+
+    @media (max-width: 768px) {
+      .cc-hero { padding: 7rem 0 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav scrolled">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html#command-center">Overview</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+    </div>
+    <a href="demo-command-center.html" class="btn btn-primary btn-sm">See the Demo</a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="cc-hero">
+  <div class="container text-center">
+    <span class="inv-badge">The Product</span>
+    <h1>The cockpit that recovers the <span class="sa-gradient-text">revenue</span> your middle office is missing.</h1>
+    <p class="cc-hero-sub">The Command Center is a mission-control view embedded inside Bullhorn One. One screen for the middle office: KPI summary, action queue, agent fleet, ROI telemetry. A fleet of AI agents behind it that plan, wait for a human signature, and execute &mdash; with every gateway action reversible for 7 days.</p>
+    <a href="demo-command-center.html" class="btn btn-primary btn-lg">See the Live Demo &rarr;</a>
+    <a href="https://meetings-na2.hubspot.com/chris-scowden" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,.3);color:#f1f5f9" target="_blank" rel="noopener">Book a Call</a>
+    <div class="cc-hero-shot">
+      <picture>
+        <source srcset="/images/cc/cockpit-hero.webp" type="image/webp">
+        <img src="/images/cc/cockpit-hero.png" alt="StaffingAgent Command Center cockpit — KPI summary tiles across Actions Pending Review, MTD Cost Savings, Active Agents, Transactions Today, Anomalies Flagged 7d, and Error Rate, with the Action Queue listing seven prioritized alerts." width="1440" height="900" loading="eager" fetchpriority="high">
+      </picture>
+      <div class="cc-hero-shot-caption">Embedded in Bullhorn One &middot; Live in 2&ndash;3 business days &middot; Real data, human-in-the-loop</div>
+    </div>
+  </div>
+</header>
+
+<!-- Section 1 — The Cockpit -->
+<section class="section">
+  <div class="container">
+    <div class="cc-detail">
+      <span class="section-tag">Section 1 &middot; The Cockpit</span>
+      <h2>One screen for the entire middle office.</h2>
+      <p>The cockpit landing view is the center of gravity for everything StaffingAgent does. It surfaces the six numbers an operations leader actually needs, the prioritized action queue of alerts across every agent, the live Agent Fleet panel with status and throughput, and a running ROI ledger. Refreshed every 30 seconds. Drill-through to the underlying Bullhorn record in a single click.</p>
+      <ul>
+        <li><strong>KPI summary row</strong> &mdash; Actions Pending Review, MTD Cost Savings, Active Agents, Transactions Today, Anomalies Flagged (7d), Error Rate</li>
+        <li><strong>Action Queue</strong> &mdash; prioritized alerts across Time Anomaly, Invoice Matching, Risk Alert, and VMS Reconciliation with severity and dollar impact</li>
+        <li><strong>Agent Fleet panel</strong> &mdash; status, daily transactions, and accuracy or match-rate for every agent; one-click "Run Agent" launches the Plan &rarr; Approve &rarr; Execute pipeline</li>
+        <li><strong>ROI telemetry</strong> &mdash; cost savings captured vs. prior period, with drill-through to the decisions that produced them</li>
+      </ul>
+    </div>
+    <div class="cc-shot-wrap">
+      <picture>
+        <source srcset="/images/cc/agent-fleet.webp" type="image/webp">
+        <img src="/images/cc/agent-fleet.png" alt="Agent Fleet panel showing Time Anomaly, Invoice Matching, and Risk Alert marked Active; VMS Recon marked Beta; Collections and Compliance marked Coming Soon with projected Q3 2026 release." width="1892" height="1026" loading="lazy">
+      </picture>
+      <div class="cc-shot-caption">Agent Fleet panel &mdash; 4 Active, 1 Beta, 2 Coming Soon. Captured from the live demo.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 2 — The Agent Fleet -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="cc-detail">
+      <span class="section-tag">Section 2 &middot; The Agent Fleet</span>
+      <h2>Seven agents. Four shipping today. Three on the 2026 roadmap.</h2>
+      <p>Each agent has a narrow job, a typed set of tools it's allowed to call, and a Plan &rarr; Approve &rarr; Execute pipeline. No agent touches production data without a human signature. Every agent runs in dry-run mode before it's rolled out in anger.</p>
+    </div>
+    <div class="fleet-grid">
+
+      <a href="agent-time.html" class="fleet-card">
+        <div class="fleet-card-head">
+          <span class="fleet-card-icon">&#9200;</span>
+          <h3>Time Anomaly</h3>
+          <span class="agent-status-badge active">Active</span>
+        </div>
+        <p>Four detector groups across open placements: A1 missing timesheet, A2 consecutive miss, B hours variance, C rate drift. Drives SMS / email outreach, escalates unresolved cases to HITL.</p>
+        <span class="fleet-card-link">Inside the agent &rarr;</span>
+      </a>
+
+      <a href="agent-vms.html" class="fleet-card">
+        <div class="fleet-card-head">
+          <span class="fleet-card-icon">&#128202;</span>
+          <h3>VMS Reconciliation</h3>
+          <span class="agent-status-badge beta">Beta</span>
+        </div>
+        <p>Four match strategies (Learned / Exact / Fuzzy / AI) with confidence-tier routing: &ge;95% auto-approve, 70&ndash;94% human review, &lt;70% flagged. Side-by-side VMS&harr;Bullhorn compare for every match.</p>
+        <span class="fleet-card-link">Inside the agent &rarr;</span>
+      </a>
+
+      <a href="agent-invoice.html" class="fleet-card">
+        <div class="fleet-card-head">
+          <span class="fleet-card-icon">&#128203;</span>
+          <h3>Invoice Matching</h3>
+          <span class="agent-status-badge active">Active</span>
+        </div>
+        <p>Line-level tolerance release on invoices that match cleanly; flags rate variances, missing OT lines, and PO discrepancies to the HITL queue for review.</p>
+        <span class="fleet-card-link">Inside the agent &rarr;</span>
+      </a>
+
+      <a href="agent-risk.html" class="fleet-card">
+        <div class="fleet-card-head">
+          <span class="fleet-card-icon">&#128680;</span>
+          <h3>Risk Alert</h3>
+          <span class="agent-status-badge active">Active</span>
+        </div>
+        <p>Real-time detectors on the highest-impact financial risks: negative markup (pay &gt; bill), pay/bill rate misalignment, and state-level minimum-wage compliance.</p>
+        <span class="fleet-card-link">Inside the agent &rarr;</span>
+      </a>
+
+      <a href="agent-collections.html" class="fleet-card">
+        <div class="fleet-card-head">
+          <span class="fleet-card-icon">&#128176;</span>
+          <h3>Collections Strategy</h3>
+          <span class="agent-status-badge roadmap">Coming Soon</span>
+        </div>
+        <p>Designed to build dynamic collection strategies from aging, client risk profile, and payment history to accelerate AR recovery. Projected 2026 H2.</p>
+        <span class="fleet-card-link">Preview roadmap &rarr;</span>
+      </a>
+
+      <a href="agent-compliance.html" class="fleet-card">
+        <div class="fleet-card-head">
+          <span class="fleet-card-icon">&#128737;&#65039;</span>
+          <h3>Compliance &amp; Credentialing</h3>
+          <span class="agent-status-badge roadmap">Coming Soon</span>
+        </div>
+        <p>Designed to track licenses and certifications across your workforce and auto-alert before expirations create compliance gaps. Projected 2026 H2.</p>
+        <span class="fleet-card-link">Preview roadmap &rarr;</span>
+      </a>
+
+      <a href="agent-payment.html" class="fleet-card">
+        <div class="fleet-card-head">
+          <span class="fleet-card-icon">&#128200;</span>
+          <h3>Payment Prediction</h3>
+          <span class="agent-status-badge roadmap">Coming Soon</span>
+        </div>
+        <p>Designed to forecast payment timing from historical client behavior and AR aging to optimize cash flow planning. Projected 2026 H2.</p>
+        <span class="fleet-card-link">Preview roadmap &rarr;</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- Section 3 — Plan → Approve → Execute -->
+<section class="section">
+  <div class="container">
+    <div class="cc-detail">
+      <span class="section-tag">Section 3 &middot; Plan &rarr; Approve &rarr; Execute</span>
+      <h2>Every agent action is planned, reviewed, and executed &mdash; in that order.</h2>
+      <p>When you click "Run Agent" in the cockpit, the agent doesn't start taking actions. It builds a plan &mdash; loads tenant context and configuration, scans Bullhorn for the pattern it owns, classifies findings into action groups, and drafts recommended actions. Then it shows you the full plan and waits.</p>
+      <p>You uncheck anything that shouldn't run, click <em>Approve &amp; Execute</em>, and the agent invokes its typed tools against the gateway, one action at a time. Every execution writes to the audit log with timestamp, actor, tenant, and outcome.</p>
+    </div>
+    <div class="cc-shot-wrap">
+      <picture>
+        <source srcset="/images/cc/agent-plan.webp" type="image/webp">
+        <img src="/images/cc/agent-plan.png" alt="AgentPlanView modal in plan_ready phase showing five proposed actions with checkboxes, per-action confidence and severity, summary stats of total/selected/est savings/high severity, and an Approve and Execute button in the footer." width="1440" height="900" loading="lazy">
+      </picture>
+      <div class="cc-shot-caption">AgentPlanView &mdash; plan_ready phase with 5 proposed actions, checkboxes, and summary stats.</div>
+    </div>
+    <div class="cc-detail" style="margin-top:2rem;">
+      <ul>
+        <li><strong>Phase 1 &middot; Idle</strong> &mdash; agent loaded, not running</li>
+        <li><strong>Phase 2 &middot; Planning</strong> &mdash; tenant config loaded, Bullhorn scanned, findings classified, actions drafted</li>
+        <li><strong>Phase 3 &middot; Plan ready</strong> &mdash; summary stats + per-action checkboxes shown; awaits human approval</li>
+        <li><strong>Phase 4 &middot; Executing</strong> &mdash; approved actions invoked through the typed gateway, one at a time, with progress</li>
+        <li><strong>Phase 5 &middot; Complete</strong> &mdash; results written to the audit log, surfaced in the Alert Queue, and tallied in ROI telemetry</li>
+      </ul>
+      <p style="margin-top:1rem;">Dry-run toggle on every agent: run the full pipeline end-to-end against real data, generate the plan, <em>don't</em> actually call the gateway tools. Used for safe rollouts on new tenants.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Section 4 — Alert Queue & Reversibility -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="cc-detail">
+      <span class="section-tag">Section 4 &middot; Alert Queue &amp; Reversibility</span>
+      <h2>Every decision lands in the Alert Queue. Every gateway action is reversible for 7 days.</h2>
+      <p>When an agent executes an action &mdash; sending a reminder, marking a timesheet DNW, releasing an invoice within tolerance, updating a placement &mdash; the result lands in the Alert Queue with full context: candidate, client, pay period, why the alert fired, the complete event timeline, and the resolve footer.</p>
+      <p>If something was approved in error, you can reverse any gateway action inside the 7-day window without touching the database. The reversal runs through the same typed gateway as the original action and writes a matching entry to the audit log.</p>
+    </div>
+    <div class="cc-shot-wrap">
+      <picture>
+        <source srcset="/images/cc/alert-queue-drawer.webp" type="image/webp">
+        <img src="/images/cc/alert-queue-drawer.png" alt="Alert Queue resolve drawer open on a consecutive missed timesheet alert, showing candidate and client, why the alert fired, a context grid, a four-step timeline from detection through HITL escalation, and a Resolve alert footer with a resolution dropdown." width="1440" height="900" loading="lazy">
+      </picture>
+      <div class="cc-shot-caption">Alert Queue resolve drawer &mdash; full context, timeline, and resolution footer.</div>
+    </div>
+    <div class="cc-detail" style="margin-top:2rem;">
+      <ul>
+        <li><strong>Full context per alert</strong> &mdash; candidate, client, pay period, why it fired, full event timeline</li>
+        <li><strong>Audit trail retained indefinitely</strong> &mdash; the 7-day window is only on reversal; the log is permanent</li>
+        <li><strong>State filters</strong> &mdash; All / Detected / Reminder Sent / HITL Required / Resolved</li>
+        <li><strong>Severity filter &amp; KPI header</strong> &mdash; Alerts Triggered, Auto-Resolved, HITL Required, Currently Open, Avg Time to Resolve</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Section 5 — Agent Settings -->
+<section class="section">
+  <div class="container">
+    <div class="cc-detail">
+      <span class="section-tag">Section 5 &middot; Agent Settings</span>
+      <h2>Per-tenant thresholds, templates, and runtime &mdash; with platform defaults you can reset to.</h2>
+      <p>Every agent is configurable per tenant without code. The Agent Settings view exposes thresholds (e.g. <em>escalate to HITL after 2 consecutive missed timesheets</em>), message templates for SMS and email outreach (<em>Subject: Missed timesheet reminder &mdash; &lbrace;placement_id&rbrace;</em>), runtime controls (schedule, dry-run toggle, concurrency), and integrations (SMS provider, email sender, audit log sink).</p>
+      <p>Changes are diffed against platform defaults: you can see exactly what your tenant overrides and reset any field to the default in one click. A sticky save bar tracks dirty changes and offers a discard path.</p>
+      <ul>
+        <li>Thresholds tab &mdash; all detector cutoffs (hours variance, rate drift, missed-cycle count) in one place</li>
+        <li>Message Templates tab &mdash; per-template editing with variable reference and preview</li>
+        <li>Runtime tab &mdash; schedule, dry-run, concurrency, error-handling</li>
+        <li>Integrations tab &mdash; SMS / email providers, audit sink, webhooks</li>
+        <li>Sticky save bar with dirty tracking; platform-default reset per field</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Implementation (3-step) -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="cc-detail" style="text-align:center">
+      <span class="section-tag">Getting Started</span>
+      <h2 style="color:#f1f5f9">Live in 2&ndash;3 business days.</h2>
+      <p style="text-align:center;">Implementation is included in your license fee. No setup charges. Most of the work happens before you sign &mdash; not after.</p>
+    </div>
+    <div class="impl-bar">
+      <div class="impl-step">
+        <div class="impl-step-num">1</div>
+        <div>
+          <h4>Kickoff &amp; Bullhorn setup</h4>
+          <p>OAuth app provisioned, API scopes granted, custom-field map reviewed, initial tenant context seeded.</p>
+          <span class="impl-step-duration">Day 1 &middot; ~60 min</span>
+        </div>
+      </div>
+      <div class="impl-step">
+        <div class="impl-step-num">2</div>
+        <div>
+          <h4>Cockpit live &amp; thresholds tuned</h4>
+          <p>Command Center embedded in your Bullhorn One instance. Risk tolerances, placement statuses, and role-based access configured together in a 30&ndash;60 minute session.</p>
+          <span class="impl-step-duration">Day 2</span>
+        </div>
+      </div>
+      <div class="impl-step">
+        <div class="impl-step-num">3</div>
+        <div>
+          <h4>Agents dry-run &amp; team trained</h4>
+          <p>Every active agent runs end-to-end in dry-run on your real data. Team walk-through of Plan &rarr; Approve &rarr; Execute + Alert Queue. First live agent run on day 3.</p>
+          <span class="impl-step-duration">Day 2&ndash;3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="section">
+  <div class="container text-center">
+    <span class="section-tag">Pricing</span>
+    <h2>Starts at $5,000/Month</h2>
+    <p class="section-sub">The Command Center is available in the Assess tier. Add AI agents and automation when you're ready.</p>
+    <div class="pricing-grid" style="max-width:720px;">
+
+      <div class="pricing-card">
+        <div class="pricing-tier">Assess</div>
+        <div class="pricing-price">$5,000<span>/month</span></div>
+        <div class="pricing-term">12-month minimum</div>
+        <ul class="pricing-features">
+          <li>Command Center cockpit</li>
+          <li>Action Queue &amp; Alert Queue (HITL)</li>
+          <li>Agent Fleet panel &mdash; view only</li>
+          <li>ROI telemetry &amp; audit log</li>
+          <li>Bullhorn One embedded</li>
+          <li>Configurable filters &amp; tenant settings</li>
+          <li>Implementation included</li>
+          <li>Success manager</li>
+        </ul>
+        <a href="demo-command-center.html" class="btn btn-primary" style="width:100%">See the Demo &rarr;</a>
+      </div>
+
+      <div class="pricing-card pricing-featured">
+        <div class="pricing-badge">Most Popular</div>
+        <div class="pricing-tier">Transform</div>
+        <div class="pricing-price">$12,500<span>/month</span></div>
+        <div class="pricing-term">24-month minimum</div>
+        <ul class="pricing-features">
+          <li><strong>Everything in Assess, plus:</strong></li>
+          <li>Full AI agent execution (Time Anomaly, VMS Recon, Invoice Matching, Risk Alert)</li>
+          <li>Plan &rarr; Approve &rarr; Execute pipeline</li>
+          <li>Per-tenant thresholds &amp; templates</li>
+          <li>Dry-run on every agent</li>
+          <li>Quarterly ROI reporting</li>
+          <li>100% ROI guarantee</li>
+        </ul>
+        <a href="https://meetings-na2.hubspot.com/chris-scowden" class="btn btn-primary" style="width:100%" target="_blank" rel="noopener">Book a Call &rarr;</a>
+      </div>
+
+    </div>
+    <p style="margin-top:1.5rem;font-size:.9rem;color:#64748b">Enterprise tier also available for multi-entity deployments with full governance. <a href="index.html#pricing" style="color:var(--sa-accent);text-decoration:underline">See all tiers</a></p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section section-cta">
+  <div class="container text-center">
+    <h2>Recover the revenue your middle office is missing.</h2>
+    <p>Your pay/bill pipeline is leaking 2&ndash;5% somewhere right now. The Command Center surfaces it in real time &mdash; and the agent fleet acts on it with your signature on every decision.</p>
+    <a href="demo-command-center.html" class="btn btn-white btn-lg">See the Live Demo &rarr;</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+      <p>&copy; 2026 StaffingAgent LLC. All rights reserved.</p>
+      <p class="footer-newbury">Built by the team behind <a href="https://www.newburypartners.com" target="_blank" rel="noopener">Newbury Partners</a></p>
+    </div>
+    <div class="footer-links">
+      <a href="index.html#command-center">Command Center</a>
+      <a href="index.html#how-it-works">How It Works</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="demos.html">Demos</a>
+      <a href="demo-command-center.html">Command Center Demo</a>
+      <a href="assessment.html">AI Readiness Assessment</a>
+      <a href="blog-middle-office-whitespace.html">Blog</a>
+      <a href="https://meetings-na2.hubspot.com/chris-scowden" target="_blank" rel="noopener">Book a Meeting</a>
+      <a href="invest.html">Investors</a>
+    </div>
+    <div class="footer-contact">
+      <a href="mailto:chris.scowden@staffingagent.ai">chris.scowden@staffingagent.ai</a>
+      <a href="https://www.linkedin.com/in/chrisscowden/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+var t = document.getElementById('nav-toggle'), l = document.getElementById('nav-links');
+t.addEventListener('click', function () { l.classList.toggle('open'); t.classList.toggle('open'); });
+</script>
+<script type="text/javascript" id="hs-script-loader" async defer src="//js-na2.hs-scripts.com/245521589.js"></script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk Alert Agent &mdash; negative markup, pay/bill mismatch, minimum-wage compliance | StaffingAgent.ai</title>
+  <meta name="description" content="The Risk Alert Agent runs real-time detectors on the highest-impact financial risks: negative markup (pay > bill), pay/bill rate misalignment, and state-level minimum-wage compliance. Every flag includes dollar impact and a recommended action.">
+  <link rel="canonical" href="https://staffingagent.ai/agent-risk.html">
+  <meta property="og:title" content="Risk Alert Agent — StaffingAgent.ai">
+  <meta property="og:description" content="Real-time detectors on negative markup, pay/bill misalignment, and state-level minimum-wage compliance. HITL on every resolution.">
+  <meta property="og:url" content="https://staffingagent.ai/agent-risk.html">
+  <meta property="og:image" content="https://staffingagent.ai/images/cc/alert-queue-drawer.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://staffingagent.ai/images/cc/alert-queue-drawer.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260404">
+  <style>
+    .agent-page-tag { display: inline-block; font-size: .72rem; font-weight: 700; padding: .3rem .9rem; border-radius: 10px; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 1rem; }
+    .tag-red { background: rgba(239,68,68,.15); color: #f87171; }
+    .agent-hero { padding: 9rem 0 3rem; background: linear-gradient(175deg, #0f172a 0%, #1e293b 100%); color: #f1f5f9; text-align: center; }
+    .agent-hero h1 { font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 800; letter-spacing: -.03em; margin-bottom: .75rem; }
+    .agent-hero p.agent-sub { font-size: 1.05rem; color: #94a3b8; max-width: 680px; margin: 0 auto 1.25rem; }
+    .agent-hero .hero-badges { display: flex; justify-content: center; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .agent-hero-shot { margin: 2rem auto 0; max-width: 960px; }
+    .agent-hero-shot img { width: 100%; height: auto; border-radius: 14px; box-shadow: 0 40px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(148,163,184,.18); display: block; }
+    .agent-hero-shot-caption { color: #94a3b8; font-size: .85rem; text-align: center; margin-top: .65rem; }
+    .agent-detail { max-width: 760px; margin: 0 auto; }
+    .agent-detail h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; }
+    .agent-detail p { font-size: 1.05rem; color: #475569; line-height: 1.7; margin-bottom: 1rem; }
+    .section-dark .agent-detail h2 { color: #f1f5f9; }
+    .section-dark .agent-detail p { color: #cbd5e1; }
+    .agent-cta { text-align: center; padding: 2rem 0; }
+    .agent-cta .btn { margin: .5rem; }
+
+    .risk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 2rem 0 0; }
+    .risk-card { background: rgba(255,255,255,.04); border: 1px solid rgba(148,163,184,.18); border-radius: 14px; padding: 1.4rem 1.25rem; border-left: 4px solid #ef4444; }
+    .risk-card h3 { font-size: 1.05rem; font-weight: 700; color: #f1f5f9; margin-bottom: .4rem; }
+    .risk-card p { font-size: .9rem; color: #94a3b8; line-height: 1.55; margin: 0 0 .55rem; }
+    .risk-card .risk-action { font-size: .82rem; color: #fbbf24; font-weight: 600; }
+    .risk-icon { font-size: 1.2rem; margin-right: .35rem; }
+  </style>
+</head>
+<body>
+
+<nav class="nav scrolled">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="the-command-center.html">Command Center</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+    </div>
+    <a href="index.html" class="btn btn-sm" style="background:#1e293b;color:#94a3b8">&larr; Back to Site</a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<header class="agent-hero">
+  <div class="container">
+    <div class="hero-badges">
+      <span class="agent-page-tag tag-red">Financial Risk</span>
+      <span class="agent-status-badge active">Active</span>
+    </div>
+    <h1>Risk Alert Agent</h1>
+    <p class="agent-sub">Real-time detectors on the highest-impact financial risks: negative markup (pay &gt; bill), pay/bill rate misalignment, and state-level minimum-wage compliance. Every flag includes the dollar impact and a recommended action for human review.</p>
+    <div class="agent-hero-shot">
+      <picture>
+        <source srcset="/images/cc/alert-queue-drawer.webp" type="image/webp">
+        <img src="/images/cc/alert-queue-drawer.png" alt="Alert Queue resolve drawer on a risk alert showing candidate, client, why the alert fired, context grid, timeline, and resolution footer." width="1440" height="900" loading="eager" fetchpriority="high">
+      </picture>
+      <div class="agent-hero-shot-caption">Every Risk Alert lands in the Alert Queue with full context, timeline, and a resolve footer.</div>
+    </div>
+  </div>
+</header>
+
+<!-- Problem -->
+<section class="section">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Problem</span>
+      <h2>Financial-risk leaks are quiet until they&rsquo;re catastrophic.</h2>
+      <p>A placement with pay rate higher than bill rate doesn&rsquo;t throw an error &mdash; it throws a margin. A pay rate set $2 above the placement&rsquo;s bill rate burns through gross profit silently every week until someone catches it. A pay rate below the state minimum wage is a compliance violation that can trigger audits, back-wage claims, and reputational damage. These are the three leaks that deserve real-time detectors, not a month-end report.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Detectors -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Detectors</span>
+      <h2>Three detectors. Always-on. Dollar impact on every flag.</h2>
+      <p>Every time a placement, timesheet, or invoice updates in Bullhorn, the Risk Alert Agent re-evaluates three conditions. Any trigger fires an alert into the Alert Queue with severity, dollar impact, and a recommended action &mdash; no action is ever taken on the placement without a human approving it.</p>
+    </div>
+    <div class="risk-grid">
+      <div class="risk-card">
+        <h3><span class="risk-icon">&#128308;</span>Negative markup</h3>
+        <p>Pay rate is greater than or equal to bill rate on an active placement &mdash; gross margin is negative or zero.</p>
+        <span class="risk-action">&rarr; High severity. Hold invoice until reconciled.</span>
+      </div>
+      <div class="risk-card">
+        <h3><span class="risk-icon">&#128280;</span>Pay/bill misalignment</h3>
+        <p>Pay rate or bill rate on a timesheet doesn&rsquo;t match the active placement&rsquo;s configured rate.</p>
+        <span class="risk-action">&rarr; Medium severity. Open rate dispute ticket.</span>
+      </div>
+      <div class="risk-card">
+        <h3><span class="risk-icon">&#128737;&#65039;</span>Minimum-wage compliance</h3>
+        <p>Pay rate is below the federal or state minimum wage applicable to the worksite location.</p>
+        <span class="risk-action">&rarr; Critical severity. Escalate to compliance + HITL.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Resolve flow -->
+<section class="section">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Resolve</span>
+      <h2>Every alert opens to full context.</h2>
+      <p>When you click a Risk Alert in the queue, the drawer opens to show the full picture: placement details, the active rates on Bullhorn vs. what the timesheet is reporting, the dollar impact per pay cycle and year-to-date, a four-step event timeline (Detection &rarr; Notification &rarr; Review &rarr; Resolution), and a resolve footer with the appropriate action menu.</p>
+      <p>Common resolutions: <em>Adjust rate in Bullhorn</em>, <em>Cancel invoice line</em>, <em>Escalate to compliance</em>, <em>Mark false positive</em>. Every resolution writes to the audit log with actor, timestamp, and the state the record was in when the decision was made. Gateway actions (rate updates, invoice holds) are reversible for 7 days.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section section-dark">
+  <div class="container text-center">
+    <span class="section-tag" style="color:#94a3b8">Included in Transform &amp; Enterprise</span>
+    <h2 style="color:#f1f5f9">See your margin leaks before they become P&amp;L hits.</h2>
+    <p class="section-sub" style="color:#94a3b8">The Risk Alert Agent is bundled with the Transform tier. Runs continuously; surfaces findings in the cockpit&rsquo;s Action Queue and the Alert Queue view.</p>
+    <div class="agent-cta">
+      <a href="demo-command-center.html" class="btn btn-primary btn-lg">See the Command Center</a>
+      <a href="the-command-center.html" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,.3);color:#f1f5f9">Inside the Command Center</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+      <p>&copy; 2026 StaffingAgent LLC. All rights reserved.</p>
+      <p class="footer-newbury">Built by the team behind <a href="https://www.newburypartners.com" target="_blank" rel="noopener">Newbury Partners</a></p>
+    </div>
+    <div class="footer-links">
+      <a href="the-command-center.html">Command Center</a>
+      <a href="index.html#how-it-works">How It Works</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="demos.html">Demos</a>
+      <a href="demo-command-center.html">Command Center Demo</a>
+      <a href="assessment.html">AI Readiness Assessment</a>
+      <a href="blog-middle-office-whitespace.html">Blog</a>
+      <a href="https://meetings-na2.hubspot.com/chris-scowden" target="_blank" rel="noopener">Book a Meeting</a>
+      <a href="invest.html">Investors</a>
+    </div>
+    <div class="footer-contact">
+      <a href="mailto:chris.scowden@staffingagent.ai">chris.scowden@staffingagent.ai</a>
+      <a href="https://www.linkedin.com/in/chrisscowden/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+var t = document.getElementById('nav-toggle'), l = document.getElementById('nav-links');
+t.addEventListener('click', function () { l.classList.toggle('open'); t.classList.toggle('open'); });
+</script>
+<script type="text/javascript" id="hs-script-loader" async defer src="//js-na2.hs-scripts.com/245521589.js"></script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

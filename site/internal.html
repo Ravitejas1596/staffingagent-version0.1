@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>StaffingAgent OS — Internal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: #f8fafc; color: #1e293b; }
+
+    /* ── Gate ── */
+    .gate { position: fixed; inset: 0; z-index: 500; background: linear-gradient(175deg, #080d1a 0%, #1e293b 100%); display: flex; align-items: center; justify-content: center; transition: opacity .4s; }
+    .gate.hidden { opacity: 0; pointer-events: none; }
+    .gate-card { background: #fff; border-radius: 20px; padding: 2.5rem; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 24px 80px rgba(0,0,0,.4); }
+    .gate-badge { display: inline-block; font-size: .65rem; font-weight: 700; padding: .3rem .9rem; border-radius: 20px; letter-spacing: .06em; text-transform: uppercase; background: rgba(6,182,212,.1); color: var(--sa-accent); margin-bottom: 1.25rem; }
+    .gate-logo { font-weight: 800; font-size: 1.4rem; letter-spacing: -.02em; margin-bottom: .25rem; }
+    .gate-logo span { color: var(--sa-accent); }
+    .gate-sub { font-size: .85rem; color: #64748b; margin-bottom: 1.75rem; }
+    .gate-input { width: 100%; padding: .85rem 1.2rem; font-family: inherit; font-size: 1rem; border: 2px solid #e2e8f0; border-radius: 10px; text-align: center; font-weight: 600; letter-spacing: .08em; transition: border-color .2s; }
+    .gate-input:focus { outline: none; border-color: var(--sa-accent); box-shadow: 0 0 0 3px rgba(6,182,212,.12); }
+    .gate-input.error { border-color: #ef4444; animation: shake .35s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+    .gate-btn { width: 100%; margin-top: .9rem; padding: .85rem; font-family: inherit; font-size: 1rem; font-weight: 700; border: none; border-radius: 10px; background: var(--sa-accent); color: #fff; cursor: pointer; transition: all .2s; }
+    .gate-btn:hover { background: var(--sa-accent-hover); transform: translateY(-1px); }
+    .gate-hint { font-size: .75rem; color: #94a3b8; margin-top: 1rem; }
+
+    /* ── Topbar ── */
+    #topbar { position: sticky; top: 0; z-index: 100; height: 52px; background: #080d1a; display: flex; align-items: center; justify-content: space-between; padding: 0 1.75rem; border-bottom: 1px solid #1e293b; }
+    .tb-logo { font-weight: 800; font-size: 1.1rem; color: #f1f5f9; letter-spacing: -.02em; }
+    .tb-logo span { color: var(--sa-accent); }
+    .tb-right { display: flex; align-items: center; gap: 1rem; }
+    .tb-badge { font-size: .62rem; font-weight: 700; padding: .25rem .75rem; border-radius: 20px; text-transform: uppercase; letter-spacing: .06em; background: rgba(6,182,212,.15); color: var(--sa-accent-bright); }
+    .tb-logout { font-size: .78rem; font-weight: 600; color: #64748b; background: none; border: none; cursor: pointer; transition: color .2s; }
+    .tb-logout:hover { color: #f1f5f9; }
+
+    /* ── Tab Nav ── */
+    .tab-nav { background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; gap: 0; padding: 0 1.75rem; overflow-x: auto; }
+    .tab-btn { padding: .9rem 1.25rem; font-size: .85rem; font-weight: 600; color: #64748b; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: all .2s; }
+    .tab-btn:hover { color: #0f172a; }
+    .tab-btn.active { color: var(--sa-accent); border-bottom-color: var(--sa-accent); }
+
+    /* ── Layout ── */
+    .app { display: none; flex-direction: column; min-height: calc(100vh - 52px); }
+    .app.visible { display: flex; }
+    .tab-content { display: none; padding: 2rem 1.75rem; max-width: 1200px; width: 100%; margin: 0 auto; }
+    .tab-content.active { display: block; }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1.25rem; padding-bottom: .6rem; border-bottom: 2px solid #f1f5f9; display: flex; align-items: center; gap: .5rem; }
+    .section-title .count { font-size: .7rem; font-weight: 700; padding: .2rem .6rem; border-radius: 20px; background: #f1f5f9; color: #64748b; }
+
+    /* ── Artifact Cards ── */
+    .artifact-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .artifact-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; transition: box-shadow .2s; }
+    .artifact-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+    .artifact-meta { display: flex; align-items: center; gap: .6rem; margin-bottom: .75rem; }
+    .artifact-code { font-size: .65rem; font-weight: 700; padding: .25rem .65rem; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; }
+    .code-assess { background: rgba(99,102,241,.1); color: #6366f1; }
+    .code-demo { background: rgba(6,182,212,.1); color: var(--sa-accent); }
+    .code-cold { background: rgba(245,158,11,.1); color: #d97706; }
+    .code-social { background: rgba(59,130,246,.1); color: #2563eb; }
+    .artifact-timing { font-size: .72rem; color: #94a3b8; font-weight: 500; }
+    .artifact-subject { font-size: .95rem; font-weight: 700; color: #0f172a; margin-bottom: .5rem; line-height: 1.35; }
+    .artifact-preview { font-size: .8rem; color: #64748b; line-height: 1.5; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .artifact-body { display: none; font-size: .82rem; color: #334155; line-height: 1.65; white-space: pre-wrap; background: #f8fafc; border-radius: 8px; padding: .9rem; margin-bottom: .9rem; border: 1px solid #e2e8f0; max-height: 260px; overflow-y: auto; }
+    .artifact-body.open { display: block; }
+    .artifact-actions { display: flex; gap: .6rem; align-items: center; }
+    .btn-toggle { font-size: .75rem; font-weight: 600; color: #64748b; background: #f1f5f9; border: none; border-radius: 8px; padding: .45rem .9rem; cursor: pointer; transition: all .2s; }
+    .btn-toggle:hover { background: #e2e8f0; color: #0f172a; }
+    .btn-copy { font-size: .75rem; font-weight: 700; color: #fff; background: var(--sa-accent); border: none; border-radius: 8px; padding: .45rem .9rem; cursor: pointer; transition: all .2s; }
+    .btn-copy:hover { background: var(--sa-accent-hover); }
+    .btn-copy.copied { background: #059669; }
+    .btn-copy-subject { font-size: .75rem; font-weight: 600; color: var(--sa-accent); background: rgba(6,182,212,.08); border: 1px solid rgba(6,182,212,.2); border-radius: 8px; padding: .45rem .9rem; cursor: pointer; transition: all .2s; }
+    .btn-copy-subject:hover { background: rgba(6,182,212,.15); }
+
+    /* ── Checklist ── */
+    .task-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+    .task-group { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; }
+    .task-group-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .task-group-name { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; display: flex; align-items: center; gap: .5rem; }
+    .tg-legal { color: #6366f1; }
+    .tg-pipeline { color: var(--sa-accent); }
+    .tg-hiring { color: #f59e0b; }
+    .tg-product { color: #3b82f6; }
+    .tg-ops { color: #10b981; }
+    .task-progress-bar { height: 4px; background: #f1f5f9; border-radius: 4px; overflow: hidden; margin-bottom: 1rem; }
+    .task-progress-fill { height: 100%; border-radius: 4px; background: var(--sa-accent); transition: width .3s; }
+    .task-item { display: flex; align-items: flex-start; gap: .75rem; padding: .55rem 0; border-bottom: 1px solid #f8fafc; }
+    .task-item:last-child { border-bottom: none; }
+    .task-checkbox { width: 17px; height: 17px; accent-color: var(--sa-accent); cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+    .task-label { font-size: .83rem; color: #334155; line-height: 1.4; cursor: pointer; flex: 1; }
+    .task-item.done .task-label { color: #94a3b8; text-decoration: line-through; }
+    .task-tag { font-size: .62rem; font-weight: 700; padding: .15rem .5rem; border-radius: 10px; background: #fef3c7; color: #92400e; white-space: nowrap; flex-shrink: 0; }
+    .task-tag.critical { background: #fee2e2; color: #991b1b; }
+    .task-tag.done { background: #dcfce7; color: #166534; }
+    .checklist-summary { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
+    .summary-stat { text-align: center; }
+    .summary-num { font-size: 1.8rem; font-weight: 800; color: var(--sa-accent); line-height: 1; }
+    .summary-label { font-size: .72rem; color: #64748b; margin-top: .2rem; }
+    .checklist-reset { margin-left: auto; font-size: .75rem; font-weight: 600; color: #94a3b8; background: none; border: 1px solid #e2e8f0; border-radius: 8px; padding: .45rem .9rem; cursor: pointer; }
+    .checklist-reset:hover { color: #ef4444; border-color: #ef4444; }
+
+    /* ── Project Plan ── */
+    .plan-phases { display: flex; flex-direction: column; gap: 1.5rem; }
+    .plan-phase { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; }
+    .plan-phase-header { padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; }
+    .plan-phase-title { font-size: .9rem; font-weight: 700; color: #0f172a; }
+    .plan-phase-sub { font-size: .75rem; color: #94a3b8; margin-top: .1rem; }
+    .plan-phase-badge { font-size: .65rem; font-weight: 700; padding: .3rem .75rem; border-radius: 20px; white-space: nowrap; }
+    .badge-active { background: rgba(6,182,212,.1); color: var(--sa-accent); }
+    .badge-upcoming { background: rgba(100,116,139,.1); color: #64748b; }
+    .badge-done { background: rgba(16,185,129,.1); color: #059669; }
+    .plan-items { padding: .5rem 1.25rem; }
+    .plan-item { display: flex; align-items: flex-start; gap: .75rem; padding: .7rem 0; border-bottom: 1px solid #f8fafc; }
+    .plan-item:last-child { border-bottom: none; }
+    .plan-num { font-size: .7rem; font-weight: 800; color: #94a3b8; min-width: 22px; margin-top: 2px; }
+    .plan-text { font-size: .83rem; color: #334155; line-height: 1.4; flex: 1; }
+    .plan-item.complete .plan-text { color: #94a3b8; text-decoration: line-through; }
+    .plan-item.complete .plan-num { color: #10b981; }
+    .plan-status { font-size: .62rem; font-weight: 700; padding: .2rem .55rem; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+    .ps-done { background: #dcfce7; color: #166534; }
+    .ps-active { background: #fef3c7; color: #92400e; }
+    .ps-pending { background: #f1f5f9; color: #64748b; }
+    .ps-critical { background: #fee2e2; color: #991b1b; }
+
+    /* ── Dev Tracker ── */
+    .dev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .dev-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; text-decoration: none; color: inherit; transition: box-shadow .2s; display: block; }
+    .dev-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); border-color: var(--sa-accent); }
+    .dev-card-icon { font-size: 1.5rem; margin-bottom: .75rem; }
+    .dev-card-title { font-size: .95rem; font-weight: 700; color: #0f172a; margin-bottom: .3rem; }
+    .dev-card-desc { font-size: .8rem; color: #64748b; line-height: 1.45; }
+    .dev-card-arrow { display: inline-block; margin-top: .75rem; font-size: .78rem; font-weight: 700; color: var(--sa-accent); }
+    .workflow-list { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; }
+    .workflow-item { display: flex; align-items: center; gap: 1rem; padding: .9rem 1.25rem; border-bottom: 1px solid #f8fafc; }
+    .workflow-item:last-child { border-bottom: none; }
+    .workflow-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-green { background: #10b981; }
+    .dot-blue { background: #3b82f6; }
+    .workflow-name { font-size: .85rem; font-weight: 600; color: #0f172a; flex: 1; }
+    .workflow-desc { font-size: .75rem; color: #94a3b8; }
+    .workflow-link { font-size: .75rem; font-weight: 600; color: var(--sa-accent); text-decoration: none; }
+    .workflow-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- Gate -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-badge">Internal Only</div>
+    <div class="gate-logo">Staffing<span>Agent</span>.ai</div>
+    <p class="gate-sub">CEO Operating System — Internal Access</p>
+    <form id="gate-form">
+      <input type="password" class="gate-input" id="gate-input" placeholder="Access code" autocomplete="off" autofocus>
+      <button type="submit" class="gate-btn">Enter</button>
+    </form>
+    <p class="gate-hint">Team members only. Contact Chris for access.</p>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app" id="app">
+
+  <!-- Topbar -->
+  <div id="topbar">
+    <div class="tb-logo">Staffing<span>Agent</span>.ai</div>
+    <div class="tb-right">
+      <span class="tb-badge">CEO OS — Internal</span>
+      <button class="tb-logout" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Tab Nav -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('artifacts', this)">Artifact Library</button>
+    <button class="tab-btn" onclick="switchTab('checklist', this)">Task Checklist</button>
+    <button class="tab-btn" onclick="switchTab('plan', this)">Project Plan</button>
+    <button class="tab-btn" onclick="switchTab('dev', this)">Dev Tracker</button>
+  </nav>
+
+  <!-- ════════════════════════════════════════
+       TAB 1 — ARTIFACT LIBRARY
+  ════════════════════════════════════════ -->
+  <div class="tab-content active" id="tab-artifacts">
+
+    <div class="section-title">Email Templates <span class="count">8</span></div>
+
+    <div class="artifact-grid" id="email-cards"></div>
+
+    <div class="section-title" style="margin-top:1rem;">Social Posts <span class="count">3</span></div>
+    <div class="artifact-grid" id="social-cards"></div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════
+       TAB 2 — TASK CHECKLIST
+  ════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-checklist">
+
+    <div class="checklist-summary" id="checklist-summary">
+      <div class="summary-stat">
+        <div class="summary-num" id="stat-done">0</div>
+        <div class="summary-label">Completed</div>
+      </div>
+      <div class="summary-stat">
+        <div class="summary-num" id="stat-open" style="color:#ef4444;">0</div>
+        <div class="summary-label">Open</div>
+      </div>
+      <div class="summary-stat">
+        <div class="summary-num" id="stat-pct" style="color:#f59e0b;">0%</div>
+        <div class="summary-label">Complete</div>
+      </div>
+      <button class="checklist-reset" onclick="resetChecklist()">Reset all</button>
+    </div>
+
+    <div class="task-groups" id="task-groups"></div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════
+       TAB 3 — PROJECT PLAN
+  ════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-plan">
+
+    <div class="plan-phases" id="plan-phases"></div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════
+       TAB 4 — DEV TRACKER
+  ════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-dev">
+
+    <div class="section-title">GitHub Quick Links</div>
+    <div class="dev-grid">
+      <a href="https://github.com/StaffingAgent-ai/StaffingAgent/issues" target="_blank" class="dev-card">
+        <div class="dev-card-icon">🐛</div>
+        <div class="dev-card-title">Issues</div>
+        <div class="dev-card-desc">All open tasks, bug reports, and build milestones. Josh and Lane track work here.</div>
+        <div class="dev-card-arrow">Open Issues →</div>
+      </a>
+      <a href="https://github.com/StaffingAgent-ai/StaffingAgent/projects" target="_blank" class="dev-card">
+        <div class="dev-card-icon">📋</div>
+        <div class="dev-card-title">Projects Board</div>
+        <div class="dev-card-desc">Kanban view: Backlog / In Progress / In Review / Done. See build progress at a glance.</div>
+        <div class="dev-card-arrow">View Board →</div>
+      </a>
+      <a href="https://github.com/StaffingAgent-ai/StaffingAgent/actions" target="_blank" class="dev-card">
+        <div class="dev-card-icon">⚙️</div>
+        <div class="dev-card-title">GitHub Actions</div>
+        <div class="dev-card-desc">Daily brief, weekly advisory board, site deploy, CI runs. See last run status here.</div>
+        <div class="dev-card-arrow">View Runs →</div>
+      </a>
+      <a href="https://github.com/StaffingAgent-ai/StaffingAgent/commits/main" target="_blank" class="dev-card">
+        <div class="dev-card-icon">📦</div>
+        <div class="dev-card-title">Commit History</div>
+        <div class="dev-card-desc">Every code change with author, date, and description. Full audit trail of what shipped.</div>
+        <div class="dev-card-arrow">View Commits →</div>
+      </a>
+      <a href="https://github.com/StaffingAgent-ai/StaffingAgent/pulls" target="_blank" class="dev-card">
+        <div class="dev-card-icon">🔀</div>
+        <div class="dev-card-title">Pull Requests</div>
+        <div class="dev-card-desc">Code reviews in progress. Anything in review before merging to main shows up here.</div>
+        <div class="dev-card-arrow">View PRs →</div>
+      </a>
+      <a href="https://staffingagent-ai.github.io/StaffingAgent/" target="_blank" class="dev-card">
+        <div class="dev-card-icon">🌐</div>
+        <div class="dev-card-title">Live Site</div>
+        <div class="dev-card-desc">The production marketing site on GitHub Pages. Deploys automatically on every push to main.</div>
+        <div class="dev-card-arrow">Open Site →</div>
+      </a>
+    </div>
+
+    <div class="section-title">Automated Workflows</div>
+    <div class="workflow-list">
+      <div class="workflow-item">
+        <div class="workflow-dot dot-green"></div>
+        <div>
+          <div class="workflow-name">CEO Daily Brief</div>
+          <div class="workflow-desc">Mon–Fri at 7am CT — generates brief via Claude, sends email via Resend, syncs to Notion</div>
+        </div>
+        <a href="https://github.com/StaffingAgent-ai/StaffingAgent/actions/workflows/daily-ceo-brief.yml" target="_blank" class="workflow-link">View logs →</a>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-dot dot-green"></div>
+        <div>
+          <div class="workflow-name">Weekly Advisory Board</div>
+          <div class="workflow-desc">Every Monday at 8am CT — 5 AI personas, posts full report as GitHub Issue</div>
+        </div>
+        <a href="https://github.com/StaffingAgent-ai/StaffingAgent/actions/workflows/weekly-advisory.yml" target="_blank" class="workflow-link">View logs →</a>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-dot dot-blue"></div>
+        <div>
+          <div class="workflow-name">Site Deploy</div>
+          <div class="workflow-desc">Triggers on push to main affecting site/ — deploys to GitHub Pages automatically</div>
+        </div>
+        <a href="https://github.com/StaffingAgent-ai/StaffingAgent/actions/workflows/deploy-site.yml" target="_blank" class="workflow-link">View logs →</a>
+      </div>
+      <div class="workflow-item">
+        <div class="workflow-dot dot-blue"></div>
+        <div>
+          <div class="workflow-name">CI — Lint &amp; Test</div>
+          <div class="workflow-desc">Runs on every push — ruff linting + pytest. Catches errors before they reach main.</div>
+        </div>
+        <a href="https://github.com/StaffingAgent-ai/StaffingAgent/actions/workflows/ci.yml" target="_blank" class="workflow-link">View logs →</a>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ─── DATA ────────────────────────────────────────────────────── */
+
+const EMAILS = [
+  {
+    code: 'SA-Assess-1', codeClass: 'code-assess',
+    timing: 'Post-assessment — Day 1',
+    subject: 'Your assessment results + the 8-hour report trap',
+    preview: 'Based on your responses, your team is spending 6–10 hours/week building reports manually.',
+    body: `Hi [First Name],
+
+Thanks for completing the StaffingAgent AI Readiness Assessment.
+
+Based on your responses, your team is likely spending 6–10 hours per week building reports manually — pulling data from Bullhorn, assembling spreadsheets, chasing missing timesheets — before you can even act on the numbers.
+
+The StaffingAgent Command Center eliminates that entirely. Your pay/bill metrics, risk alerts, and missing timesheet visibility are surfaced automatically — with drill-through to the exact Bullhorn records, and mass action tools to send reminders or resolve issues in bulk.
+
+Most firms like yours are live within 2–3 business days. No implementation fee.
+
+Worth 30 minutes to see it against your actual data?
+
+[Insert calendar link]
+
+Chris Scowden
+CEO, StaffingAgent.ai`
+  },
+  {
+    code: 'SA-Assess-2', codeClass: 'code-assess',
+    timing: 'Day 6 after SA-Assess-1',
+    subject: 'The $298K question every ops leader faces',
+    preview: 'For a firm with 500+ contractors, the average value sitting in at-risk placements at any point is ~$298K.',
+    body: `Hi [First Name],
+
+A quick follow-up from last week's assessment.
+
+For a staffing firm with 500+ contractors, the average value sitting in unresolved pay/bill exceptions at any given time is around $298K — mismatched hours, late timesheets, invoicing gaps that don't get caught until month-end review.
+
+The Command Center surfaces all of it in real time, with risk tolerances you configure once and never have to think about again.
+
+If you haven't had a chance to look at the demo, it's worth 10 minutes:
+staffingagent.ai/demo-command-center.html
+
+Happy to walk through it live if that's easier.
+
+Chris`
+  },
+  {
+    code: 'SA-Assess-3', codeClass: 'code-assess',
+    timing: 'Day 12 after SA-Assess-1',
+    subject: 'How TrueBlue eliminated manual reporting',
+    preview: 'One more note before I stop following up.',
+    body: `Hi [First Name],
+
+One more note before I stop following up.
+
+Staffing firms your size typically have 2–3 people spending significant time each week on manual pay/bill reporting. When that time is redirected to actual billing, collections, and placement work — the ROI is immediate.
+
+We guarantee it: if you don't see ROI equal to your first year's license cost, we refund the difference.
+
+If the timing isn't right, no worries — I'll check back in a quarter. But if you'd like to see a live demo, reply here or grab 30 minutes:
+[Insert calendar link]
+
+Chris Scowden
+CEO, StaffingAgent.ai`
+  },
+  {
+    code: 'SA-Demo-1', codeClass: 'code-demo',
+    timing: 'Post-demo — same day or next morning',
+    subject: 'The hidden cost of manual pay/bill reporting',
+    preview: 'Great talking with you today. A few resources based on what we covered.',
+    body: `Hi [First Name],
+
+Great talking with you today. A few resources based on what we covered:
+
+• Live demo (replay or share with your team): staffingagent.ai/demo-command-center.html
+• Assess tier overview ($5,000/month, 12-month minimum, implementation included): [proposal link]
+• ROI calculator — plug in your contractor count and see projected savings: staffingagent.ai/roi.html
+
+The biggest thing I left you with: your team is probably spending 6–8 hours per week on tasks the Command Center handles automatically. That's time back to the business from day one.
+
+If your team wants to dig in, I'm happy to do a second session with your CFO or VP Ops.
+
+Chris`
+  },
+  {
+    code: 'SA-Demo-2', codeClass: 'code-demo',
+    timing: 'Day 8 after SA-Demo-1',
+    subject: '$298K sitting in your pay/bill pipeline right now',
+    preview: 'Based on your firm\'s size, our model estimates roughly $298K in at-risk revenue at any point.',
+    body: `Hi [First Name],
+
+Following up from our demo last week.
+
+Based on your firm's size, our model estimates roughly $298K in at-risk revenue at any point — between missing timesheets, pay/bill mismatches, and invoicing gaps that age past 30 days before they're caught.
+
+The Command Center is designed to surface that number and give your team the tools to act on it immediately. Most customers recover more than their annual license cost in the first 90 days.
+
+Worth another 20 minutes this week?
+
+Chris Scowden
+CEO, StaffingAgent.ai`
+  },
+  {
+    code: 'SA-Cold-1', codeClass: 'code-cold',
+    timing: 'Cold outbound — Day 1',
+    subject: '142 missing timesheets = $284K at risk',
+    preview: 'For a staffing firm your size, the average week includes roughly 142 missing timesheets.',
+    body: `Hi [First Name],
+
+For a staffing firm your size, the average week includes roughly 142 missing timesheets — representing around $284K in at-risk revenue sitting in Bullhorn that isn't being actioned.
+
+That's not a process problem. It's a visibility problem.
+
+The StaffingAgent Command Center shows you every missing timesheet, who owns it, and lets you send mass reminders in one click — directly from your Bullhorn data.
+
+Firms like yours are live in 2–3 business days. No implementation fee.
+
+Worth a 20-minute look?
+
+Chris Scowden
+CEO, StaffingAgent.ai`
+  },
+  {
+    code: 'SA-Cold-2', codeClass: 'code-cold',
+    timing: 'Day 8 after SA-Cold-1',
+    subject: '$440K in ready-to-bill charges sitting invisible',
+    preview: 'Beyond missing timesheets, there\'s typically another layer: pay/bill mismatches, rate discrepancies.',
+    body: `Hi [First Name],
+
+Following up from last week.
+
+Beyond missing timesheets, there's typically another layer: pay/bill mismatches, rate discrepancies, and invoicing gaps that don't get caught until month-end review — by which point they've aged 30+ days.
+
+The Command Center's Risk Dashboard surfaces all of it automatically, with configurable thresholds you set once. Your team sees exactly what needs attention, not a 200-row exception report.
+
+I won't keep following up after this, but I'd love to show you a 20-minute demo:
+[Insert calendar link]
+
+Chris`
+  },
+  {
+    code: 'SA-Cold-3', codeClass: 'code-cold',
+    timing: 'Day 15 after SA-Cold-1',
+    subject: 'How Apex Staffing cut manual reporting by 85%',
+    preview: 'Last note — one of our early pilot firms reduced manual pay/bill reporting by 85% in 60 days.',
+    body: `Hi [First Name],
+
+Last note — I promise.
+
+One of our early pilot firms reduced manual pay/bill reporting by 85% in the first 60 days. Their ops team went from building reports to acting on them.
+
+If you ever want to revisit, the demo is always available:
+staffingagent.ai/demo-command-center.html
+
+And if the timing isn't right, I'll check back in a quarter.
+
+Thanks for your time,
+Chris Scowden
+CEO, StaffingAgent.ai`
+  }
+];
+
+const SOCIAL = [
+  {
+    code: 'LI-001', codeClass: 'code-social',
+    timing: 'LinkedIn — Educational',
+    subject: 'Your Bullhorn dashboard tells you what happened last week.',
+    preview: 'The StaffingAgent Command Center tells you what\'s happening right now.',
+    body: `Your Bullhorn dashboard tells you what happened last week.
+
+The StaffingAgent Command Center tells you what's happening right now.
+
+Missing timesheets. Pay/bill mismatches. Negative markups. Rate flags.
+
+All surfaced automatically — with one-click drill-through to the exact records that need action. No custom reports. No spreadsheets. 2–3 day deployment.
+
+Built exclusively for mid-to-large staffing firms ($100M–$1B+).
+
+#StaffingTech #AIinStaffing #OperationalExcellence`
+  },
+  {
+    code: 'LI-002', codeClass: 'code-social',
+    timing: 'LinkedIn — Pain point',
+    subject: '142 missing timesheets per week.',
+    preview: 'For a $300M staffing firm, that\'s ~$284K in at-risk revenue sitting in Bullhorn — unactioned.',
+    body: `142 missing timesheets per week.
+
+For a $300M staffing firm, that's roughly $284K in at-risk revenue sitting in Bullhorn — unactioned.
+
+Not because your team doesn't care. Because they can't see it.
+
+The StaffingAgent Command Center changes that. Every missing timesheet. Who owns it. One-click mass reminders.
+
+Live in 2–3 business days.
+
+#StaffingTech #TimeAndExpense #RevenueLeakage`
+  },
+  {
+    code: 'LI-003', codeClass: 'code-social',
+    timing: 'LinkedIn — ROI / CFO angle',
+    subject: 'The question CFOs at staffing firms keep asking me.',
+    preview: '"How do I know which pay/bill exceptions actually matter?"',
+    body: `The question CFOs at staffing firms keep asking me:
+
+"How do I know which pay/bill exceptions actually matter?"
+
+The answer isn't a better spreadsheet. It's a Risk Dashboard that surfaces high pay rates, negative markups, and minimum wage flags the moment they appear — with configurable tolerance thresholds set by your team.
+
+That's what the StaffingAgent Command Center does. Starting at $5,000/month with a 100% ROI guarantee.
+
+#Staffing #AI #CFO #MiddleOffice`
+  }
+];
+
+const TASKS = [
+  {
+    id: 'legal', name: 'Legal', className: 'tg-legal',
+    items: [
+      { id: 'legal-attorney', text: 'Engage Texas business attorney for operating agreement, IP assignment, and services agreement', tag: 'critical', done: false },
+      { id: 'legal-oa', text: 'Operating Agreement — CFO review in progress, send to attorney when complete', tag: 'active', done: false },
+      { id: 'legal-oa-execute', text: 'Execute Operating Agreement with equity schedule and C-Corp conversion mechanics', tag: null, done: false },
+      { id: 'legal-capital', text: 'Execute Capital Contribution Agreements for all 5 partners', tag: null, done: false },
+      { id: 'legal-ip', text: 'Execute IP Assignment Agreement (Newbury → StaffingAgent LLC)', tag: 'critical', done: false },
+      { id: 'legal-ica', text: 'Execute Inter-Company Services Agreement (cost-plus-15%, IRC §482)', tag: null, done: false },
+      { id: 'legal-confirmatory', text: 'Confirmatory IP assignments — Cortney, Renee, Lane, contractors', tag: null, done: false },
+      { id: 'legal-valuation', text: 'Valuation Memorandum — $1M pre-money (Berkus + DCF methodology)', tag: null, done: false },
+      { id: 'legal-cpa', text: 'Brief CPA on LLC structure, inter-company services, K-1 implications', tag: null, done: false },
+    ]
+  },
+  {
+    id: 'pipeline', name: 'Pipeline', className: 'tg-pipeline',
+    items: [
+      { id: 'pipeline-ghr', text: 'Schedule Command Center demo with GHR — Cortney/Jane relationship', tag: null, done: false },
+      { id: 'pipeline-atrium', text: 'Schedule Command Center demo with Atrium — Sean relationship', tag: null, done: false },
+      { id: 'pipeline-cch', text: 'Push Cross Country Healthcare toward Transform tier ($12.5K/mo)', tag: null, done: false },
+      { id: 'pipeline-proposal', text: 'Draft customer-facing Assess-tier proposal template ($5K/mo, 12-month min, ROI guarantee)', tag: null, done: false },
+      { id: 'pipeline-pricing', text: 'Validate pricing with first 3 discovery calls before committing to materials', tag: null, done: false },
+    ]
+  },
+  {
+    id: 'hiring', name: 'Hiring', className: 'tg-hiring',
+    items: [
+      { id: 'hiring-architect', text: 'AI Architect — recruiter search active, target onboard by April 30', tag: 'active', done: false },
+      { id: 'hiring-cs', text: 'Customer Success Lead — plan to post after first customer signed (Month 3–4)', tag: null, done: false },
+    ]
+  },
+  {
+    id: 'product', name: 'Product / Build', className: 'tg-product',
+    items: [
+      { id: 'product-date', text: 'Confirm demo-ready date from Josh/Lane in writing (critical path)', tag: 'critical', done: false },
+      { id: 'product-briefing', text: 'Brief Cortney and Renee on StaffingAgent positioning, pricing, and brand', tag: null, done: false },
+      { id: 'product-nbrain', text: 'Finalize nBrain decision based on Phase 2 agent requirements analysis', tag: null, done: false },
+    ]
+  },
+  {
+    id: 'ops', name: 'Operations (Done)', className: 'tg-ops',
+    items: [
+      { id: 'ops-anthropic', text: 'Add ANTHROPIC_API_KEY to GitHub secrets', tag: null, done: true },
+      { id: 'ops-resend', text: 'Set up Resend account and add RESEND_API_KEY to GitHub secrets', tag: null, done: true },
+      { id: 'ops-brief', text: 'CEO Daily Brief live — email delivered Mon–Fri at 7am CT', tag: null, done: true },
+      { id: 'ops-advisory', text: 'Weekly Advisory Board live — GitHub Issue every Monday at 8am CT', tag: null, done: true },
+      { id: 'ops-hubspot', text: 'HubSpot pulse active — HUBSPOT_ACCESS_TOKEN + PORTAL_ID in GitHub secrets', tag: null, done: true },
+      { id: 'ops-email', text: 'CHRIS_EMAIL secret set in GitHub', tag: null, done: true },
+      { id: 'ops-demo', text: 'Demo gate replaced with self-service HubSpot registration form', tag: null, done: true },
+    ]
+  }
+];
+
+const PLAN = [
+  {
+    phase: 'Legal & Entity', timing: 'Days 1–14', badge: 'badge-active', badgeText: 'In Progress',
+    items: [
+      { text: 'Engage Texas business attorney', status: 'ps-critical', statusText: 'Not Started' },
+      { text: 'Execute Newbury Members\' Unanimous Written Consent (IP transfer authorization)', status: 'ps-pending', statusText: 'Pending' },
+      { text: 'Draft and execute StaffingAgent LLC Operating Agreement', status: 'ps-active', statusText: 'CFO Review' },
+      { text: 'Execute Capital Contribution Agreements for all 5 partners', status: 'ps-pending', statusText: 'Pending' },
+      { text: 'Brief CPA on LLC structure and K-1 implications', status: 'ps-pending', statusText: 'Pending' },
+    ]
+  },
+  {
+    phase: 'IP & Documentation', timing: 'Days 14–21', badge: 'badge-upcoming', badgeText: 'Upcoming',
+    items: [
+      { text: 'Execute IP Assignment Agreement (Newbury → StaffingAgent LLC)', status: 'ps-critical', statusText: 'Critical Path' },
+      { text: 'Execute Inter-Company Services Agreement (cost-plus-15%, IRC §482 compliant)', status: 'ps-pending', statusText: 'Pending' },
+      { text: 'Confirmatory IP assignments — Cortney, Renee, Lane, and contractors', status: 'ps-pending', statusText: 'Pending' },
+      { text: 'Valuation Memorandum — $1M pre-money (Berkus + DCF methodology)', status: 'ps-pending', statusText: 'Pending' },
+    ]
+  },
+  {
+    phase: 'Product & Development', timing: 'Ongoing', badge: 'badge-active', badgeText: 'Active',
+    items: [
+      { text: 'Complete Command Center build — $103K development with Josh/Lane', status: 'ps-active', statusText: 'In Progress' },
+      { text: 'Confirm demo-ready date from Josh/Lane in writing', status: 'ps-critical', statusText: 'Blocking Demos' },
+      { text: 'Brief Cortney and Renee on StaffingAgent positioning, pricing, and brand', status: 'ps-pending', statusText: 'Pending' },
+      { text: 'Finalize nBrain decision based on Phase 2 agent requirements', status: 'ps-pending', statusText: 'Deferred' },
+    ]
+  },
+  {
+    phase: 'Go-to-Market', timing: 'Dashboard Ready', badge: 'badge-upcoming', badgeText: 'Post-Demo-Ready',
+    items: [
+      { text: 'Schedule Command Center demo with GHR (Cortney/Jane)', status: 'ps-pending', statusText: 'Waiting' },
+      { text: 'Schedule Command Center demo with Atrium (Sean)', status: 'ps-pending', statusText: 'Waiting' },
+      { text: 'Draft customer-facing Assess-tier proposal ($5K/mo, 12-month, ROI guarantee)', status: 'ps-pending', statusText: 'Pending' },
+      { text: 'Post AI Architect brief on Toptal/Gun.io (recruiter search already underway)', status: 'ps-active', statusText: 'In Progress' },
+      { text: 'Validate pricing with first 3 discovery calls', status: 'ps-pending', statusText: 'Pending' },
+    ]
+  },
+  {
+    phase: 'Operations (Completed)', timing: 'Done', badge: 'badge-done', badgeText: 'Complete',
+    items: [
+      { text: 'CEO Daily Brief — Mon–Fri 7am CT, email via Resend, HubSpot pulse active', status: 'ps-done', statusText: 'Live' },
+      { text: 'Weekly Advisory Board — Monday 8am CT, posts to GitHub Issues', status: 'ps-done', statusText: 'Live' },
+      { text: 'Site deployed to GitHub Pages with self-service demo registration', status: 'ps-done', statusText: 'Live' },
+      { text: 'AI Architect recruiter search engaged — target onboard April 30', status: 'ps-done', statusText: 'Active' },
+    ]
+  }
+];
+
+/* ─── AUTH ───────────────────────────────────────────────────── */
+const AUTH_KEY = 'sa_ops_auth';
+const PASS = 'saops2026';
+
+function checkAuth() {
+  if (localStorage.getItem(AUTH_KEY) === 'true') unlock();
+}
+function unlock() {
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.add('visible');
+  setTimeout(() => document.getElementById('gate').style.display = 'none', 500);
+}
+function logout() {
+  localStorage.removeItem(AUTH_KEY);
+  location.reload();
+}
+
+document.getElementById('gate-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const input = document.getElementById('gate-input');
+  if (input.value.trim().toLowerCase() === PASS) {
+    localStorage.setItem(AUTH_KEY, 'true');
+    unlock();
+  } else {
+    input.classList.add('error');
+    input.value = '';
+    input.placeholder = 'Incorrect — try again';
+    setTimeout(() => { input.classList.remove('error'); input.placeholder = 'Access code'; }, 600);
+  }
+});
+
+/* ─── TABS ───────────────────────────────────────────────────── */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ─── COPY ───────────────────────────────────────────────────── */
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+/* ─── ARTIFACT CARDS ─────────────────────────────────────────── */
+function buildArtifactCard(item, idx, containerId) {
+  const card = document.createElement('div');
+  card.className = 'artifact-card';
+  const bodyId = `body-${containerId}-${idx}`;
+  card.innerHTML = `
+    <div class="artifact-meta">
+      <span class="artifact-code ${item.codeClass}">${item.code}</span>
+      <span class="artifact-timing">${item.timing}</span>
+    </div>
+    <div class="artifact-subject">${item.subject}</div>
+    <div class="artifact-preview">${item.preview}</div>
+    <div class="artifact-body" id="${bodyId}">${item.body}</div>
+    <div class="artifact-actions">
+      <button class="btn-toggle" onclick="toggleBody('${bodyId}', this)">Show body</button>
+      <button class="btn-copy-subject" onclick="copyText(${JSON.stringify(item.subject)}, this)">Copy subject</button>
+      <button class="btn-copy" onclick="copyText(${JSON.stringify(item.body)}, this)">Copy body</button>
+    </div>`;
+  document.getElementById(containerId).appendChild(card);
+}
+
+function toggleBody(id, btn) {
+  const el = document.getElementById(id);
+  const open = el.classList.toggle('open');
+  btn.textContent = open ? 'Hide body' : 'Show body';
+}
+
+EMAILS.forEach((e, i) => buildArtifactCard(e, i, 'email-cards'));
+SOCIAL.forEach((s, i) => buildArtifactCard(s, i, 'social-cards'));
+
+/* ─── CHECKLIST ──────────────────────────────────────────────── */
+const TASK_KEY = 'sa_ops_tasks';
+
+function loadTaskState() {
+  try { return JSON.parse(localStorage.getItem(TASK_KEY)) || {}; } catch { return {}; }
+}
+function saveTaskState(state) {
+  localStorage.setItem(TASK_KEY, JSON.stringify(state));
+}
+
+function buildChecklist() {
+  const state = loadTaskState();
+  const container = document.getElementById('task-groups');
+
+  TASKS.forEach(group => {
+    const div = document.createElement('div');
+    div.className = 'task-group';
+
+    // Merge saved state into items
+    const items = group.items.map(item => ({
+      ...item,
+      done: state[item.id] !== undefined ? state[item.id] : item.done
+    }));
+
+    const total = items.length;
+    const done = items.filter(i => i.done).length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+
+    div.innerHTML = `
+      <div class="task-group-header">
+        <div class="task-group-name ${group.className}">${group.name}</div>
+        <span style="font-size:.75rem;color:#94a3b8;">${done}/${total}</span>
+      </div>
+      <div class="task-progress-bar"><div class="task-progress-fill" id="prog-${group.id}" style="width:${pct}%"></div></div>
+      ${items.map(item => `
+        <div class="task-item ${item.done ? 'done' : ''}" id="task-row-${item.id}">
+          <input type="checkbox" class="task-checkbox" id="cb-${item.id}" ${item.done ? 'checked' : ''} onchange="toggleTask('${item.id}', '${group.id}', this)">
+          <label class="task-label" for="cb-${item.id}">${item.text}</label>
+          ${item.tag ? `<span class="task-tag ${item.tag === 'critical' ? 'critical' : item.done ? 'done' : ''}">${item.tag}</span>` : ''}
+        </div>`).join('')}`;
+
+    container.appendChild(div);
+  });
+
+  updateSummary();
+}
+
+function toggleTask(taskId, groupId, cb) {
+  const state = loadTaskState();
+  state[taskId] = cb.checked;
+  saveTaskState(state);
+  const row = document.getElementById('task-row-' + taskId);
+  if (cb.checked) row.classList.add('done'); else row.classList.remove('done');
+  recalcGroupProgress(groupId);
+  updateSummary();
+}
+
+function recalcGroupProgress(groupId) {
+  const group = TASKS.find(g => g.id === groupId);
+  if (!group) return;
+  const state = loadTaskState();
+  const items = group.items;
+  const done = items.filter(i => state[i.id] !== undefined ? state[i.id] : i.done).length;
+  const pct = items.length ? Math.round((done / items.length) * 100) : 0;
+  const bar = document.getElementById('prog-' + groupId);
+  if (bar) bar.style.width = pct + '%';
+}
+
+function updateSummary() {
+  const state = loadTaskState();
+  let total = 0, done = 0;
+  TASKS.forEach(g => g.items.forEach(i => {
+    total++;
+    if (state[i.id] !== undefined ? state[i.id] : i.done) done++;
+  }));
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-open').textContent = total - done;
+  document.getElementById('stat-pct').textContent = total ? Math.round((done / total) * 100) + '%' : '0%';
+}
+
+function resetChecklist() {
+  if (!confirm('Reset all checkboxes to their default state?')) return;
+  localStorage.removeItem(TASK_KEY);
+  document.getElementById('task-groups').innerHTML = '';
+  buildChecklist();
+}
+
+/* ─── PROJECT PLAN ───────────────────────────────────────────── */
+function buildPlan() {
+  const container = document.getElementById('plan-phases');
+  PLAN.forEach((phase, pi) => {
+    const div = document.createElement('div');
+    div.className = 'plan-phase';
+    div.innerHTML = `
+      <div class="plan-phase-header">
+        <div>
+          <div class="plan-phase-title">${phase.phase}</div>
+          <div class="plan-phase-sub">${phase.timing}</div>
+        </div>
+        <span class="plan-phase-badge ${phase.badge}">${phase.badgeText}</span>
+      </div>
+      <div class="plan-items">
+        ${phase.items.map((item, i) => `
+          <div class="plan-item ${item.status === 'ps-done' ? 'complete' : ''}">
+            <div class="plan-num">${(i + 1).toString().padStart(2, '0')}</div>
+            <div class="plan-text">${item.text}</div>
+            <span class="plan-status ${item.status}">${item.statusText}</span>
+          </div>`).join('')}
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+/* ─── INIT ───────────────────────────────────────────────────── */
+checkAuth();
+buildChecklist();
+buildPlan();
+</script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

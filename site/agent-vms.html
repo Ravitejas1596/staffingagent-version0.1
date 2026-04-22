@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VMS Reconciliation Agent &mdash; 4 match strategies + confidence-tier routing | StaffingAgent.ai</title>
+  <meta name="description" content="The VMS Reconciliation Agent runs four match strategies (Learned, Exact, Fuzzy, AI), routes results by confidence tier, and shows a side-by-side VMS↔Bullhorn compare for every match. Human-in-the-loop on anything below 95%.">
+  <link rel="canonical" href="https://staffingagent.ai/agent-vms.html">
+  <meta property="og:title" content="VMS Reconciliation Agent — StaffingAgent.ai">
+  <meta property="og:description" content="Four match strategies (Learned / Exact / Fuzzy / AI), confidence-tier routing, side-by-side VMS↔Bullhorn compare.">
+  <meta property="og:url" content="https://staffingagent.ai/agent-vms.html">
+  <meta property="og:image" content="https://staffingagent.ai/images/cc/vms-match-review.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://staffingagent.ai/images/cc/vms-match-review.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260404">
+  <style>
+    .agent-page-tag { display: inline-block; font-size: .72rem; font-weight: 700; padding: .3rem .9rem; border-radius: 10px; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 1rem; }
+    .tag-blue { background: rgba(59,130,246,.15); color: #60a5fa; }
+    .agent-hero { padding: 9rem 0 3rem; background: linear-gradient(175deg, #0f172a 0%, #1e293b 100%); color: #f1f5f9; text-align: center; }
+    .agent-hero h1 { font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 800; letter-spacing: -.03em; margin-bottom: .75rem; }
+    .agent-hero p.agent-sub { font-size: 1.05rem; color: #94a3b8; max-width: 680px; margin: 0 auto 1.25rem; }
+    .agent-hero .hero-badges { display: flex; justify-content: center; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .agent-hero-shot { margin: 2rem auto 0; max-width: 960px; }
+    .agent-hero-shot img { width: 100%; height: auto; border-radius: 14px; box-shadow: 0 40px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(148,163,184,.18); display: block; }
+    .agent-hero-shot-caption { color: #94a3b8; font-size: .85rem; text-align: center; margin-top: .65rem; }
+    .agent-detail { max-width: 760px; margin: 0 auto; }
+    .agent-detail h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; }
+    .agent-detail p { font-size: 1.05rem; color: #475569; line-height: 1.7; margin-bottom: 1rem; }
+    .section-dark .agent-detail h2 { color: #f1f5f9; }
+    .section-dark .agent-detail p { color: #cbd5e1; }
+    .agent-cta { text-align: center; padding: 2rem 0; }
+    .agent-cta .btn { margin: .5rem; }
+
+    .strategy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin: 2rem 0 0; }
+    .strategy-card { background: rgba(255,255,255,.04); border: 1px solid rgba(148,163,184,.18); border-radius: 14px; padding: 1.3rem 1.25rem; }
+    .strategy-pill { display: inline-block; font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: .2rem .55rem; border-radius: 999px; background: rgba(34,211,238,.14); color: var(--sa-accent-bright); margin-bottom: .55rem; }
+    .strategy-card h3 { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin-bottom: .4rem; }
+    .strategy-card p { font-size: .9rem; color: #94a3b8; line-height: 1.55; margin: 0 0 .5rem; }
+    .strategy-card .strategy-score { font-size: .82rem; color: #fbbf24; font-weight: 600; }
+
+    .tier-rows { display: grid; gap: .9rem; margin: 2rem 0 0; max-width: 780px; margin-left: auto; margin-right: auto; }
+    .tier-row { display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.1rem 1.25rem; }
+    .tier-row .tier-label { font-weight: 700; font-size: .95rem; }
+    .tier-row.tier-green { border-left: 4px solid #10b981; }
+    .tier-row.tier-amber { border-left: 4px solid #f59e0b; }
+    .tier-row.tier-red { border-left: 4px solid #ef4444; }
+    .tier-row.tier-green .tier-label { color: #047857; }
+    .tier-row.tier-amber .tier-label { color: #b45309; }
+    .tier-row.tier-red .tier-label { color: #b91c1c; }
+    .tier-row .tier-desc { font-size: .9rem; color: #475569; line-height: 1.55; }
+  </style>
+</head>
+<body>
+
+<nav class="nav scrolled">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="the-command-center.html">Command Center</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+    </div>
+    <a href="index.html" class="btn btn-sm" style="background:#1e293b;color:#94a3b8">&larr; Back to Site</a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<header class="agent-hero">
+  <div class="container">
+    <div class="hero-badges">
+      <span class="agent-page-tag tag-blue">Core Revenue Recovery</span>
+      <span class="agent-status-badge beta">Beta</span>
+    </div>
+    <h1>VMS Reconciliation Agent</h1>
+    <p class="agent-sub">Four match strategies run in order &mdash; Learned, Exact, Fuzzy, AI &mdash; and every result is routed by confidence tier. &ge;95% auto-approves. 70&ndash;94% goes to human review. &lt;70% is flagged. Side-by-side VMS&harr;Bullhorn compare for every match.</p>
+    <div class="agent-hero-shot">
+      <picture>
+        <source srcset="/images/cc/vms-match-review.webp" type="image/webp">
+        <img src="/images/cc/vms-match-review.png" alt="VMSMatchReview view with a row expanded, showing side-by-side VMS and Bullhorn field values, field-level agreement indicators, and an AI reasoning pill explaining the confidence score." width="1440" height="900" loading="eager" fetchpriority="high">
+      </picture>
+      <div class="agent-hero-shot-caption">VMSMatchReview &mdash; expanded row with side-by-side VMS&harr;Bullhorn compare and AI reasoning pill.</div>
+    </div>
+  </div>
+</header>
+
+<!-- Problem -->
+<section class="section">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Problem</span>
+      <h2>The 2&ndash;5% revenue leak happens in the VMS&harr;Bullhorn gap.</h2>
+      <p>Fieldglass, Beeline, VectorVMS, and Magnit all hold the same placements as Bullhorn &mdash; just under different IDs, with different field names, and occasionally different rates or hours. Reconciling by hand is slow, error-prone, and institutional (one senior analyst typically owns it). Whatever slips through becomes an underbilled or overbilled invoice, or an aging dispute the client won&rsquo;t pay.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Strategies -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Strategies</span>
+      <h2>Four match strategies, run in order, per record.</h2>
+      <p>For every VMS record the agent receives, it runs four matching strategies in sequence. The highest-confidence result wins and is attached to the record as its &ldquo;match candidate.&rdquo; Every candidate is persisted with its confidence score, the matching strategy that produced it, and the fields that agreed vs. disagreed.</p>
+    </div>
+    <div class="strategy-grid">
+      <div class="strategy-card">
+        <span class="strategy-pill">1 &middot; Learned</span>
+        <h3>Previously confirmed pair</h3>
+        <p>The same VMS ID &harr; Bullhorn placement pair was confirmed in a previous reconciliation. Near-instant, highest confidence.</p>
+        <span class="strategy-score">Typical: 98&ndash;100%</span>
+      </div>
+      <div class="strategy-card">
+        <span class="strategy-pill">2 &middot; Exact</span>
+        <h3>Deterministic key match</h3>
+        <p>Exact match on one or more of: external ID, placement number, candidate email, SSN last-4 combined with name.</p>
+        <span class="strategy-score">Typical: 95&ndash;99%</span>
+      </div>
+      <div class="strategy-card">
+        <span class="strategy-pill">3 &middot; Fuzzy</span>
+        <h3>Tolerant string + field</h3>
+        <p>Normalized-name similarity, rate within tolerance, overlapping start/end dates, same client &mdash; weighted into a score.</p>
+        <span class="strategy-score">Typical: 70&ndash;94%</span>
+      </div>
+      <div class="strategy-card">
+        <span class="strategy-pill">4 &middot; AI</span>
+        <h3>LLM reasoning with citations</h3>
+        <p>Structured LLM compare over name, client, role, rate, dates. Emits a confidence score and a reasoning pill for every match.</p>
+        <span class="strategy-score">Typical: 60&ndash;90%</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Confidence tiers -->
+<section class="section">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Routing</span>
+      <h2>Confidence-tier routing &mdash; humans only see what humans need to.</h2>
+      <p>Once a candidate has a winning strategy and confidence score, it&rsquo;s routed automatically. The cutoffs are configurable per tenant in Agent Settings, but the defaults mirror what the operations team at Newbury already does by hand.</p>
+    </div>
+    <div class="tier-rows">
+      <div class="tier-row tier-green">
+        <div class="tier-label">&ge; 95%</div>
+        <div class="tier-desc"><strong>Auto-approve.</strong> Match is written to the audit log and appears in the Alert Queue as "Resolved (auto)." Reversible for 7 days.</div>
+      </div>
+      <div class="tier-row tier-amber">
+        <div class="tier-label">70&ndash;94%</div>
+        <div class="tier-desc"><strong>Human review.</strong> Surfaced in VMSMatchReview with the side-by-side compare and AI reasoning pill. One-click Approve / Reject / Re-match.</div>
+      </div>
+      <div class="tier-row tier-red">
+        <div class="tier-label">&lt; 70%</div>
+        <div class="tier-desc"><strong>Flagged.</strong> Held for manual resolution; does not block the rest of the batch. Typically requires data-quality fix on one side or the other.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Compare view -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="agent-detail">
+      <span class="section-tag">The Review</span>
+      <h2>Every match opens to a side-by-side compare.</h2>
+      <p>When a human reviews a match, the row expands to show the VMS record on one side and the Bullhorn placement on the other, field-by-field, with agreement indicators on each field. Above the compare sits the AI reasoning pill explaining why the agent scored the match the way it did. One click to approve. One click to reject. One click to request a re-match with different fields.</p>
+      <p>Everything you do here writes to the audit log: actor, timestamp, decision, and the match candidate that was accepted or rejected. If a re-match is requested, the new candidate shows up in the queue immediately.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="container text-center">
+    <span class="section-tag">Included in Transform &amp; Enterprise</span>
+    <h2>Recover the revenue hiding in the VMS gap.</h2>
+    <p class="section-sub">Currently in Beta on the Transform tier. Every tenant starts in dry-run for the first full reconciliation batch.</p>
+    <div class="agent-cta">
+      <a href="demo-command-center.html" class="btn btn-primary btn-lg">See the Command Center</a>
+      <a href="demo-vms.html" class="btn btn-outline btn-lg">Try VMS Demo</a>
+    </div>
+    <p style="font-size:.9rem;color:#64748b"><a href="the-command-center.html" style="color:var(--sa-accent)">How agents work inside the Command Center &rarr;</a></p>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="logo sa-logo-combo"><span class="sa-logo-tile" aria-hidden="true"></span><span class="sa-logo-text">Staffing<span class="logo-dot">Agent</span>.ai</span></a>
+      <p>&copy; 2026 StaffingAgent LLC. All rights reserved.</p>
+      <p class="footer-newbury">Built by the team behind <a href="https://www.newburypartners.com" target="_blank" rel="noopener">Newbury Partners</a></p>
+    </div>
+    <div class="footer-links">
+      <a href="the-command-center.html">Command Center</a>
+      <a href="index.html#how-it-works">How It Works</a>
+      <a href="index.html#agents">AI Agents</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="demos.html">Demos</a>
+      <a href="demo-command-center.html">Command Center Demo</a>
+      <a href="assessment.html">AI Readiness Assessment</a>
+      <a href="blog-middle-office-whitespace.html">Blog</a>
+      <a href="https://meetings-na2.hubspot.com/chris-scowden" target="_blank" rel="noopener">Book a Meeting</a>
+      <a href="invest.html">Investors</a>
+    </div>
+    <div class="footer-contact">
+      <a href="mailto:chris.scowden@staffingagent.ai">chris.scowden@staffingagent.ai</a>
+      <a href="https://www.linkedin.com/in/chrisscowden/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+var t = document.getElementById('nav-toggle'), l = document.getElementById('nav-links');
+t.addEventListener('click', function () { l.classList.toggle('open'); t.classList.toggle('open'); });
+</script>
+<script type="text/javascript" id="hs-script-loader" async defer src="//js-na2.hs-scripts.com/245521589.js"></script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

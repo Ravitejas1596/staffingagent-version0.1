@@ -1,0 +1,52 @@
+@keyframes sa-skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.sa-skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    #e2e8f0 50%,
+    #f1f5f9 100%
+  );
+  background-size: 200% 100%;
+  animation: sa-skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.sa-skeleton-text {
+  border-radius: 4px;
+}
+
+.sa-skeleton-rect {
+  border-radius: 6px;
+}
+
+.sa-skeleton-card {
+  border-radius: 14px;
+}
+
+[data-theme='dark'] .sa-skeleton {
+  background: linear-gradient(
+    90deg,
+    #1e293b 0%,
+    #334155 50%,
+    #1e293b 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sa-skeleton {
+    animation: none;
+    background: #e2e8f0;
+  }
+  [data-theme='dark'] .sa-skeleton {
+    background: #334155;
+  }
+}

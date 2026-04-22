@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StaffingAgent.ai — Platform Architecture</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1a1a2e; line-height: 1.6; background: #fff;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ---- Nav ---- */
+    .arch-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,.96); backdrop-filter: blur(12px);
+      border-bottom: 1px solid #e2e8f0; padding: 0 2rem;
+    }
+    .arch-nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; height: 56px;
+    }
+    .arch-logo { font-weight: 800; font-size: 1.15rem; letter-spacing: -.02em; }
+    .arch-logo span { color: var(--sa-accent); }
+    .arch-nav-links { display: flex; gap: 1.5rem; }
+    .arch-nav-links a {
+      font-size: .8rem; font-weight: 500; color: #64748b;
+      transition: color .15s; text-transform: uppercase; letter-spacing: .04em;
+    }
+    .arch-nav-links a:hover { color: var(--sa-accent); }
+    .arch-back { font-size: .82rem; color: var(--sa-accent); font-weight: 600; }
+
+    /* ---- Hero ---- */
+    .arch-hero {
+      position: relative; overflow: hidden;
+      padding: 6rem 2rem 4rem; text-align: center;
+      background: #080d1a;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(6,182,212,.28) 0%, transparent 70%),
+        radial-gradient(ellipse 55% 45% at 80% 80%, rgba(99,102,241,.18) 0%, transparent 65%);
+    }
+    .arch-hero::before {
+      content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: radial-gradient(ellipse 85% 70% at 50% 40%, black 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 40%, black 30%, transparent 100%);
+    }
+    .arch-hero > * { position: relative; z-index: 1; }
+    .arch-badge {
+      display: inline-block; font-size: .72rem; font-weight: 600;
+      padding: .35rem 1rem; border-radius: 20px; letter-spacing: .06em;
+      text-transform: uppercase; background: rgba(6,182,212,.12);
+      border: 1px solid rgba(34,211,238,.25); color: var(--sa-accent-bright); margin-bottom: 1.25rem;
+    }
+    .arch-hero h1 {
+      font-size: clamp(2rem, 4vw, 3rem); font-weight: 800;
+      line-height: 1.15; color: #f8fafc; max-width: 800px; margin: 0 auto 1rem;
+      letter-spacing: -.03em;
+    }
+    .arch-hero p { font-size: 1.05rem; color: #94a3b8; max-width: 680px; margin: 0 auto; }
+
+    /* ---- Layout ---- */
+    .arch-wrap { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+    .arch-section { padding: 4rem 0; border-bottom: 1px solid #f1f5f9; }
+    .arch-section:last-child { border-bottom: none; }
+
+    .section-label {
+      display: inline-block; font-size: .72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em; color: var(--sa-accent);
+      margin-bottom: .5rem;
+    }
+    .arch-section h2 {
+      font-size: 1.75rem; font-weight: 800; margin-bottom: .5rem; letter-spacing: -.02em;
+    }
+    .arch-section .lead { font-size: 1rem; color: #64748b; max-width: 720px; margin-bottom: 2rem; }
+
+    /* ---- Architecture Diagram ---- */
+    .arch-diagram {
+      background: #0f172a; border-radius: 16px; padding: 2.5rem;
+      margin-bottom: 2rem; overflow-x: auto;
+    }
+    .arch-diagram-grid {
+      display: grid; grid-template-columns: 1fr; gap: 1.5rem; min-width: 700px;
+    }
+    .arch-layer {
+      display: flex; align-items: stretch; gap: 1rem;
+    }
+    .arch-layer-label {
+      writing-mode: vertical-lr; transform: rotate(180deg);
+      font-size: .65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: #475569; min-width: 28px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .arch-layer-boxes {
+      flex: 1; display: flex; gap: .75rem; flex-wrap: wrap;
+    }
+    .arch-box {
+      flex: 1; min-width: 140px; padding: 1rem 1.25rem;
+      border-radius: 10px; border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+    }
+    .arch-box-title {
+      font-size: .78rem; font-weight: 700; color: #f1f5f9;
+      margin-bottom: .25rem; display: flex; align-items: center; gap: .4rem;
+    }
+    .arch-box-title .dot {
+      width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+    }
+    .dot-teal { background: var(--sa-accent); }
+    .dot-indigo { background: #6366f1; }
+    .dot-amber { background: #f59e0b; }
+    .dot-rose { background: #f43f5e; }
+    .dot-sky { background: #0ea5e9; }
+    .dot-emerald { background: #10b981; }
+    .arch-box-sub {
+      font-size: .7rem; color: #94a3b8; line-height: 1.5;
+    }
+    .arch-box.highlight {
+      border-color: rgba(6,182,212,.4);
+      background: rgba(6,182,212,.08);
+    }
+    .arch-arrow {
+      text-align: center; color: #475569; font-size: 1.2rem; padding: .25rem 0;
+    }
+
+    /* ---- Tables ---- */
+    .arch-table-wrap { overflow-x: auto; margin: 1.5rem 0; }
+    table.arch-table {
+      width: 100%; border-collapse: collapse; font-size: .82rem;
+    }
+    table.arch-table thead th {
+      background: #f8fafc; color: #475569; font-weight: 600;
+      text-transform: uppercase; font-size: .7rem; letter-spacing: .05em;
+      padding: .75rem 1rem; text-align: left; border-bottom: 2px solid #e2e8f0;
+      position: sticky; top: 0;
+    }
+    table.arch-table tbody td {
+      padding: .65rem 1rem; border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+    }
+    table.arch-table tbody tr:hover { background: #f8fafc; }
+    table.arch-table .col-name { font-weight: 600; color: #1e293b; white-space: nowrap; }
+    table.arch-table .col-type { font-family: 'JetBrains Mono', monospace; font-size: .75rem; color: #6366f1; }
+    table.arch-table .col-constraint { font-size: .75rem; color: #64748b; }
+
+    /* ---- Cards ---- */
+    .tech-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;
+    }
+    .tech-card {
+      border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .tech-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.06); transform: translateY(-2px); }
+    .tech-card-icon { font-size: 1.5rem; margin-bottom: .75rem; }
+    .tech-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .25rem; }
+    .tech-card .tech-label { font-size: .72rem; color: var(--sa-accent); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .tech-card p { font-size: .85rem; color: #64748b; margin-top: .5rem; }
+
+    /* ---- Schema collapse ---- */
+    .schema-group { margin-bottom: 1rem; }
+    .schema-toggle {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: .75rem 1rem; cursor: pointer; font-size: .88rem; font-weight: 700;
+      color: #1e293b; transition: background .15s;
+    }
+    .schema-toggle:hover { background: #f1f5f9; }
+    .schema-toggle .arrow { transition: transform .2s; font-size: .75rem; color: #94a3b8; }
+    .schema-toggle[aria-expanded="true"] .arrow { transform: rotate(90deg); }
+    .schema-body { display: none; padding: .5rem 0 0; }
+    .schema-body.open { display: block; }
+    .schema-badge {
+      font-size: .65rem; font-weight: 600; padding: .15rem .5rem; border-radius: 4px;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .badge-rls { background: rgba(6,182,212,.1); color: var(--sa-accent); }
+    .badge-no-rls { background: rgba(245,158,11,.1); color: #d97706; }
+
+    /* ---- Agent cards ---- */
+    .agent-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;
+    }
+    .agent-card {
+      border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem;
+      position: relative; overflow: hidden;
+    }
+    .agent-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .agent-card.p0::before { background: var(--sa-accent); }
+    .agent-card.p1::before { background: #6366f1; }
+    .agent-card.p2::before { background: #94a3b8; }
+    .agent-card h3 { font-size: .95rem; font-weight: 700; margin-bottom: .25rem; }
+    .agent-card .agent-phase {
+      font-size: .65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; padding: .15rem .5rem; border-radius: 4px;
+      display: inline-block; margin-bottom: .5rem;
+    }
+    .agent-card.p0 .agent-phase { background: rgba(6,182,212,.1); color: var(--sa-accent); }
+    .agent-card.p1 .agent-phase { background: rgba(99,102,241,.1); color: #6366f1; }
+    .agent-card.p2 .agent-phase { background: #f1f5f9; color: #94a3b8; }
+    .agent-card p { font-size: .82rem; color: #64748b; }
+    .agent-caps {
+      margin-top: .75rem; display: flex; flex-wrap: wrap; gap: .35rem;
+    }
+    .agent-cap {
+      font-size: .68rem; font-weight: 500; padding: .2rem .6rem;
+      background: #f1f5f9; border-radius: 4px; color: #475569;
+    }
+
+    /* ---- API ---- */
+    .api-method {
+      display: inline-block; font-size: .68rem; font-weight: 700;
+      padding: .15rem .45rem; border-radius: 4px; text-transform: uppercase;
+      letter-spacing: .03em; margin-right: .5rem;
+    }
+    .method-get { background: rgba(16,185,129,.12); color: #059669; }
+    .method-post { background: rgba(99,102,241,.12); color: #4f46e5; }
+    .api-path { font-family: 'JetBrains Mono', monospace; font-size: .82rem; font-weight: 500; }
+    .api-row { padding: .75rem 0; border-bottom: 1px solid #f1f5f9; }
+    .api-row:last-child { border-bottom: none; }
+    .api-desc { font-size: .8rem; color: #64748b; margin-top: .25rem; }
+    .api-auth { font-size: .68rem; font-weight: 500; color: #94a3b8; margin-left: .5rem; }
+
+    /* ---- Integration flow ---- */
+    .flow-steps {
+      display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; margin: 1.5rem 0;
+    }
+    .flow-step {
+      flex: 1; min-width: 160px; padding: 1.25rem; text-align: center;
+      border: 1px solid #e2e8f0; position: relative;
+    }
+    .flow-step:first-child { border-radius: 10px 0 0 10px; }
+    .flow-step:last-child { border-radius: 0 10px 10px 0; }
+    .flow-step:not(:last-child)::after {
+      content: '\2192'; position: absolute; right: -12px; top: 50%;
+      transform: translateY(-50%); font-size: 1.1rem; color: var(--sa-accent); z-index: 1;
+      background: #fff; padding: 0 4px;
+    }
+    .flow-step-num {
+      font-size: .65rem; font-weight: 700; text-transform: uppercase;
+      color: var(--sa-accent); letter-spacing: .08em; margin-bottom: .35rem;
+    }
+    .flow-step h4 { font-size: .85rem; font-weight: 700; margin-bottom: .25rem; }
+    .flow-step p { font-size: .75rem; color: #64748b; }
+
+    /* ---- Security ---- */
+    .sec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+    .sec-item {
+      display: flex; gap: .75rem; padding: 1.25rem;
+      border: 1px solid #e2e8f0; border-radius: 10px;
+    }
+    .sec-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .sec-item h4 { font-size: .88rem; font-weight: 700; margin-bottom: .15rem; }
+    .sec-item p { font-size: .78rem; color: #64748b; }
+
+    /* ---- Footer ---- */
+    .arch-footer {
+      text-align: center; padding: 3rem 2rem; color: #94a3b8;
+      font-size: .78rem; border-top: 1px solid #f1f5f9;
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 768px) {
+      .arch-nav-links { display: none; }
+      .tech-grid { grid-template-columns: 1fr; }
+      .agent-grid { grid-template-columns: 1fr; }
+      .flow-steps { flex-direction: column; }
+      .flow-step { border-radius: 10px !important; }
+      .flow-step::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="arch-nav">
+  <div class="arch-nav-inner">
+    <a href="/" class="arch-logo">Staffing<span>Agent</span>.ai</a>
+    <div class="arch-nav-links">
+      <a href="#stack">Stack</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#data-model">Data Model</a>
+      <a href="#agents">Agents</a>
+      <a href="#api">API</a>
+      <a href="#integrations">Integrations</a>
+      <a href="#security">Security</a>
+    </div>
+    <a href="/" class="arch-back">&larr; Back to Site</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="arch-hero">
+  <div>
+    <span class="arch-badge">Technical Documentation</span>
+    <h1>Platform Architecture</h1>
+    <p>A comprehensive technical overview of the StaffingAgent.ai platform for engineering teams and technical evaluators. Multi-tenant, AI-native, built for enterprise staffing operations.</p>
+  </div>
+</header>
+
+<div class="arch-wrap">
+
+<!-- ============================================================ -->
+<!-- TECH STACK -->
+<!-- ============================================================ -->
+<section class="arch-section" id="stack">
+  <span class="section-label">Technology Stack</span>
+  <h2>Built on Proven, Scalable Infrastructure</h2>
+  <p class="lead">Every component is chosen for production reliability, developer velocity, and staffing-industry fit. No experimental dependencies.</p>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-card-icon">&#9881;</div>
+      <div class="tech-label">Backend</div>
+      <h3>Python + FastAPI</h3>
+      <p>Async-first API framework. Pydantic validation on every request and response. Sub-10ms overhead per call.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#129302;</div>
+      <div class="tech-label">AI Orchestration</div>
+      <h3>LangGraph</h3>
+      <p>Stateful agent graphs with built-in human-in-the-loop gates. Every agent follows: analyze &rarr; verify &rarr; review &rarr; act.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#128171;</div>
+      <div class="tech-label">LLM</div>
+      <h3>Anthropic Claude</h3>
+      <p>Reasoning engine for anomaly detection, explanation generation, and communication drafting. Token usage tracked per call for billing passthrough.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#128451;</div>
+      <div class="tech-label">Database</div>
+      <h3>Aurora PostgreSQL Serverless v2</h3>
+      <p>Auto-scaling 0.5&ndash;4 ACU. Row-Level Security for tenant isolation. JSONB for flexible data. Full-text search via pg_trgm.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#9729;</div>
+      <div class="tech-label">Compute</div>
+      <h3>AWS ECS Fargate</h3>
+      <p>Serverless container hosting. No instances to manage. Auto-scaling based on CPU and memory. Private subnets only.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#127760;</div>
+      <div class="tech-label">Frontend</div>
+      <h3>React + TypeScript + Vite</h3>
+      <p>Type-safe Command Center UI. CloudFront-delivered with sub-second load times. Embeddable in Bullhorn via iframe.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#128268;</div>
+      <div class="tech-label">ATS Integration</div>
+      <h3>Bullhorn REST API</h3>
+      <p>All Bullhorn access through a unified gateway abstraction. OAuth 2.0 client credentials. 20+ years Bullhorn expertise on the team.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#128230;</div>
+      <div class="tech-label">Infrastructure as Code</div>
+      <h3>Terraform + GitHub Actions</h3>
+      <p>Full stack defined in HCL. CI/CD auto-deploys on push. S3 remote state with versioning. Zero manual provisioning.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- ARCHITECTURE DIAGRAM -->
+<!-- ============================================================ -->
+<section class="arch-section" id="architecture">
+  <span class="section-label">System Architecture</span>
+  <h2>End-to-End Platform Topology</h2>
+  <p class="lead">Three-layer architecture: Presentation (Command Center), Execution (AI Agents), and Governance (Audit + Compliance). Every data path is authenticated and tenant-isolated.</p>
+
+  <div class="arch-diagram">
+    <div class="arch-diagram-grid">
+
+      <!-- Presentation Layer -->
+      <div class="arch-layer">
+        <div class="arch-layer-label">Presentation</div>
+        <div class="arch-layer-boxes">
+          <div class="arch-box highlight">
+            <div class="arch-box-title"><span class="dot dot-teal"></span> Command Center</div>
+            <div class="arch-box-sub">React/TypeScript &bull; Vite build &bull; CloudFront CDN<br>Entity panels, Risk dashboards, TimeOps, RiskOps, Mass actions</div>
+          </div>
+          <div class="arch-box">
+            <div class="arch-box-title"><span class="dot dot-sky"></span> Bullhorn Embed</div>
+            <div class="arch-box-sub">iframe integration &bull; Bullhorn One sidebar<br>SSO handoff &bull; Context-aware deep links</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">&#8595; HTTPS / JWT &darr;</div>
+
+      <!-- Network Layer -->
+      <div class="arch-layer">
+        <div class="arch-layer-label">Network</div>
+        <div class="arch-layer-boxes">
+          <div class="arch-box">
+            <div class="arch-box-title"><span class="dot dot-emerald"></span> CloudFront</div>
+            <div class="arch-box-sub">CDN &bull; app.staffingagent.ai<br>ACM TLS cert &bull; S3 origin</div>
+          </div>
+          <div class="arch-box">
+            <div class="arch-box-title"><span class="dot dot-emerald"></span> Application Load Balancer</div>
+            <div class="arch-box-sub">api.staffingagent.ai<br>HTTPS termination &bull; Health checks</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">&#8595;</div>
+
+      <!-- Execution Layer -->
+      <div class="arch-layer">
+        <div class="arch-layer-label">Execution</div>
+        <div class="arch-layer-boxes">
+          <div class="arch-box highlight">
+            <div class="arch-box-title"><span class="dot dot-teal"></span> FastAPI Service</div>
+            <div class="arch-box-sub">ECS Fargate &bull; Private subnet<br>JWT auth &bull; Tenant-aware sessions &bull; RBAC</div>
+          </div>
+          <div class="arch-box highlight">
+            <div class="arch-box-title"><span class="dot dot-indigo"></span> LangGraph Agents</div>
+            <div class="arch-box-sub">Stateful graphs &bull; Human-in-the-loop<br>Tool-calling pattern &bull; Verification nodes</div>
+          </div>
+          <div class="arch-box">
+            <div class="arch-box-title"><span class="dot dot-amber"></span> SQS Job Queue</div>
+            <div class="arch-box-sub">Async agent execution<br>300s visibility &bull; 24hr retention</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">&#8595;</div>
+
+      <!-- Data Layer -->
+      <div class="arch-layer">
+        <div class="arch-layer-label">Data</div>
+        <div class="arch-layer-boxes">
+          <div class="arch-box">
+            <div class="arch-box-title"><span class="dot dot-indigo"></span> Aurora PostgreSQL</div>
+            <div class="arch-box-sub">Serverless v2 &bull; Encrypted at rest<br>Row-Level Security &bull; 11 tables &bull; JSONB</div>
+          </div>
+          <div class="arch-box">
+            <div class="arch-box-title"><span class="dot dot-amber"></span> S3 Buckets</div>
+            <div class="arch-box-sub">Frontend build &bull; VMS file uploads<br>SSE-S3 encryption &bull; Pre-signed URLs</div>
+          </div>
+          <div class="arch-box">
+            <div class="arch-box-title"><span class="dot dot-rose"></span> Secrets Manager</div>
+            <div class="arch-box-sub">DB credentials &bull; JWT secret<br>API keys &bull; Rotatable</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">&#8595;</div>
+
+      <!-- External -->
+      <div class="arch-layer">
+        <div class="arch-layer-label">External</div>
+        <div class="arch-layer-boxes">
+          <div class="arch-box">
+            <div class="arch-box-title"><span class="dot dot-sky"></span> Bullhorn REST API</div>
+            <div class="arch-box-sub">OAuth 2.0 &bull; Placement, T&amp;E, Payroll, Billing, Invoice entities<br>Sync interval configurable per tenant</div>
+          </div>
+          <div class="arch-box">
+            <div class="arch-box-title"><span class="dot dot-amber"></span> VMS Platforms</div>
+            <div class="arch-box-sub">Phase 1: Flat file upload (CSV/Excel &rarr; S3)<br>Phase 2: Direct VMS API integration</div>
+          </div>
+          <div class="arch-box">
+            <div class="arch-box-title"><span class="dot dot-indigo"></span> Anthropic Claude API</div>
+            <div class="arch-box-sub">Reasoning + anomaly analysis<br>Circuit breaker &bull; Token tracking &bull; Rate limiting</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- MULTI-TENANCY -->
+<!-- ============================================================ -->
+<section class="arch-section" id="multi-tenancy">
+  <span class="section-label">Multi-Tenancy</span>
+  <h2>Enterprise-Grade Tenant Isolation</h2>
+  <p class="lead">Shared database with PostgreSQL Row-Level Security. Every query is automatically scoped to the authenticated tenant. Zero cross-tenant data leakage by design.</p>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-step-num">Step 1</div>
+      <h4>JWT Authentication</h4>
+      <p>Every request carries a signed JWT with tenant_id, user_id, and role claims. HS256 with rotatable secret.</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">Step 2</div>
+      <h4>Session Scoping</h4>
+      <p>Database session runs <code>SET LOCAL app.tenant_id</code> before any query. Transaction-scoped, auto-cleared.</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">Step 3</div>
+      <h4>Row-Level Security</h4>
+      <p>RLS policy on every tenant table: <code>USING (tenant_id = current_setting('app.tenant_id')::uuid)</code></p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">Step 4</div>
+      <h4>Audit Trail</h4>
+      <p>Every agent action and data modification is logged with SHA-256 input hash, timestamps, and approval status.</p>
+    </div>
+  </div>
+
+  <div class="tech-grid" style="margin-top:1.5rem;">
+    <div class="tech-card">
+      <h3>Assess &amp; Transform Tiers</h3>
+      <p>Shared database, RLS isolation. Cost-effective for $5K&ndash;$12.5K/month customers. Same security guarantees via PostgreSQL enforcement.</p>
+    </div>
+    <div class="tech-card">
+      <h3>Enterprise Tier</h3>
+      <p>Option for dedicated database instance per customer. Physical isolation for firms requiring it. Same API, same agent layer &mdash; just a different connection string.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DATA MODEL -->
+<!-- ============================================================ -->
+<section class="arch-section" id="data-model">
+  <span class="section-label">Data Model</span>
+  <h2>11-Table Relational Schema</h2>
+  <p class="lead">PostgreSQL 16 with pgcrypto and pg_trgm extensions. Every table (except tenants) has RLS enabled with tenant_isolation policy.</p>
+
+  <!-- tenants -->
+  <div class="schema-group">
+    <button class="schema-toggle" onclick="toggleSchema(this)" aria-expanded="false">
+      <span>tenants <span class="schema-badge badge-no-rls">No RLS</span></span>
+      <span class="arrow">&#9654;</span>
+    </button>
+    <div class="schema-body">
+      <div class="arch-table-wrap">
+        <table class="arch-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-constraint">PRIMARY KEY, gen_random_uuid()</td></tr>
+            <tr><td class="col-name">name</td><td class="col-type">TEXT</td><td class="col-constraint">NOT NULL</td></tr>
+            <tr><td class="col-name">slug</td><td class="col-type">TEXT</td><td class="col-constraint">UNIQUE NOT NULL</td></tr>
+            <tr><td class="col-name">tier</td><td class="col-type">TEXT</td><td class="col-constraint">NOT NULL, DEFAULT 'assess', CHECK IN (assess, transform, enterprise)</td></tr>
+            <tr><td class="col-name">bullhorn_config</td><td class="col-type">JSONB</td><td class="col-constraint">DEFAULT '{}'</td></tr>
+            <tr><td class="col-name">settings</td><td class="col-type">JSONB</td><td class="col-constraint">DEFAULT '{}'</td></tr>
+            <tr><td class="col-name">client_memory</td><td class="col-type">JSONB</td><td class="col-constraint">DEFAULT '{}' &mdash; learned patterns, tolerances, exceptions</td></tr>
+            <tr><td class="col-name">is_active</td><td class="col-type">BOOLEAN</td><td class="col-constraint">DEFAULT true</td></tr>
+            <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-constraint">DEFAULT now()</td></tr>
+            <tr><td class="col-name">updated_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-constraint">DEFAULT now()</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- users -->
+  <div class="schema-group">
+    <button class="schema-toggle" onclick="toggleSchema(this)" aria-expanded="false">
+      <span>users <span class="schema-badge badge-rls">RLS</span></span>
+      <span class="arrow">&#9654;</span>
+    </button>
+    <div class="schema-body">
+      <div class="arch-table-wrap">
+        <table class="arch-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-constraint">PRIMARY KEY</td></tr>
+            <tr><td class="col-name">tenant_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; tenants, CASCADE</td></tr>
+            <tr><td class="col-name">email</td><td class="col-type">TEXT</td><td class="col-constraint">NOT NULL, UNIQUE per tenant</td></tr>
+            <tr><td class="col-name">name</td><td class="col-type">TEXT</td><td class="col-constraint">NOT NULL</td></tr>
+            <tr><td class="col-name">password_hash</td><td class="col-type">TEXT</td><td class="col-constraint">bcrypt</td></tr>
+            <tr><td class="col-name">role</td><td class="col-type">TEXT</td><td class="col-constraint">admin | manager | viewer (DEFAULT 'viewer')</td></tr>
+            <tr><td class="col-name">bullhorn_user_id</td><td class="col-type">TEXT</td><td class="col-constraint">Links to Bullhorn user</td></tr>
+            <tr><td class="col-name">is_active</td><td class="col-type">BOOLEAN</td><td class="col-constraint">DEFAULT true</td></tr>
+            <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td class="col-constraint">DEFAULT now()</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- placements -->
+  <div class="schema-group">
+    <button class="schema-toggle" onclick="toggleSchema(this)" aria-expanded="false">
+      <span>placements <span class="schema-badge badge-rls">RLS</span></span>
+      <span class="arrow">&#9654;</span>
+    </button>
+    <div class="schema-body">
+      <div class="arch-table-wrap">
+        <table class="arch-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-constraint">PRIMARY KEY</td></tr>
+            <tr><td class="col-name">tenant_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; tenants</td></tr>
+            <tr><td class="col-name">bullhorn_id</td><td class="col-type">TEXT</td><td class="col-constraint">NOT NULL, UNIQUE per tenant</td></tr>
+            <tr><td class="col-name">candidate_name</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">job_title</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">client_name</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">pay_rate</td><td class="col-type">NUMERIC(10,2)</td><td></td></tr>
+            <tr><td class="col-name">bill_rate</td><td class="col-type">NUMERIC(10,2)</td><td></td></tr>
+            <tr><td class="col-name">ot_rate</td><td class="col-type">NUMERIC(10,2)</td><td></td></tr>
+            <tr><td class="col-name">start_date / end_date</td><td class="col-type">DATE</td><td></td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td>Approved, Pending, Inactive, Active</td></tr>
+            <tr><td class="col-name">state</td><td class="col-type">TEXT</td><td>Geographic state</td></tr>
+            <tr><td class="col-name">po_number</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">raw_data</td><td class="col-type">JSONB</td><td>Full Bullhorn record</td></tr>
+            <tr><td class="col-name">synced_at</td><td class="col-type">TIMESTAMPTZ</td><td>Last Bullhorn sync</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- timesheets -->
+  <div class="schema-group">
+    <button class="schema-toggle" onclick="toggleSchema(this)" aria-expanded="false">
+      <span>timesheets <span class="schema-badge badge-rls">RLS</span></span>
+      <span class="arrow">&#9654;</span>
+    </button>
+    <div class="schema-body">
+      <div class="arch-table-wrap">
+        <table class="arch-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-constraint">PRIMARY KEY</td></tr>
+            <tr><td class="col-name">tenant_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; tenants</td></tr>
+            <tr><td class="col-name">bullhorn_id</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">placement_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; placements</td></tr>
+            <tr><td class="col-name">candidate_name</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">week_ending</td><td class="col-type">DATE</td><td class="col-constraint">NOT NULL</td></tr>
+            <tr><td class="col-name">regular_hours</td><td class="col-type">NUMERIC(8,2)</td><td class="col-constraint">DEFAULT 0</td></tr>
+            <tr><td class="col-name">ot_hours</td><td class="col-type">NUMERIC(8,2)</td><td class="col-constraint">DEFAULT 0</td></tr>
+            <tr><td class="col-name">total_hours</td><td class="col-type">NUMERIC(8,2)</td><td class="col-constraint">GENERATED (regular + ot)</td></tr>
+            <tr><td class="col-name">bill_rate / ot_rate</td><td class="col-type">NUMERIC(10,2)</td><td></td></tr>
+            <tr><td class="col-name">total_amount</td><td class="col-type">NUMERIC(12,2)</td><td></td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- vms_records -->
+  <div class="schema-group">
+    <button class="schema-toggle" onclick="toggleSchema(this)" aria-expanded="false">
+      <span>vms_records <span class="schema-badge badge-rls">RLS</span></span>
+      <span class="arrow">&#9654;</span>
+    </button>
+    <div class="schema-body">
+      <div class="arch-table-wrap">
+        <table class="arch-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-constraint">PRIMARY KEY</td></tr>
+            <tr><td class="col-name">tenant_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; tenants</td></tr>
+            <tr><td class="col-name">upload_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; vms_uploads</td></tr>
+            <tr><td class="col-name">vms_platform</td><td class="col-type">TEXT</td><td>Beeline, Fieldglass, etc.</td></tr>
+            <tr><td class="col-name">placement_ref</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">candidate_name</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">week_ending</td><td class="col-type">DATE</td><td></td></tr>
+            <tr><td class="col-name">regular_hours / ot_hours</td><td class="col-type">NUMERIC(8,2)</td><td></td></tr>
+            <tr><td class="col-name">total_hours</td><td class="col-type">NUMERIC(8,2)</td><td class="col-constraint">GENERATED</td></tr>
+            <tr><td class="col-name">bill_rate / ot_rate / per_diem</td><td class="col-type">NUMERIC(10,2)</td><td></td></tr>
+            <tr><td class="col-name">total_amount</td><td class="col-type">NUMERIC(12,2)</td><td></td></tr>
+            <tr><td class="col-name">po_number</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">source_type</td><td class="col-type">TEXT</td><td>file | api</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- vms_uploads -->
+  <div class="schema-group">
+    <button class="schema-toggle" onclick="toggleSchema(this)" aria-expanded="false">
+      <span>vms_uploads <span class="schema-badge badge-rls">RLS</span></span>
+      <span class="arrow">&#9654;</span>
+    </button>
+    <div class="schema-body">
+      <div class="arch-table-wrap">
+        <table class="arch-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-constraint">PRIMARY KEY</td></tr>
+            <tr><td class="col-name">tenant_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; tenants</td></tr>
+            <tr><td class="col-name">uploaded_by</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; users</td></tr>
+            <tr><td class="col-name">filename</td><td class="col-type">TEXT</td><td class="col-constraint">NOT NULL</td></tr>
+            <tr><td class="col-name">s3_key</td><td class="col-type">TEXT</td><td class="col-constraint">NOT NULL</td></tr>
+            <tr><td class="col-name">vms_platform</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">record_count</td><td class="col-type">INT</td><td></td></tr>
+            <tr><td class="col-name">column_mapping</td><td class="col-type">JSONB</td><td>VMS field &rarr; standard mapping</td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td>pending | processing | completed | failed</td></tr>
+            <tr><td class="col-name">error_message</td><td class="col-type">TEXT</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- invoices -->
+  <div class="schema-group">
+    <button class="schema-toggle" onclick="toggleSchema(this)" aria-expanded="false">
+      <span>invoices <span class="schema-badge badge-rls">RLS</span></span>
+      <span class="arrow">&#9654;</span>
+    </button>
+    <div class="schema-body">
+      <div class="arch-table-wrap">
+        <table class="arch-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-constraint">PRIMARY KEY</td></tr>
+            <tr><td class="col-name">tenant_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; tenants</td></tr>
+            <tr><td class="col-name">bullhorn_id</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">invoice_number</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">client_name</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">amount</td><td class="col-type">NUMERIC(12,2)</td><td></td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">invoice_date / due_date / paid_date</td><td class="col-type">DATE</td><td></td></tr>
+            <tr><td class="col-name">days_outstanding</td><td class="col-type">INT</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- agent_runs -->
+  <div class="schema-group">
+    <button class="schema-toggle" onclick="toggleSchema(this)" aria-expanded="false">
+      <span>agent_runs <span class="schema-badge badge-rls">RLS</span></span>
+      <span class="arrow">&#9654;</span>
+    </button>
+    <div class="schema-body">
+      <div class="arch-table-wrap">
+        <table class="arch-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-constraint">PRIMARY KEY</td></tr>
+            <tr><td class="col-name">tenant_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; tenants</td></tr>
+            <tr><td class="col-name">agent_type</td><td class="col-type">TEXT</td><td class="col-constraint">NOT NULL</td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">TEXT</td><td>pending | running | completed | failed</td></tr>
+            <tr><td class="col-name">triggered_by</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; users</td></tr>
+            <tr><td class="col-name">trigger_type</td><td class="col-type">TEXT</td><td>manual | scheduled | event</td></tr>
+            <tr><td class="col-name">config</td><td class="col-type">JSONB</td><td>Run-specific parameters</td></tr>
+            <tr><td class="col-name">result_summary</td><td class="col-type">JSONB</td><td>Aggregated results</td></tr>
+            <tr><td class="col-name">token_usage</td><td class="col-type">JSONB</td><td>LLM token counts for billing</td></tr>
+            <tr><td class="col-name">error_message</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">started_at / completed_at</td><td class="col-type">TIMESTAMPTZ</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- agent_results -->
+  <div class="schema-group">
+    <button class="schema-toggle" onclick="toggleSchema(this)" aria-expanded="false">
+      <span>agent_results <span class="schema-badge badge-rls">RLS</span></span>
+      <span class="arrow">&#9654;</span>
+    </button>
+    <div class="schema-body">
+      <div class="arch-table-wrap">
+        <table class="arch-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-constraint">PRIMARY KEY</td></tr>
+            <tr><td class="col-name">tenant_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; tenants</td></tr>
+            <tr><td class="col-name">run_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; agent_runs, CASCADE</td></tr>
+            <tr><td class="col-name">record_ref</td><td class="col-type">TEXT</td><td>Bullhorn ID reference</td></tr>
+            <tr><td class="col-name">severity</td><td class="col-type">TEXT</td><td>clean | info | warning | critical</td></tr>
+            <tr><td class="col-name">confidence</td><td class="col-type">NUMERIC(4,3)</td><td>0.000 &ndash; 1.000</td></tr>
+            <tr><td class="col-name">requires_review</td><td class="col-type">BOOLEAN</td><td>Human-in-the-loop flag</td></tr>
+            <tr><td class="col-name">discrepancies</td><td class="col-type">JSONB</td><td>Array of found issues</td></tr>
+            <tr><td class="col-name">compliance_flags</td><td class="col-type">JSONB</td><td>Regulatory flags</td></tr>
+            <tr><td class="col-name">llm_explanation</td><td class="col-type">TEXT</td><td>Claude-generated reasoning</td></tr>
+            <tr><td class="col-name">recommended_action</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">financial_impact</td><td class="col-type">NUMERIC(12,2)</td><td>Dollar impact of discrepancy</td></tr>
+            <tr><td class="col-name">review_status</td><td class="col-type">TEXT</td><td>pending | approved | escalated | corrected | dismissed</td></tr>
+            <tr><td class="col-name">reviewed_by</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; users</td></tr>
+            <tr><td class="col-name">vms_snapshot / ats_snapshot</td><td class="col-type">JSONB</td><td>Point-in-time data capture</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- audit_log -->
+  <div class="schema-group">
+    <button class="schema-toggle" onclick="toggleSchema(this)" aria-expanded="false">
+      <span>audit_log <span class="schema-badge badge-rls">RLS</span></span>
+      <span class="arrow">&#9654;</span>
+    </button>
+    <div class="schema-body">
+      <div class="arch-table-wrap">
+        <table class="arch-table">
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name">id</td><td class="col-type">UUID</td><td class="col-constraint">PRIMARY KEY</td></tr>
+            <tr><td class="col-name">tenant_id</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; tenants</td></tr>
+            <tr><td class="col-name">agent_id</td><td class="col-type">TEXT</td><td class="col-constraint">NOT NULL</td></tr>
+            <tr><td class="col-name">action_type</td><td class="col-type">TEXT</td><td class="col-constraint">NOT NULL</td></tr>
+            <tr><td class="col-name">target_resource</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">input_hash</td><td class="col-type">TEXT</td><td>SHA-256 for tamper detection</td></tr>
+            <tr><td class="col-name">output_summary</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">human_approval_required</td><td class="col-type">BOOLEAN</td><td></td></tr>
+            <tr><td class="col-name">approved_by</td><td class="col-type">UUID</td><td class="col-constraint">FK &rarr; users</td></tr>
+            <tr><td class="col-name">verification_status</td><td class="col-type">TEXT</td><td></td></tr>
+            <tr><td class="col-name">token_usage</td><td class="col-type">JSONB</td><td>Input/output token counts</td></tr>
+            <tr><td class="col-name">duration_ms</td><td class="col-type">INT</td><td>Execution time</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- AGENTS -->
+<!-- ============================================================ -->
+<section class="arch-section" id="agents">
+  <span class="section-label">AI Agent Layer</span>
+  <h2>Seven Purpose-Built Agents</h2>
+  <p class="lead">Every agent is a LangGraph state machine with mandatory verification nodes, permission enforcement, and human-in-the-loop gates. No autonomous writes to production data without approval.</p>
+
+  <div class="agent-grid">
+    <div class="agent-card p0">
+      <span class="agent-phase">P0 &mdash; Phase 2</span>
+      <h3>Time Anomaly Detection</h3>
+      <p>Identifies missing timesheets, duplicate entries, hours outliers, and late submissions. Sends mass reminders with configurable exclusions.</p>
+      <div class="agent-caps">
+        <span class="agent-cap">Missing TS detection</span>
+        <span class="agent-cap">Duplicate flagging</span>
+        <span class="agent-cap">Hours anomaly</span>
+        <span class="agent-cap">Mass reminders</span>
+        <span class="agent-cap">Exclusion management</span>
+      </div>
+    </div>
+    <div class="agent-card p0">
+      <span class="agent-phase">P0 &mdash; Phase 2</span>
+      <h3>Risk Alert Engine</h3>
+      <p>Monitors seven risk categories in real time: pay rate mismatches, negative markups, minimum wage violations, hours flags, and more.</p>
+      <div class="agent-caps">
+        <span class="agent-cap">Pay/bill mismatch</span>
+        <span class="agent-cap">Negative markup</span>
+        <span class="agent-cap">Min wage compliance</span>
+        <span class="agent-cap">High rate flags</span>
+        <span class="agent-cap">Configurable tolerances</span>
+      </div>
+    </div>
+    <div class="agent-card p0">
+      <span class="agent-phase">P0 &mdash; Phase 2</span>
+      <h3>Invoice Matching</h3>
+      <p>Cross-references billable hours against generated invoices. Catches unbilled time, rate discrepancies, and PO mismatches before revenue is lost.</p>
+      <div class="agent-caps">
+        <span class="agent-cap">Billable vs. invoiced</span>
+        <span class="agent-cap">Rate validation</span>
+        <span class="agent-cap">PO matching</span>
+        <span class="agent-cap">Revenue leakage</span>
+      </div>
+    </div>
+    <div class="agent-card p1">
+      <span class="agent-phase">P1 &mdash; Months 6&ndash;12</span>
+      <h3>Collections Communications</h3>
+      <p>AI-drafted collection emails based on aging buckets, client history, and configurable escalation cadences. Human approval before send.</p>
+      <div class="agent-caps">
+        <span class="agent-cap">Aging analysis</span>
+        <span class="agent-cap">Email drafting</span>
+        <span class="agent-cap">Escalation cadence</span>
+        <span class="agent-cap">Payment prediction</span>
+      </div>
+    </div>
+    <div class="agent-card p1">
+      <span class="agent-phase">P1 &mdash; Months 6&ndash;12</span>
+      <h3>Compliance Monitoring</h3>
+      <p>Tracks credential expirations, wage compliance across jurisdictions, and placement-level regulatory requirements.</p>
+      <div class="agent-caps">
+        <span class="agent-cap">Credential tracking</span>
+        <span class="agent-cap">Jurisdiction rules</span>
+        <span class="agent-cap">Expiration alerts</span>
+        <span class="agent-cap">Audit-ready reports</span>
+      </div>
+    </div>
+    <div class="agent-card p1">
+      <span class="agent-phase">P1 &mdash; Months 6&ndash;12</span>
+      <h3>Payment Prediction</h3>
+      <p>Forecasts payment timing based on historical patterns, client behavior, and invoice aging. Surfaces cash flow risks early.</p>
+      <div class="agent-caps">
+        <span class="agent-cap">Payment forecasting</span>
+        <span class="agent-cap">Cash flow risk</span>
+        <span class="agent-cap">Client scoring</span>
+        <span class="agent-cap">Trend analysis</span>
+      </div>
+    </div>
+    <div class="agent-card p0">
+      <span class="agent-phase">P0 &mdash; Phase 2</span>
+      <h3>VMS Reconciliation</h3>
+      <p>Matches VMS timesheet data against Bullhorn records. Flags hours discrepancies, rate mismatches, and missing entries across platforms.</p>
+      <div class="agent-caps">
+        <span class="agent-cap">Cross-platform matching</span>
+        <span class="agent-cap">Hours reconciliation</span>
+        <span class="agent-cap">Rate validation</span>
+        <span class="agent-cap">Multi-VMS support</span>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2.5rem; margin-bottom:1rem;">Agent Execution Pattern</h3>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-step-num">1. Trigger</div>
+      <h4>Initiation</h4>
+      <p>Manual button, scheduled cron, or event-driven (anomaly detected)</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">2. Analyze</div>
+      <h4>Data Processing</h4>
+      <p>Query Bullhorn + DB via gateway. LLM reasoning on structured data.</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">3. Verify</div>
+      <h4>Verification Nodes</h4>
+      <p>Math checks, record counts, temporal validation, field presence.</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">4. Review</div>
+      <h4>Human-in-the-Loop</h4>
+      <p>Actions queued for approval. User approves, modifies, or dismisses.</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">5. Act</div>
+      <h4>Execution</h4>
+      <p>Approved actions executed. Full audit trail with input hash.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2.5rem; margin-bottom:1rem;">Permission Matrix</h3>
+  <div class="arch-table-wrap">
+    <table class="arch-table">
+      <thead>
+        <tr><th>Agent</th><th>Read</th><th>Write</th><th>Send</th><th>Modify Financial</th><th>Override Compliance</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-name">Time Anomaly</td><td>timesheets, placements</td><td>timesheets, alerts</td><td>reminders</td><td>No</td><td>No</td></tr>
+        <tr><td class="col-name">Risk Alert</td><td>ALL</td><td>alerts, flags</td><td>notifications</td><td>No</td><td>No</td></tr>
+        <tr><td class="col-name">Invoice Matching</td><td>invoices, timesheets, placements</td><td>invoices, alerts</td><td>notifications</td><td>Yes</td><td>No</td></tr>
+        <tr><td class="col-name">Collections</td><td>invoices, placements, history</td><td>communications, alerts</td><td>emails</td><td>No</td><td>No</td></tr>
+        <tr><td class="col-name">Compliance</td><td>ALL</td><td>flags, alerts</td><td>notifications</td><td>No</td><td>Yes</td></tr>
+        <tr><td class="col-name">VMS Reconciliation</td><td>vms_records, timesheets, placements</td><td>reconciliation, alerts</td><td>notifications</td><td>Yes</td><td>No</td></tr>
+        <tr><td class="col-name">Billing</td><td>ALL</td><td>invoices, adjustments</td><td>notifications</td><td>Yes</td><td>No</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- API -->
+<!-- ============================================================ -->
+<section class="arch-section" id="api">
+  <span class="section-label">API Surface</span>
+  <h2>RESTful API &mdash; v1</h2>
+  <p class="lead">All endpoints are JWT-authenticated (except health and login). Responses are JSON. Tenant isolation is enforced at the database layer via RLS.</p>
+
+  <div style="border:1px solid #e2e8f0; border-radius:12px; padding:1.5rem;">
+    <div class="api-row">
+      <span class="api-method method-get">GET</span>
+      <span class="api-path">/health</span>
+      <div class="api-desc">Health check. Returns <code>{"status":"ok","version":"0.1.0"}</code></div>
+    </div>
+    <div class="api-row">
+      <span class="api-method method-post">POST</span>
+      <span class="api-path">/api/v1/auth/login</span>
+      <div class="api-desc">Authenticate with email, password, and tenant slug. Returns JWT access token + user profile.</div>
+    </div>
+    <div class="api-row">
+      <span class="api-method method-get">GET</span>
+      <span class="api-path">/api/v1/dashboard/metrics</span>
+      <span class="api-auth">JWT</span>
+      <div class="api-desc">Aggregate counts: placements, timesheets, invoices, VMS records, pending review queue.</div>
+    </div>
+    <div class="api-row">
+      <span class="api-method method-get">GET</span>
+      <span class="api-path">/api/v1/placements</span>
+      <span class="api-auth">JWT</span>
+      <div class="api-desc">List placements with optional status filter. Paginated (limit/offset).</div>
+    </div>
+    <div class="api-row">
+      <span class="api-method method-get">GET</span>
+      <span class="api-path">/api/v1/timesheets</span>
+      <span class="api-auth">JWT</span>
+      <div class="api-desc">List timesheets with optional week_ending and status filters. Ordered by week descending.</div>
+    </div>
+    <div class="api-row">
+      <span class="api-method method-get">GET</span>
+      <span class="api-path">/api/v1/vms/uploads</span>
+      <span class="api-auth">JWT</span>
+      <div class="api-desc">Last 50 VMS file uploads for the tenant.</div>
+    </div>
+    <div class="api-row">
+      <span class="api-method method-post">POST</span>
+      <span class="api-path">/api/v1/vms/uploads/presign</span>
+      <span class="api-auth">JWT</span>
+      <div class="api-desc">Generate pre-signed S3 URL for VMS file upload. Creates upload tracking record.</div>
+    </div>
+    <div class="api-row">
+      <span class="api-method method-get">GET</span>
+      <span class="api-path">/api/v1/agents/runs</span>
+      <span class="api-auth">JWT</span>
+      <div class="api-desc">Agent run history with optional agent_type filter.</div>
+    </div>
+    <div class="api-row">
+      <span class="api-method method-get">GET</span>
+      <span class="api-path">/api/v1/agents/runs/{run_id}/results</span>
+      <span class="api-auth">JWT</span>
+      <div class="api-desc">Detailed results for a specific agent run. Filter by severity and review status.</div>
+    </div>
+    <div class="api-row">
+      <span class="api-method method-post">POST</span>
+      <span class="api-path">/api/v1/agents/results/{result_id}/review</span>
+      <span class="api-auth">JWT</span>
+      <div class="api-desc">Submit review decision: approved, escalated, corrected, or dismissed. Records reviewer and timestamp.</div>
+    </div>
+    <div class="api-row">
+      <span class="api-method method-get">GET</span>
+      <span class="api-path">/api/v1/audit</span>
+      <span class="api-auth">JWT</span>
+      <div class="api-desc">Audit trail for the tenant. Every agent action, review decision, and data change.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- INTEGRATIONS -->
+<!-- ============================================================ -->
+<section class="arch-section" id="integrations">
+  <span class="section-label">Integrations</span>
+  <h2>External System Connectivity</h2>
+  <p class="lead">All external systems are accessed through a unified gateway abstraction (<code>src/api/gateway.py</code>). No agent or UI component calls external APIs directly.</p>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-card-icon">&#128268;</div>
+      <div class="tech-label">ATS</div>
+      <h3>Bullhorn REST API</h3>
+      <p>OAuth 2.0 client credentials flow. Supports all staffing entities: Placement, TimeSheet, PayableCharge, BillableCharge, Invoice, Candidate. Credentials stored in AWS Secrets Manager. Configurable sync interval per tenant.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#128196;</div>
+      <div class="tech-label">VMS &mdash; Phase 1</div>
+      <h3>Flat File Upload</h3>
+      <p>CSV/Excel upload to S3 via pre-signed URL. Server-side parsing with configurable column mapping per VMS platform (Beeline, Fieldglass, etc.). Records inserted into vms_records with source_type='file'.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#128279;</div>
+      <div class="tech-label">VMS &mdash; Phase 2</div>
+      <h3>Direct VMS API</h3>
+      <p>Planned: Native API connectors for major VMS platforms. Same vms_records table, source_type='api'. Architecture ready &mdash; gateway abstraction supports both modes.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#129302;</div>
+      <div class="tech-label">AI</div>
+      <h3>Anthropic Claude</h3>
+      <p>Circuit breaker pattern with exponential backoff. Token usage tracked per call for billing passthrough (actual + 30% markup). Abstraction layer supports model swapping.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2.5rem; margin-bottom:1rem;">Data Flow</h3>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-step-num">Source</div>
+      <h4>Bullhorn + VMS</h4>
+      <p>REST API sync and file upload</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">Gateway</div>
+      <h4>Abstraction Layer</h4>
+      <p>Unified interface, tenant routing</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">Store</div>
+      <h4>Aurora PostgreSQL</h4>
+      <p>RLS-isolated, JSONB + relational</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">Process</div>
+      <h4>LangGraph Agents</h4>
+      <p>Analysis, verification, flagging</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">Present</div>
+      <h4>Command Center</h4>
+      <p>Dashboards, alerts, actions</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- MEMORY ARCHITECTURE -->
+<!-- ============================================================ -->
+<section class="arch-section" id="memory">
+  <span class="section-label">Intelligence Layer</span>
+  <h2>Three-Tier Memory Architecture</h2>
+  <p class="lead">Agents get smarter over time. Client-specific learned patterns, tolerance overrides, and known exceptions persist across runs so the system adapts to each customer's operations.</p>
+
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-card-icon">&#9889;</div>
+      <div class="tech-label">Tier 1</div>
+      <h3>Transaction Memory</h3>
+      <p>LangGraph state per agent run. Pydantic-validated. Includes messages, results, review decisions, token usage. Ephemeral &mdash; lives for the duration of one task. Audit log persists the record.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#128218;</div>
+      <div class="tech-label">Tier 2</div>
+      <h3>Client Memory</h3>
+      <p>Per-tenant persistent configuration: tolerance overrides (e.g., "GHR allows 5% OT variance"), known exceptions, VMS quirks, billing rules, escalation contacts, and learned patterns from past runs.</p>
+    </div>
+    <div class="tech-card">
+      <div class="tech-card-icon">&#127758;</div>
+      <div class="tech-label">Tier 3</div>
+      <h3>Platform Memory</h3>
+      <p>Cross-tenant intelligence (planned for 8+ customers). Common VMS parsing patterns, industry benchmarks, regulatory updates. Anonymized &mdash; no tenant data crosses boundaries.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECURITY -->
+<!-- ============================================================ -->
+<section class="arch-section" id="security">
+  <span class="section-label">Security &amp; Compliance</span>
+  <h2>Enterprise Security by Design</h2>
+  <p class="lead">Built for staffing firms handling sensitive PII, financial data, and regulatory compliance requirements across multiple jurisdictions.</p>
+
+  <div class="sec-grid">
+    <div class="sec-item">
+      <div class="sec-icon">&#128274;</div>
+      <div>
+        <h4>Tenant Isolation</h4>
+        <p>PostgreSQL Row-Level Security on every data table. Impossible to query another tenant's data even with direct DB access.</p>
+      </div>
+    </div>
+    <div class="sec-item">
+      <div class="sec-icon">&#128272;</div>
+      <div>
+        <h4>Encryption</h4>
+        <p>TLS in transit (ACM certificates). AES-256 at rest (Aurora, S3). Secrets in AWS Secrets Manager &mdash; never in code or env files.</p>
+      </div>
+    </div>
+    <div class="sec-item">
+      <div class="sec-icon">&#128101;</div>
+      <div>
+        <h4>Authentication</h4>
+        <p>JWT with HS256 signing. 8-hour token expiry. bcrypt password hashing. Role-based access: admin, manager, viewer.</p>
+      </div>
+    </div>
+    <div class="sec-item">
+      <div class="sec-icon">&#128220;</div>
+      <div>
+        <h4>Audit Trail</h4>
+        <p>Every agent action logged with SHA-256 input hash for tamper detection. Reviewer identity, timestamp, and decision recorded.</p>
+      </div>
+    </div>
+    <div class="sec-item">
+      <div class="sec-icon">&#128736;</div>
+      <div>
+        <h4>Human-in-the-Loop</h4>
+        <p>No autonomous writes to production data. Approval gates for financial modifications, client communications, and compliance overrides.</p>
+      </div>
+    </div>
+    <div class="sec-item">
+      <div class="sec-icon">&#127760;</div>
+      <div>
+        <h4>Network Isolation</h4>
+        <p>VPC with private subnets for compute and database. NAT gateway for outbound. No public IP on any service except ALB.</p>
+      </div>
+    </div>
+    <div class="sec-item">
+      <div class="sec-icon">&#128681;</div>
+      <div>
+        <h4>No Hiring AI</h4>
+        <p>Deliberate boundary: no candidate screening or hiring agents. Avoids EEOC/OFCCP bias risk and EU AI Act high-risk classification.</p>
+      </div>
+    </div>
+    <div class="sec-item">
+      <div class="sec-icon">&#128373;</div>
+      <div>
+        <h4>PII Protection</h4>
+        <p>GDPR-simulated privacy standards. PII redacted from debug/test output. No candidate data in LLM prompts without tenant consent flags.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- INFRASTRUCTURE COSTS -->
+<!-- ============================================================ -->
+<section class="arch-section" id="infrastructure">
+  <span class="section-label">Infrastructure</span>
+  <h2>AWS Cost Profile</h2>
+  <p class="lead">Serverless-first architecture keeps costs low at launch and scales with customer volume. No idle servers.</p>
+
+  <div class="arch-table-wrap">
+    <table class="arch-table">
+      <thead>
+        <tr><th>Service</th><th>Resource</th><th>Est. Monthly Cost</th><th>Scales With</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-name">Aurora PostgreSQL</td><td>Serverless v2 (0.5&ndash;4 ACU)</td><td>$45&ndash;$150</td><td>Query volume</td></tr>
+        <tr><td class="col-name">ECS Fargate</td><td>0.5 vCPU / 1 GB</td><td>$15&ndash;$40</td><td>API requests</td></tr>
+        <tr><td class="col-name">Application Load Balancer</td><td>ALB + target group</td><td>$18&ndash;$25</td><td>Connections</td></tr>
+        <tr><td class="col-name">NAT Gateway</td><td>Single AZ</td><td>$32&ndash;$50</td><td>Outbound data</td></tr>
+        <tr><td class="col-name">CloudFront</td><td>CDN distribution</td><td>$1&ndash;$5</td><td>Page views</td></tr>
+        <tr><td class="col-name">S3</td><td>2 buckets (frontend + uploads)</td><td>$1&ndash;$5</td><td>Storage volume</td></tr>
+        <tr><td class="col-name">SQS</td><td>Agent job queue</td><td>&lt;$1</td><td>Agent runs</td></tr>
+        <tr><td class="col-name">Secrets Manager</td><td>1 secret</td><td>$0.40</td><td>Fixed</td></tr>
+        <tr><td class="col-name">CloudWatch</td><td>Logs (30-day retention)</td><td>$2&ndash;$10</td><td>Log volume</td></tr>
+        <tr style="background:#f8fafc; font-weight:600;"><td>Total</td><td></td><td>$130&ndash;$300/mo</td><td>All customers</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</div><!-- /arch-wrap -->
+
+<!-- Footer -->
+<footer class="arch-footer">
+  <p>&copy; 2026 StaffingAgent LLC &mdash; Confidential Technical Documentation</p>
+  <p style="margin-top:.5rem;">Questions? Contact <strong>Chris Scowden</strong>, CEO &mdash; chris@staffingagent.ai</p>
+</footer>
+
+<script>
+function toggleSchema(btn) {
+  const body = btn.nextElementSibling;
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', !expanded);
+  body.classList.toggle('open');
+}
+
+document.querySelectorAll('.arch-nav-links a[href^="#"]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

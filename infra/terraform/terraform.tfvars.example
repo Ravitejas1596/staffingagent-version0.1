@@ -1,0 +1,4 @@
+project     = "staffingagent"
+environment = "prod"
+aws_region  = "us-east-1"
+db_password = "REPLACE_WITH_STRONG_PASSWORD_20_PLUS_CHARS"

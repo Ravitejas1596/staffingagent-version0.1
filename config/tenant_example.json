@@ -1,0 +1,21 @@
+{
+  "tenant_id": "example",
+  "nbrain": {
+    "enabled": false,
+    "api_url_env": "NBRAIN_API_URL",
+    "api_key_env": "NBRAIN_API_KEY"
+  },
+  "bullhorn": {
+    "enabled": false,
+    "rest_url_env": "BULLHORN_REST_URL",
+    "client_id_env": "BULLHORN_CLIENT_ID",
+    "client_secret_env": "BULLHORN_CLIENT_SECRET"
+  },
+  "agents": {
+    "vms_reconciliation": true,
+    "invoice_matching": true,
+    "time_anomaly": true,
+    "collections": true,
+    "compliance": true
+  }
+}
